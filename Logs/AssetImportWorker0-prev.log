@@ -1,0 +1,1020 @@
+Using pre-set license
+Built from '2020.3/release' branch; Version is '2020.3.1f1 (77a89f25062f) revision 7841951'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10 Pro; OS build 19042.928; Version 2009; 64bit' Language: 'en' Physical Memory: 16257 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+ COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\2020.3.1f1\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+C:/Users/mamar/Documents/Unity/2000-EGR - NO MAPBOX TEST
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+54516
+Successfully changed project path to: C:/Users/mamar/Documents/Unity/2000-EGR - NO MAPBOX TEST
+C:/Users/mamar/Documents/Unity/2000-EGR - NO MAPBOX TEST
+Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 59.61 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.3.1f1 (77a89f25062f)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/2020.3.1f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/mamar/Documents/Unity/2000-EGR - NO MAPBOX TEST/Assets
+GfxDevice: creating device client; threaded=0
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1050 Ti (ID=0x1c8c)
+    Vendor:   
+    VRAM:     4019 MB
+    Driver:   27.21.14.6192
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/2020.3.1f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/2020.3.1f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/2020.3.1f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56424
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/2020.3.1f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.104546 seconds.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 45.69 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  5.707 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.189920 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 49.96 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  3.348 seconds
+Platform modules already initialized, skipping
+========================================================================
+Worker process is ready to serve import requests
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.09 seconds
+Refreshing native plugins compatible for Editor in 0.59 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2433 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 198.2 MB.
+System memory in use after: 198.4 MB.
+
+Unloading 23 unused Assets to reduce memory usage. Loaded Objects now: 2923.
+Total: 2.543800 ms (FindLiveObjects: 0.291000 ms CreateObjectMapping: 0.138900 ms MarkObjects: 1.662500 ms  DeleteObjects: 0.450500 ms)
+
+========================================================================
+Received Import Request.
+  path: Assets/Materials/Planets/PlanetJupiterMat.mat
+  artifactKey: Guid(0a29765e817a691438673d51632542d5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Materials/Planets/PlanetJupiterMat.mat using Guid(0a29765e817a691438673d51632542d5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9c7819391e35135ebece2b5fb58d186c') in 0.242770 seconds
+  Import took 0.247591 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 75.090591 seconds.
+  path: Assets/Materials/Planets/PlanetJupiterMat.mat
+  artifactKey: Guid(0a29765e817a691438673d51632542d5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Materials/Planets/PlanetJupiterMat.mat using Guid(0a29765e817a691438673d51632542d5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '2864018185927fbb4bb43671d5df2207') in 0.206548 seconds
+  Import took 0.212912 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002361 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.53 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.859 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.48 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.3 MB.
+System memory in use after: 189.5 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2967.
+Total: 2.272700 ms (FindLiveObjects: 0.277600 ms CreateObjectMapping: 0.111300 ms MarkObjects: 1.855600 ms  DeleteObjects: 0.027200 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.71 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.8 MB.
+System memory in use after: 148.0 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2967.
+Total: 2.445400 ms (FindLiveObjects: 0.285000 ms CreateObjectMapping: 0.119700 ms MarkObjects: 2.016500 ms  DeleteObjects: 0.022300 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 3.63 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.8 MB.
+System memory in use after: 148.0 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2967.
+Total: 2.681300 ms (FindLiveObjects: 0.268800 ms CreateObjectMapping: 0.121300 ms MarkObjects: 2.272400 ms  DeleteObjects: 0.017300 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002192 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.51 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.930 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.49 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.3 MB.
+System memory in use after: 189.6 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2971.
+Total: 3.670200 ms (FindLiveObjects: 0.602900 ms CreateObjectMapping: 0.256600 ms MarkObjects: 2.785500 ms  DeleteObjects: 0.023100 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.76 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.1 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2971.
+Total: 2.664600 ms (FindLiveObjects: 0.459500 ms CreateObjectMapping: 0.171500 ms MarkObjects: 2.012500 ms  DeleteObjects: 0.019300 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.85 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.1 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2971.
+Total: 2.813400 ms (FindLiveObjects: 0.265300 ms CreateObjectMapping: 0.124100 ms MarkObjects: 2.406400 ms  DeleteObjects: 0.016500 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.68 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.1 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2971.
+Total: 2.830600 ms (FindLiveObjects: 0.297500 ms CreateObjectMapping: 0.099500 ms MarkObjects: 2.413600 ms  DeleteObjects: 0.018600 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 2010.090460 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b76d5e7190a8769a9544c407b419d799') in 0.485131 seconds
+  Import took 0.492308 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000876 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c3259628c0e4ea9ecaf881db5e2fd346') in 0.131008 seconds
+  Import took 0.134978 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 246.004946 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/EarthMobile.mat
+  artifactKey: Guid(5aaff034f90869f4891c8248fb8d44dd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/EarthMobile.mat using Guid(5aaff034f90869f4891c8248fb8d44dd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '745d87b6ed1841b839134778505e38a6') in 0.472021 seconds
+  Import took 0.477846 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000303 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/VenusMobile.mat
+  artifactKey: Guid(9344716f23cfb604e8c26fce84cba36a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/VenusMobile.mat using Guid(9344716f23cfb604e8c26fce84cba36a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ee76be33d8836a7269e1564d8fbc3b93') in 0.110366 seconds
+  Import took 0.114240 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000326 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/UranusMobile.mat
+  artifactKey: Guid(281e7e2fafbda1941931212c0770429b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/UranusMobile.mat using Guid(281e7e2fafbda1941931212c0770429b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'cd8aba140bcf5bb2f05ef69acaab7f75') in 0.056116 seconds
+  Import took 0.060422 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000318 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/NeptuneMobile.mat
+  artifactKey: Guid(4cefca5b0f47fb8488f704f5457eb5e5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/NeptuneMobile.mat using Guid(4cefca5b0f47fb8488f704f5457eb5e5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c3eb6ea46d3e0df20a2ea148b15802da') in 0.037172 seconds
+  Import took 0.041250 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000280 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/JupiterMobile.mat
+  artifactKey: Guid(400eb57add67b274e86e74cc645f940e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/JupiterMobile.mat using Guid(400eb57add67b274e86e74cc645f940e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '67b05aa98efd649ee418e0ea18520db6') in 0.095133 seconds
+  Import took 0.099587 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000284 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MarsMobile.mat
+  artifactKey: Guid(281e20fb040fe5b479e251c8a0365f46) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MarsMobile.mat using Guid(281e20fb040fe5b479e251c8a0365f46) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'df7952639834e1fa62fb3e67dba0db18') in 0.119150 seconds
+  Import took 0.123034 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000314 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/SaturnMobile.mat
+  artifactKey: Guid(e2f02c989e05b934f90e3ef0d9e79e76) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/SaturnMobile.mat using Guid(e2f02c989e05b934f90e3ef0d9e79e76) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '03402d3e1821afd09e4a5a6ea11ad235') in 0.090730 seconds
+  Import took 0.095399 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000334 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MercuryMobile.mat
+  artifactKey: Guid(e99bbf3182478844c8f4ef234b52a356) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MercuryMobile.mat using Guid(e99bbf3182478844c8f4ef234b52a356) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'edbe8a6601a3f4c39435afaf0a6448e5') in 0.115834 seconds
+  Import took 0.119977 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.003229 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.52 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.949 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.54 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.4 MB.
+System memory in use after: 189.6 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2976.
+Total: 2.381500 ms (FindLiveObjects: 0.415500 ms CreateObjectMapping: 0.133400 ms MarkObjects: 1.808000 ms  DeleteObjects: 0.022500 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Import Request.
+  Time since last request: 174.657746 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'fb2ab2e95313b99efc048eb2f21325a0') in 0.523359 seconds
+  Import took 0.528435 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000319 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'f9f47f5bad129af7174da4831d306808') in 0.108733 seconds
+  Import took 0.113393 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000320 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat
+  artifactKey: Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat using Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'f62af5159677ac5538cd19a7add1b9d2') in 0.197240 seconds
+  Import took 0.201451 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000360 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5b86f654bbf4c0dbe10f23d330f34a94') in 0.105243 seconds
+  Import took 0.109243 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000282 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat
+  artifactKey: Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat using Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '227201949757196140fe74994c3a9ef0') in 0.053895 seconds
+  Import took 0.057434 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000284 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat
+  artifactKey: Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat using Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'a5f4d98d829ee837c0950846e24d601e') in 0.132123 seconds
+  Import took 0.136212 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000232 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat
+  artifactKey: Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat using Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7aee0504461eefc616e67fc9cd0415ec') in 0.029185 seconds
+  Import took 0.034237 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000233 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat
+  artifactKey: Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat using Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '70ed38b768a023f4d02295ac636ccc85') in 0.161343 seconds
+  Import took 0.166878 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000258 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat
+  artifactKey: Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat using Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9c416d362131e45bb0e029933cf113b7') in 0.039133 seconds
+  Import took 0.043163 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002042 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.51 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.927 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.84 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.4 MB.
+System memory in use after: 189.6 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2981.
+Total: 2.325800 ms (FindLiveObjects: 0.287400 ms CreateObjectMapping: 0.126400 ms MarkObjects: 1.894100 ms  DeleteObjects: 0.016500 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.88 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.2 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2981.
+Total: 2.409400 ms (FindLiveObjects: 0.287300 ms CreateObjectMapping: 0.116400 ms MarkObjects: 1.989100 ms  DeleteObjects: 0.015700 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 79.422903 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c5c588bf405679318610bca244525b14') in 0.529673 seconds
+  Import took 0.535304 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000290 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '333184ba5a31f352bad7692347011cd2') in 0.112732 seconds
+  Import took 0.116858 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000262 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat
+  artifactKey: Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat using Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5d2910b4dffa06c74b6ef3fd39d7b176') in 0.173008 seconds
+  Import took 0.177597 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000317 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '787fbc6140032423ed4fda675cd8df08') in 0.111636 seconds
+  Import took 0.116090 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000316 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat
+  artifactKey: Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat using Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '3351bdfe79d2b41a1b7b1bde8a76d1f4') in 0.037938 seconds
+  Import took 0.042944 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000295 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat
+  artifactKey: Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat using Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9ef775dba95350f9208ac3454996c65e') in 0.149383 seconds
+  Import took 0.153897 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000313 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat
+  artifactKey: Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat using Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8f347d79a34847e77cda666ef975e6bf') in 0.179244 seconds
+  Import took 0.185812 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000365 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat
+  artifactKey: Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat using Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '807a44d6f6ea26611f6a08157a8969a1') in 0.060738 seconds
+  Import took 0.068181 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002077 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.82 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.986 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.48 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.3 MB.
+System memory in use after: 189.6 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2986.
+Total: 3.831200 ms (FindLiveObjects: 1.624500 ms CreateObjectMapping: 0.399200 ms MarkObjects: 1.784400 ms  DeleteObjects: 0.019800 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 3.96 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.1 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2986.
+Total: 3.765800 ms (FindLiveObjects: 1.102800 ms CreateObjectMapping: 0.370100 ms MarkObjects: 2.262600 ms  DeleteObjects: 0.026800 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 135.861404 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4a4c71b2bb1308dfd5c63f90ca160ab2') in 0.500770 seconds
+  Import took 0.506795 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000288 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9ad743c0db33f1e1b2b5248c8a5409cd') in 0.101813 seconds
+  Import took 0.106557 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000310 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat
+  artifactKey: Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat using Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'f6f41913fd9b67f8d727e2f844a51b44') in 0.151498 seconds
+  Import took 0.156163 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000317 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '57fa18575fa12c086080e00787ec6ff1') in 0.105150 seconds
+  Import took 0.108821 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000304 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat
+  artifactKey: Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat using Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4ce0a3c9b265e7ca55b4d3df0f05535c') in 0.037090 seconds
+  Import took 0.041509 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000324 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat
+  artifactKey: Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat using Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '76a76d7c81137828221649625406daeb') in 0.140120 seconds
+  Import took 0.144557 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000320 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat
+  artifactKey: Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat using Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9eea5c8eb42add4365fcea3e0d9aa2ff') in 0.205713 seconds
+  Import took 0.210906 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000239 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat
+  artifactKey: Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat using Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '736a41fcca7eebf7154245f597c47dd8') in 0.035782 seconds
+  Import took 0.040301 seconds .
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.66 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 147.9 MB.
+System memory in use after: 148.2 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2987.
+Total: 3.030900 ms (FindLiveObjects: 0.298600 ms CreateObjectMapping: 0.131400 ms MarkObjects: 2.584700 ms  DeleteObjects: 0.014900 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 135.587834 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '3d6c2121ab138e3a5aa2bffcfa1409de') in 0.472201 seconds
+  Import took 0.476959 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000329 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c39b9565d3ab570d62840bccb051d98f') in 0.103036 seconds
+  Import took 0.108165 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000316 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat
+  artifactKey: Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat using Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '32b1073b33a2ffa453c22e0d2b62954c') in 0.171666 seconds
+  Import took 0.175819 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000309 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8965c73dd30a8f7e4e231b447c070704') in 0.105122 seconds
+  Import took 0.108927 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000314 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat
+  artifactKey: Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat using Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ff83cbc3dd0878db0aff48519cdfdb3b') in 0.035910 seconds
+  Import took 0.039895 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000320 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat
+  artifactKey: Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat using Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b38b9815411ea4aefce345ea98304f44') in 0.123007 seconds
+  Import took 0.127471 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000249 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat
+  artifactKey: Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat using Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ccb909d4a1cb575dc36930ebcb20acc6') in 0.156513 seconds
+  Import took 0.161257 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000289 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat
+  artifactKey: Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat using Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5e629cc5e4cbcefa6a3ad9ab454a9608') in 0.049588 seconds
+  Import took 0.054539 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 88.292041 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/EarthMobile.mat
+  artifactKey: Guid(5aaff034f90869f4891c8248fb8d44dd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/EarthMobile.mat using Guid(5aaff034f90869f4891c8248fb8d44dd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b4261e457d8ea30a829a6bff346a4cd6') in 0.356312 seconds
+  Import took 0.363995 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000242 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/VenusMobile.mat
+  artifactKey: Guid(9344716f23cfb604e8c26fce84cba36a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/VenusMobile.mat using Guid(9344716f23cfb604e8c26fce84cba36a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '3bf48557bed807772e8143149559c2e1') in 0.108753 seconds
+  Import took 0.112977 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000296 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/UranusMobile.mat
+  artifactKey: Guid(281e7e2fafbda1941931212c0770429b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/UranusMobile.mat using Guid(281e7e2fafbda1941931212c0770429b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'bbe8a4c0b64f444180949bcf55e56b5a') in 0.049023 seconds
+  Import took 0.053450 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000384 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/NeptuneMobile.mat
+  artifactKey: Guid(4cefca5b0f47fb8488f704f5457eb5e5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/NeptuneMobile.mat using Guid(4cefca5b0f47fb8488f704f5457eb5e5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5d178670ee63eb60877d24ad04ef0e5f') in 0.047521 seconds
+  Import took 0.051265 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000224 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/JupiterMobile.mat
+  artifactKey: Guid(400eb57add67b274e86e74cc645f940e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/JupiterMobile.mat using Guid(400eb57add67b274e86e74cc645f940e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'd0c4c347b51d8798446105adbcb3b1ac') in 0.106737 seconds
+  Import took 0.110776 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000301 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MarsMobile.mat
+  artifactKey: Guid(281e20fb040fe5b479e251c8a0365f46) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MarsMobile.mat using Guid(281e20fb040fe5b479e251c8a0365f46) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '70c0c218aa917fff83e3a9255ea31b4c') in 0.146441 seconds
+  Import took 0.150280 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000304 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/SaturnMobile.mat
+  artifactKey: Guid(e2f02c989e05b934f90e3ef0d9e79e76) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/SaturnMobile.mat using Guid(e2f02c989e05b934f90e3ef0d9e79e76) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '176a72044cf85605ecfd57feb38f7f8c') in 0.099970 seconds
+  Import took 0.104216 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000320 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MercuryMobile.mat
+  artifactKey: Guid(e99bbf3182478844c8f4ef234b52a356) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mobile/MercuryMobile.mat using Guid(e99bbf3182478844c8f4ef234b52a356) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4dcd5aa6ffead82b8e04cb0ce1d50dfb') in 0.146077 seconds
+  Import took 0.150080 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 13.800461 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat
+  artifactKey: Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat using Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'bae023c5a339236c1e3c40846987486a') in 0.017638 seconds
+  Import took 0.021798 seconds .
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.68 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2987.
+Total: 2.914600 ms (FindLiveObjects: 0.256300 ms CreateObjectMapping: 0.118500 ms MarkObjects: 2.523200 ms  DeleteObjects: 0.015500 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.78 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2987.
+Total: 3.119800 ms (FindLiveObjects: 0.311700 ms CreateObjectMapping: 0.150400 ms MarkObjects: 2.639300 ms  DeleteObjects: 0.016900 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 476.062674 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '18f76f3ca17c309065508fcfed29ac06') in 0.483217 seconds
+  Import took 0.488246 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000288 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat
+  artifactKey: Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Jupiter.mat using Guid(fa63b5bd7e0fa0b45a08bf74ac4205a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '93d5e966919a5e7a4fc090c62abca4e3') in 0.115208 seconds
+  Import took 0.119073 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000307 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat
+  artifactKey: Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mercury.mat using Guid(1aef184d850d8eb45b07d60d6f1436be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '30d1001fee9c801c6b1bbed62f6396e9') in 0.184377 seconds
+  Import took 0.188525 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000289 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat
+  artifactKey: Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Saturn.mat using Guid(c4bf587b0c70d834d923ddf3b2cf9166) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b06ba7760ee0e5df7ba80a0eaf00f889') in 0.107637 seconds
+  Import took 0.112256 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000266 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat
+  artifactKey: Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Neptune.mat using Guid(d95a85eabd31ab04f8e34af14f464c3f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '4f11d39f12779c9740760e2565fcbad9') in 0.039501 seconds
+  Import took 0.044216 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000346 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat
+  artifactKey: Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Venus.mat using Guid(85240e987ebf72d4987eb4cced5fa8b4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'e2760c49fc0a64c6513521ada053141c') in 0.144351 seconds
+  Import took 0.149491 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000335 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat
+  artifactKey: Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Mars.mat using Guid(ebed62f90944246459c0d42563d11485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'bf5a82aacfc89cdbf2c666877300142b') in 0.168617 seconds
+  Import took 0.176191 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000315 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat
+  artifactKey: Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Uranus.mat using Guid(b34ef3aee77b3c849a5515a124bfa8e8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c02245b232dd3e921eb34c1f709d6c8e') in 0.049237 seconds
+  Import took 0.053464 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 94.272557 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat
+  artifactKey: Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/Earth.mat using Guid(2428d1f34e850404d929653306f2a06d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '1b05b66cf569873691ee90243636c250') in 0.459132 seconds
+  Import took 0.465036 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000315 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat
+  artifactKey: Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat using Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '19936bb01ac787114d6c6bf20a588feb') in 0.028433 seconds
+  Import took 0.032715 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002096 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.59 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.967 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.49 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.5 MB.
+System memory in use after: 189.7 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2991.
+Total: 2.261000 ms (FindLiveObjects: 0.241000 ms CreateObjectMapping: 0.110600 ms MarkObjects: 1.892400 ms  DeleteObjects: 0.016300 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.82 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2991.
+Total: 2.726400 ms (FindLiveObjects: 0.288500 ms CreateObjectMapping: 0.121600 ms MarkObjects: 2.296500 ms  DeleteObjects: 0.018000 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.71 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2991.
+Total: 2.446800 ms (FindLiveObjects: 0.283000 ms CreateObjectMapping: 0.124800 ms MarkObjects: 2.022300 ms  DeleteObjects: 0.015400 ms)
+
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.64 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2991.
+Total: 3.123200 ms (FindLiveObjects: 0.313800 ms CreateObjectMapping: 0.141700 ms MarkObjects: 2.648900 ms  DeleteObjects: 0.017600 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002130 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.49 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.950 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.48 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.5 MB.
+System memory in use after: 189.7 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2995.
+Total: 2.564400 ms (FindLiveObjects: 0.461500 ms CreateObjectMapping: 0.153300 ms MarkObjects: 1.931000 ms  DeleteObjects: 0.017500 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002081 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.50 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.933 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 1.09 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.5 MB.
+System memory in use after: 189.7 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 2999.
+Total: 3.191200 ms (FindLiveObjects: 0.328400 ms CreateObjectMapping: 0.176600 ms MarkObjects: 2.655200 ms  DeleteObjects: 0.028900 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.87 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.1 MB.
+System memory in use after: 148.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 2999.
+Total: 2.358100 ms (FindLiveObjects: 0.325100 ms CreateObjectMapping: 0.156400 ms MarkObjects: 1.860000 ms  DeleteObjects: 0.015700 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002071 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.49 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.933 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 0.47 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.5 MB.
+System memory in use after: 189.8 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 3003.
+Total: 2.514100 ms (FindLiveObjects: 0.349500 ms CreateObjectMapping: 0.133000 ms MarkObjects: 2.012700 ms  DeleteObjects: 0.018100 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.002116 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 1.50 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  1.298 seconds
+Platform modules already initialized, skipping
+Switching build target platform(5) subTarget(0) extendedPlatform(0) -> platform(13) subTarget(524288) extendedPlatform(0)
+Refreshing native plugins compatible for Editor in 1.11 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 2331 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 189.4 MB.
+System memory in use after: 189.7 MB.
+
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 3007.
+Total: 4.927900 ms (FindLiveObjects: 0.673300 ms CreateObjectMapping: 0.263300 ms MarkObjects: 3.945400 ms  DeleteObjects: 0.043600 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:graphics/normal-map-encoding: 01000000000000000000000000000000 -> 02000000000000000000000000000000
+========================================================================
+Received Prepare
+Refreshing native plugins compatible for Editor in 2.72 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 148.0 MB.
+System memory in use after: 148.2 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 3007.
+Total: 2.818800 ms (FindLiveObjects: 0.413900 ms CreateObjectMapping: 0.186900 ms MarkObjects: 2.199100 ms  DeleteObjects: 0.017400 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 2517.361327 seconds.
+  path: Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat
+  artifactKey: Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/AHProxy/PlanetShader/DemoScene/Materials/Planets/SaturnRings.mat using Guid(ae297437e4c552243a4df714ab2bf508) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9bbd276e19569f48719af3b526c8ecd0') in 0.074832 seconds
+  Import took 0.080166 seconds .
+
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
