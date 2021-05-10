@@ -10,19 +10,56 @@ using System.Collections.Generic;
 
 namespace MRK.UI {
     public class EGRScreenMainSub1 : EGRScreen {
-        readonly GameObject[] m_Titles;
+        class Title {
+            public class GraphicBuffer {
+                public object Tween;
+                public Graphic Gfx;
+            }
+
+            Transform m_Transform;
+            GraphicBuffer[] m_GraphicBuffer;
+            bool m_Active;
+
+            public GraphicBuffer[] GraphicBuffers => m_GraphicBuffer;
+
+            public Title(Transform trans) {
+                m_Transform = trans;
+
+                Graphic[] gfx = m_Transform.GetComponentsInChildren<Graphic>(true);
+                m_GraphicBuffer = new GraphicBuffer[gfx.Length];
+                for (int i = 0; i < gfx.Length; i++)
+                    m_GraphicBuffer[i] = new GraphicBuffer { Gfx = gfx[i], Tween = null };
+            }
+
+            public void SetActive(bool active, bool force = false) {
+                if (m_Active == active && !force)
+                    return;
+
+                m_Active = active;
+                
+                foreach (GraphicBuffer gfx in m_GraphicBuffer) {
+                    if (gfx.Tween != null) {
+                        DOTween.Kill(gfx.Tween);
+                    }
+
+                    gfx.Tween = gfx.Gfx.DOFade(active ? 1f : 0f, 0.3f);
+                }
+            }
+        }
+        
+        readonly Title[] m_Titles;
         int m_CurrentTitleIdx;
         ScrollRect m_Scroll;
         RectTransform m_Mask;
         float m_MaskSz;
 
         public EGRScreenMainSub1() {
-            m_Titles = new GameObject[3];
+            m_Titles = new Title[3];
         }
 
         protected override void OnScreenInit() {
             for (int i = 0; i < m_Titles.Length; i++) {
-                m_Titles[i] = GetTransform((string)typeof(Others).GetField($"Title{i}", BindingFlags.Public | BindingFlags.Static).GetValue(null)).gameObject;
+                m_Titles[i] = new Title(GetTransform((string)typeof(Others).GetField($"Title{i}", BindingFlags.Public | BindingFlags.Static).GetValue(null)));
             }
 
             for (int i = 0; i < 23; i++) {
@@ -69,8 +106,10 @@ namespace MRK.UI {
             base.OnScreenShowAnim();
 
             List<Graphic> glist = new List<Graphic>();
-            foreach (GameObject go in m_Titles) {
-                glist.AddRange(go.GetComponentsInChildren<Graphic>());
+            foreach (Title title in m_Titles) {
+                foreach (Title.GraphicBuffer buf in title.GraphicBuffers) {
+                    glist.Add(buf.Gfx);
+                }
             }
 
             m_LastGraphicsBuf = glist.ToArray();
@@ -80,18 +119,20 @@ namespace MRK.UI {
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(gfx.color, TweenMonitored(0.3f))
+                /* gfx.DOColor(gfx.color, TweenMonitored(0.3f))
                     .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
+                    .SetEase(Ease.OutSine); */
 
                 gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.3f + i * 0.03f))
                         .ChangeStartValue(-1f * gfx.transform.position)
                         .SetEase(Ease.OutSine);
             }
 
-            DOTween.To(() => m_Mask.sizeDelta.y, x=> m_Mask.sizeDelta = new Vector2(m_Mask.sizeDelta.x, x), m_MaskSz, 0.4f)
+            DOTween.To(() => m_Mask.sizeDelta.y, x => m_Mask.sizeDelta = new Vector2(m_Mask.sizeDelta.x, x), m_MaskSz, 0.4f)
                 .ChangeStartValue(-1500f)
                 .SetEase(Ease.OutSine);
+
+            UpdateTitleVisibility(true);
         }
 
         protected override void OnScreenShow() {
@@ -113,9 +154,9 @@ namespace MRK.UI {
             return 0;
         }
 
-        void UpdateTitleVisibility() {
+        void UpdateTitleVisibility(bool force = false) {
             for (int i = 0; i < m_Titles.Length; i++) {
-                m_Titles[i].SetActive(i == m_CurrentTitleIdx);
+                m_Titles[i].SetActive(i == m_CurrentTitleIdx, force);
             }
         }
 
