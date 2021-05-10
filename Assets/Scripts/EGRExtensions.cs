@@ -49,6 +49,15 @@ namespace MRK {
             return false;
         }
 
+        public static bool EldersHaveTransform(this Transform trans, Transform target) {
+            while ((trans = trans.parent) != null) {
+                if (trans == target)
+                    return true;
+            }
+
+            return false;
+        }
+
         public static bool ToBool(this int i) {
             return i == 1;
         }

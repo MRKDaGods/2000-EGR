@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace MRK {
 	public class MRKMap : MonoBehaviour {
-		const int EX_N = 1, EX_S = 1, EX_W = 2, EX_E = 1;
+		const int EX_N = 1, EX_S = 1, EX_W = 1, EX_E = 1;
 
 		[SerializeField]
 		float m_Zoom;
@@ -79,8 +79,22 @@ namespace MRK {
 			m_SortedTileIDs.Clear();
 			m_SortedToActiveIDs.Clear();
 			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
-			for (int x = (centerTile.X - EX_N); x <= (centerTile.X + EX_E); x++) {
+
+			//int maxValidTile = (1 << m_AbsoluteZoom) - 1;
+
+			for (int x = (centerTile.X - EX_W); x <= (centerTile.X + EX_E); x++) {
 				for (int y = (centerTile.Y - EX_N); y <= (centerTile.Y + EX_S); y++) {
+					/* if (x < 0)
+						x = maxValidTile;
+					else if (x > maxValidTile)
+						x = 0;
+
+					if (y < 0)
+						y = maxValidTile;
+					else if (y > maxValidTile)
+						y = 0;
+
+					*/
 					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y));
 				}
 			}
@@ -108,8 +122,8 @@ namespace MRK {
             }
 
 			m_SortedTileIDs.Sort((x, y) => {
-				int sqrMagX = x.X * x.X + x.Y * x.Y;
-				int sqrMagY = y.X * y.X + y.Y * y.Y;
+				int sqrMagX = x.Magnitude;
+				int sqrMagY = y.Magnitude;
 
 				return sqrMagX.CompareTo(sqrMagY);
 			});

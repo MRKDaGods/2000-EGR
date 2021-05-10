@@ -8,7 +8,8 @@ namespace MRK.UI {
     public enum EGRGfxState {
         None = 0,
         Position = 1,
-        Color = 2
+        Color = 2,
+        LocalPosition = 4
     }
 
     public class EGRScreen : EGRBehaviour {
@@ -147,6 +148,10 @@ namespace MRK.UI {
                 m_GfxStates[gfx].Position = gfx.transform.position;
             }
 
+            if ((state & EGRGfxState.LocalPosition) == EGRGfxState.LocalPosition) {
+                m_GfxStates[gfx].Position = gfx.transform.localPosition;
+            }
+
             if ((state & EGRGfxState.Color) == EGRGfxState.Color) {
                 m_GfxStates[gfx].Color = gfx.color;
             }
@@ -173,6 +178,12 @@ namespace MRK.UI {
                 if ((m_SavedGfxState & EGRGfxState.Position) == EGRGfxState.Position) {
                     if ((gState.Mask & EGRGfxState.Position) == EGRGfxState.Position) {
                         gfx.transform.position = gState.Position;
+                    }
+                }
+
+                if ((m_SavedGfxState & EGRGfxState.LocalPosition) == EGRGfxState.LocalPosition) {
+                    if ((gState.Mask & EGRGfxState.LocalPosition) == EGRGfxState.LocalPosition) {
+                        gfx.transform.localPosition = gState.Position;
                     }
                 }
 

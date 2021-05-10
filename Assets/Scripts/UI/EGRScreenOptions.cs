@@ -12,36 +12,32 @@ using static MRK.UI.EGRUI_Main.EGRScreen_Options;
 
 namespace MRK.UI {
     public class EGRScreenOptions : EGRScreen {
-        readonly Image[] m_Backgrounds; //we have 3
+        Image m_Background;
+        Transform m_Layout;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0xFF000000;
-
-        public EGRScreenOptions() {
-            m_Backgrounds = new Image[3];
-        }
 
         protected override void OnScreenInit() {
             GetElement<Button>(Buttons.TopLeftMenu).onClick.AddListener(() => {
                 HideScreen(() => Manager.GetScreen(EGRUI_Main.EGRScreen_Menu.SCREEN_NAME).ShowScreen(), 0.1f, false);
             });
 
-            GetElement<Button>(Buttons.Acc).onClick.AddListener(() => {
+            GetElement<Button>("Layout/Account").onClick.AddListener(() => {
                 Manager.GetScreen(EGRUI_Main.EGRScreen_OptionsAccInfo.SCREEN_NAME).ShowScreen();
             });
 
-            GetElement<Button>(Buttons.Settings).onClick.AddListener(() => {
-                Manager.GetScreen<EGRScreenMenuSettings>().ShowScreen();
-            });
+            //GetElement<Button>(Buttons.Settings).onClick.AddListener(() => {
+            //    Manager.GetScreen<EGRScreenMenuSettings>().ShowScreen();
+            //});
 
-            GetElement<Button>(Buttons.Logout).onClick.AddListener(OnLogoutClick);
+            GetElement<Button>("Layout/Logout").onClick.AddListener(OnLogoutClick);
 
             TextMeshProUGUI bInfo = GetElement<TextMeshProUGUI>(Labels.BuildInfo);
             bInfo.text = string.Format(bInfo.text, $"{EGRVersion.VersionString()} - {EGRVersion.VersionSignature()}");
 
-            m_Backgrounds[0] = GetElement<Image>(Images.Bg);
-            m_Backgrounds[1] = GetElement<Image>(Images.TopBg);
-            m_Backgrounds[2] = GetElement<Image>(Images.BotBg);
+            m_Background = GetElement<Image>(Images.Bg);
+            m_Layout = GetTransform("Layout");
         }
 
         protected override void OnScreenShowAnim() {
@@ -52,36 +48,31 @@ namespace MRK.UI {
                 return y.transform.position.y.CompareTo(x.transform.position.y);
             });
 
-            PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
+            PushGfxState(EGRGfxState.LocalPosition | EGRGfxState.Color);
 
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(gfx.color, TweenMonitored(0.4f + i * 0.03f))
+                gfx.DOColor(gfx.color, TweenMonitored(0.5f))
                     .ChangeStartValue(Color.clear)
                     .SetEase(Ease.OutSine);
 
                 SetGfxStateMask(gfx, EGRGfxState.Color);
 
-                bool isBg = false;
-                foreach (Image bg in m_Backgrounds) {
-                    if (gfx == bg) {
-                        isBg = true;
-                        break;
-                    }
-                }
-
-                //text is a child of button which is an existing gfx, BETTER check for button comp in parent later
-                if (isBg || gfx.ParentHasGfx()) {
+                if (gfx == m_Background || /*gfx.transform.EldersHaveTransform(m_Layout) ||*/ gfx.ParentHasGfx()) {
                     continue;
                 }
 
-                gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.2f + i * 0.03f))
+                gfx.transform.DOLocalMoveX(gfx.transform.localPosition.x, TweenMonitored(0.4f  + i *0.01f))
                     .ChangeStartValue(-1f * gfx.transform.position)
                     .SetEase(Ease.OutSine);
 
-                SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.Position);
+                SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.LocalPosition);
             }
+
+            //m_Layout.DOMoveX(m_Layout.position.x, TweenMonitored(0.4f))
+            //        .ChangeStartValue(-1f * m_Layout.position)
+            //        .SetEase(Ease.OutSine);
         }
 
         protected override bool OnScreenHideAnim(Action callback) {

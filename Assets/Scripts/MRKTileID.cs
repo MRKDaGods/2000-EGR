@@ -9,11 +9,14 @@ namespace MRK {
         public int Z { get; private set; }
         public int X { get; private set; }
         public int Y { get; private set; }
+        public int Magnitude { get; private set; }
 
         public MRKTileID(int z, int x, int y) {
             Z = z;
             X = x;
             Y = y;
+
+            Magnitude = x * x + y * y;
         }
 
         public override string ToString() {
