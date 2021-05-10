@@ -121,9 +121,9 @@ TextureImporter:
       name: EGRPopupBgNew_0
       rect:
         serializedVersion: 2
-        x: 155
+        x: 136
         y: 458
-        width: 3174
+        width: 3222
         height: 2600
       alignment: 0
       pivot: {x: 0.5, y: 0.5}

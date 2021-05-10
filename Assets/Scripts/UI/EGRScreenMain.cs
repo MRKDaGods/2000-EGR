@@ -293,7 +293,7 @@ namespace MRK.UI {
 
             //UpdateNavButtonsVisibility();
 
-            Debug.Log("NEW VAL " + newVal);
+            //Debug.Log("NEW VAL " + newVal);
         }
 
         public bool ShouldShowSubScreen(int idx) {

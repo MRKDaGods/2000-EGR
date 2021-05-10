@@ -143,7 +143,7 @@ namespace MRK.UI {
                     m_ActivePosition = new Vector2(ms_Owner.m_ActiveButtonPositioner.GetWorldPositionX(m_Index), ms_TemplateTransform.position.y);
 
                     m_InitialTextPosition = m_Text.transform.position;
-                    m_InitialTextPosition.x = m_ActivePosition.x; //centre with active pos
+                    m_InitialTextPosition.x = m_InitialPosition.x; //m_ActivePosition.x; //centre with active pos
                     m_Text.transform.position = m_InitialTextPosition;
 
                     m_ActiveTextPosition = m_ActivePosition;

@@ -22,6 +22,8 @@
         public const string EGR_LOCALPREFS_SETTINGS_SHOW_TIME = "EGR_SETTINGS_SHOW_TIME";
         public const string EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE = "EGR_SETTINGS_SHOW_DISTANCE";
 
+        public const string EGR_LOCALPREFS_RUNS_FLAT_MAP = "EGR_RUNS_FLAT_MAP";
+
         public const int EGR_ERROR_NOTCONNECTED = 1;
         public const int EGR_ERROR_RESPONSE = 2;
         public const int EGR_ERROR_INVALID_TOKEN = 3;

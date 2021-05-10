@@ -218,10 +218,15 @@ namespace MRK {
         }
 
         void SwitchToFlatMap() {
-            Vector2d latlng = GetCurrentGeoPos();
-            Debug.Log($"Centre latlng={latlng}");
             Client.SetMapMode(EGRMapMode.Flat);
-            (Client.ActiveEGRCamera as EGRCameraFlat).SetInitialSetup(latlng, 3f);
+            (Client.ActiveEGRCamera as EGRCameraFlat).SetInitialSetup(GetCurrentGeoPos(), 3f);
+
+            if (!PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 0).ToBool()) {
+                PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 1);
+                PlayerPrefs.Save();
+
+                EGRScreenManager.Instance.GetScreen<EGRScreenMapChooser>().ShowScreen();
+            }
         }
 
         void ProcessZoomScroll(float delta) {
