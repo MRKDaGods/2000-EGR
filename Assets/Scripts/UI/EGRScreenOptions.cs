@@ -20,11 +20,11 @@ namespace MRK.UI {
 
         protected override void OnScreenInit() {
             GetElement<Button>(Buttons.TopLeftMenu).onClick.AddListener(() => {
-                HideScreen(() => Manager.GetScreen(EGRUI_Main.EGRScreen_Menu.SCREEN_NAME).ShowScreen(), 0.1f, false);
+                HideScreen(() => Manager.GetScreen<EGRScreenMenu>().ShowScreen(), 0.1f, false);
             });
 
             GetElement<Button>("Layout/Account").onClick.AddListener(() => {
-                Manager.GetScreen(EGRUI_Main.EGRScreen_OptionsAccInfo.SCREEN_NAME).ShowScreen();
+                Manager.GetScreen<EGRScreenOptionsAccInfo>().ShowScreen();
             });
 
             //GetElement<Button>(Buttons.Settings).onClick.AddListener(() => {
@@ -59,11 +59,11 @@ namespace MRK.UI {
 
                 SetGfxStateMask(gfx, EGRGfxState.Color);
 
-                if (gfx == m_Background || /*gfx.transform.EldersHaveTransform(m_Layout) ||*/ gfx.ParentHasGfx()) {
+                if (gfx == m_Background || gfx.ParentHasGfx()) {
                     continue;
                 }
 
-                gfx.transform.DOLocalMoveX(gfx.transform.localPosition.x, TweenMonitored(0.4f  + i *0.01f))
+                gfx.transform.DOLocalMoveX(gfx.transform.localPosition.x, TweenMonitored(0.3f + i * 0.03f))
                     .ChangeStartValue(-1f * gfx.transform.position)
                     .SetEase(Ease.OutSine);
 
@@ -78,17 +78,12 @@ namespace MRK.UI {
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
-
             SetTweenCount(m_LastGraphicsBuf.Length);
 
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(Color.clear, TweenMonitored(0.2f + i * 0.03f))
+                gfx.DOColor(Color.clear, TweenMonitored(0.2f))
                     .SetEase(Ease.OutSine)
                     .OnComplete(OnTweenFinished);
             }

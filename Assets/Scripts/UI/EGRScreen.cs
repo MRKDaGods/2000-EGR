@@ -141,7 +141,7 @@ namespace MRK.UI {
 
         public void PushGfxStateManual(Gfx gfx, EGRGfxState state) {
             m_GfxStates[gfx] = new GfxState {
-                Mask = EGRGfxState.Color | EGRGfxState.Position
+                Mask = EGRGfxState.Color | EGRGfxState.Position | EGRGfxState.LocalPosition
             };
 
             if ((state & EGRGfxState.Position) == EGRGfxState.Position) {

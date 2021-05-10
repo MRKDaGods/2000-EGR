@@ -39,14 +39,32 @@ namespace MRK {
             return Mathd.Abs(vec.x - other.x) > Mathd.Epsilon || Mathd.Abs(vec.y - other.y) > Mathd.Epsilon;
         }
 
-        public static bool ParentHasGfx(this Graphic gfx) {
+        public static bool ParentHasGfx(this Graphic gfx, params Type[] excluded) {
             Transform trans = gfx.transform;
             while ((trans = trans.parent) != null) {
-                if (trans.GetComponent<Graphic>() != null)
+                if (trans.GetComponent<Graphic>() != null && trans.GetComponent<Mask>() == null) {
+                    if (excluded != null && excluded.Length > 0) {
+                        bool found = false;
+                        foreach (Type type in excluded) {
+                            if (trans.GetComponent(type) != null) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found)
+                            continue;
+                    }
+
                     return true;
+                }
             }
 
             return false;
+        }
+
+        public static bool GfxHasScrollView(this Graphic gfx) {
+            return gfx.transform.GetComponent<ScrollRect>() != null || gfx.transform.GetComponent<Mask>() != null;
         }
 
         public static bool EldersHaveTransform(this Transform trans, Transform target) {

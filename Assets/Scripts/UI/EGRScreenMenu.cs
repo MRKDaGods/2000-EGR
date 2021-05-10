@@ -147,8 +147,16 @@ namespace MRK.UI {
         }
 
         void ProcessAction(int idx) {
-            if (idx == 0) {
-                HideScreen(() => Manager.GetScreen(EGRUI_Main.EGRScreen_Options.SCREEN_NAME).ShowScreen(), 0.1f, true);
+            switch (idx) {
+
+                case 0:
+                    HideScreen(() => Manager.GetScreen<EGRScreenOptions>().ShowScreen(), 0.1f, true);
+                    break;
+
+                case 1:
+                    HideScreen(() => Manager.GetScreen<EGRScreenOptionsAppSettings>().ShowScreen(), 0.1f, true);
+                    break;
+
             }
         }
     }
