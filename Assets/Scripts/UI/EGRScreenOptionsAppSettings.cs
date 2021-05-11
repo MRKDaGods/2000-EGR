@@ -6,6 +6,7 @@ using UnityEngine.UI;
 namespace MRK.UI {
     public class EGRScreenOptionsAppSettings : EGRScreen {
         Image m_Background;
+        Transform m_Layout;
 
         protected override void OnScreenInit() {
             GetElement<Button>("bTopLeftMenu").onClick.AddListener(() => {
@@ -29,10 +30,16 @@ namespace MRK.UI {
             });
 
             m_Background = GetElement<Image>("imgBg");
+            m_Layout = GetTransform("Layout");
         }
 
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim();
+
+            VerticalLayoutGroup vlayout = m_Layout.GetComponent<VerticalLayoutGroup>();
+            vlayout.enabled = true;
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
+            vlayout.enabled = false;
 
             m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
             Array.Sort(m_LastGraphicsBuf, (x, y) => {

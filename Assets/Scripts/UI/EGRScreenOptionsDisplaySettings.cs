@@ -9,14 +9,22 @@ using UnityEngine.UI;
 
 namespace MRK.UI {
     public class EGRScreenOptionsDisplaySettings : EGRScreen {
+        Transform m_Layout;
+
         protected override void OnScreenInit() {
             GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
+            m_Layout = GetTransform("Scroll View/Viewport/Content/Layout");
         }
 
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim();
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            VerticalLayoutGroup vlayout = m_Layout.GetComponent<VerticalLayoutGroup>();
+            vlayout.enabled = true;
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
+            vlayout.enabled = false;
+
+            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
             Array.Sort(m_LastGraphicsBuf, (x, y) => {
                 return y.transform.position.y.CompareTo(x.transform.position.y);
             });

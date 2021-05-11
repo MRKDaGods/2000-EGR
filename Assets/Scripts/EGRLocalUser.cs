@@ -20,6 +20,7 @@ namespace MRK {
         public string LastName { get; private set; }
         public sbyte Gender { get; private set; }
         public string Token { get; private set; }
+        public string FullName => $"{FirstName} {LastName}";
 
         public static EGRLocalUser Instance { get; private set; }
 

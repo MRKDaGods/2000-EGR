@@ -14,6 +14,7 @@ namespace MRK.UI {
     public class EGRScreenOptions : EGRScreen {
         Image m_Background;
         Transform m_Layout;
+        TextMeshProUGUI m_Name;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0xFF000000;
@@ -38,10 +39,14 @@ namespace MRK.UI {
 
             m_Background = GetElement<Image>(Images.Bg);
             m_Layout = GetTransform("Layout");
+            m_Name = GetElement<TextMeshProUGUI>("Layout/Profile/Name");
         }
 
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim(); // no extensive workload down there
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
+            m_Layout.GetComponent<VerticalLayoutGroup>().enabled = false;
 
             m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
             Array.Sort(m_LastGraphicsBuf, (x, y) => {
@@ -89,6 +94,10 @@ namespace MRK.UI {
             }
 
             return true;
+        }
+
+        protected override void OnScreenShow() {
+            m_Name.text = EGRLocalUser.Instance.FullName;
         }
 
         void OnLogoutClick() {
