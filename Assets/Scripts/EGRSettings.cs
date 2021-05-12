@@ -46,6 +46,7 @@ namespace MRK {
         static readonly int[] ms_EGRToUnityQualityMap = { 2, 2, 3, 3 };
         static readonly float[] ms_ResolutionMap = { 1f, 0.9f, 0.8f, 0.75f };
         static readonly float[] ms_SensitivityMap = { 0.1f, 0.3f, 0.5f, 0.7f, 0.9f };
+        static readonly string[] ms_StyleMap = { "main", "basic", "satellite" };
         static int ms_Counter;
         static int ms_InitialWidth;
         static int ms_InitialHeight;
@@ -111,6 +112,10 @@ namespace MRK {
 
         public static float GetMapSensitivity() {
             return ms_SensitivityMap[(int)MapSensitivity];
+        }
+
+        public static string GetCurrentTileset() {
+            return ms_StyleMap[(int)MapStyle];
         }
     }
 }

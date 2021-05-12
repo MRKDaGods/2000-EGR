@@ -31,6 +31,8 @@ namespace MRK.UI {
             EGRSettings.MapSensitivity = (EGRSettingsSensitivity)m_SensitivitySelector.SelectedIndex;
             EGRSettings.MapStyle = (EGRSettingsMapStyle)m_StyleSelector.SelectedIndex;
             EGRSettings.Save();
+
+            Client.FlatMap.UpdateTileset();
         }
 
         void OnPreviewClick() {

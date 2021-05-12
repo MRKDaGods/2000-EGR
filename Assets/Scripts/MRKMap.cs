@@ -30,6 +30,8 @@ namespace MRK {
 		string m_Tileset;
 		[SerializeField]
 		float m_TileSize = 100f;
+		[SerializeField]
+		float[] m_DesiredTilesetEmission;
 
 		public event Action OnEGRMapUpdated;
 		public event Action<int, int> OnEGRMapZoomUpdated;
@@ -64,8 +66,13 @@ namespace MRK {
 			m_InitialZoom = m_AbsoluteZoom;
 			m_CenterLatLng = center;
 
+			UpdateTileset();
 			UpdateMap(m_CenterLatLng, m_Zoom, true);
 		}
+
+		public void UpdateTileset() {
+			m_Tileset = EGRSettings.GetCurrentTileset();
+        }
 
         void UpdateScale() {
 			var referenceTileRect = MRKMapUtils.TileBounds(MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom));
@@ -109,8 +116,9 @@ namespace MRK {
 
 			foreach (MRKTile tile in buf) {
 				//tile.Obj.SetActive(false);
-				tile.Dead = true;
+				//tile.Dead = true;
 				tile.OnDestroy();
+				//m_TilePool.Free(tile);
 				Destroy(tile.Obj);
 				m_Tiles.Remove(tile);
             }
@@ -133,7 +141,7 @@ namespace MRK {
 				MRKTileID realID = m_SortedToActiveIDs[tileID];
 				MRKTile tile = m_Tiles.Find(x => x.ID == realID);
 				if (tile == null) {
-					tile = new MRKTile(); //m_TilePool.Rent();
+					tile = new MRKTile();
 				}
 				tile.InitTile(this, realID);
 
@@ -217,5 +225,13 @@ namespace MRK {
 			var worldPos = MRKMapUtils.GeoToWorldPosition(latitudeLongitude.x, latitudeLongitude.y, m_CenterMercator, WorldRelativeScale * scaleFactor).ToVector3xz();
 			return transform.TransformPoint(worldPos);
 		}
+
+		public float GetDesiredTilesetEmission() {
+			int idx = (int)EGRSettings.MapStyle;
+			if (m_DesiredTilesetEmission.Length > idx)
+				return m_DesiredTilesetEmission[idx];
+
+			return 1f;
+        }
 	}
 }

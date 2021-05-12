@@ -14,6 +14,7 @@ namespace MRK {
     public class MRKTileRequestor : EGRBehaviour {
         class CachedTileInfo {
             public byte[] Texture;
+            public string Tileset;
             public MRKTileID ID;
         }
 
@@ -37,15 +38,15 @@ namespace MRK {
             StartCoroutine(Loop());
         }
 
-        public void AddToSaveQueue(byte[] tex, MRKTileID id) {
-            m_QueuedTiles.Enqueue(new CachedTileInfo { Texture = tex, ID = id });
+        public void AddToSaveQueue(byte[] tex, string tileset, MRKTileID id) {
+            m_QueuedTiles.Enqueue(new CachedTileInfo { Texture = tex, Tileset = tileset, ID = id });
         }
 
         IEnumerator Loop() {
             while (true) {
                 CachedTileInfo tile;
                 if (m_QueuedTiles.TryPeek(out tile)) {
-                    Task t = m_FileFetcher.SaveToDisk(Client.FlatMap.Tileset, tile.ID, tile.Texture);
+                    Task t = m_FileFetcher.SaveToDisk(tile.Tileset, tile.ID, tile.Texture);
                     while (!t.IsCompleted)
                         yield return new WaitForSeconds(0.2f);
 

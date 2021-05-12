@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
 
 namespace MRK {
     public class MRKTile {
@@ -14,12 +15,16 @@ namespace MRK {
         MeshFilter m_MeshFilter;
         MRKMap m_Map;
         static Mesh ms_TileMesh;
-        readonly static ConcurrentDictionary<MRKTileID, Texture2D> ms_CachedTiles;
+        readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>> ms_CachedTiles;
         readonly static MRKFileTileFetcher ms_FileFetcher;
         readonly static MRKRemoteTileFetcher ms_RemoteFetcher;
         readonly static TextureFetcherLock ms_FetcherLock;
+        readonly static ObjectPool<Material> ms_MaterialPool;
         float m_MaterialBlend;
         object m_Tween;
+        Material m_Material;
+        bool m_FetchingTile;
+        float m_MaterialEmission;
 
         public MRKTileID ID { get; private set; }
         public float RelativeScale { get; private set; }
@@ -28,10 +33,13 @@ namespace MRK {
         public bool Dead { get; set; }
 
         static MRKTile() {
-            ms_CachedTiles = new ConcurrentDictionary<MRKTileID, Texture2D>();
+            ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>();
             ms_FileFetcher = new MRKFileTileFetcher();
             ms_RemoteFetcher = new MRKRemoteTileFetcher();
             ms_FetcherLock = new TextureFetcherLock();
+            ms_MaterialPool = new ObjectPool<Material>(() => {
+                return Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
+            });
         }
 
         public MRKTile() {
@@ -45,6 +53,7 @@ namespace MRK {
 
             if (Obj == null) {
                 Obj = new GameObject();
+                Obj.layer = 6; //PostProcessing
                 Obj.transform.parent = map.transform;
                 Obj.name = $"{id.Z} / {id.X} / {id.Y} inited";
                 m_MeshFilter = Obj.AddComponent<MeshFilter>();
@@ -81,9 +90,12 @@ namespace MRK {
                 }
 
                 m_MeshFilter.mesh = ms_TileMesh;
-                m_MeshRenderer.material = Object.Instantiate(map.TileMaterial);
-                if (ms_CachedTiles.ContainsKey(ID)) {
-                    SetTexture(ms_CachedTiles.First(x => x.Key == ID).Value);
+                m_Material = ms_MaterialPool.Rent();
+                m_MaterialEmission = m_Map.GetDesiredTilesetEmission();
+                m_MeshRenderer.material = m_Material;
+
+                if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
+                    SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
                 }
                 else {
                     if (m_Map.gameObject.activeInHierarchy)
@@ -108,14 +120,20 @@ namespace MRK {
                 ms_FetcherLock.Recursion++;
             }
 
-            MRKTileFetcher fetcher = ms_FileFetcher.Exists(m_Map.Tileset, ID) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
+            //incase we get destroyed while loading, we MUST decrement our lock somewhere
+            m_FetchingTile = true;
+
+            string tileset = m_Map.Tileset;
+            MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
             MRKTileFetcherContext context = new MRKTileFetcherContext();
-            yield return fetcher.Fetch(context, m_Map.Tileset, ID);
+            yield return fetcher.Fetch(context, tileset, ID);
 
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion--;
             }
+
+            m_FetchingTile = false;
 
             if (context.Error) {
                 Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID}");
@@ -123,10 +141,14 @@ namespace MRK {
             else {
                 SetTexture(context.Texture);
                 if (context.Texture != null) {
-                    ms_CachedTiles.AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
+                    if (!ms_CachedTiles.ContainsKey(tileset)) {
+                        ms_CachedTiles[tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
+                    }
+
+                    ms_CachedTiles[tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
 
                     if (context.Texture.isReadable)
-                        MRKTileRequestor.Instance.AddToSaveQueue(context.Data, ID);
+                        MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID);
                 }
             }
         }
@@ -154,23 +176,20 @@ namespace MRK {
         public void OnDestroy() {
             if (m_Tween != null)
                 DOTween.Kill(m_Tween);
+
+            ms_MaterialPool.Free(m_Material);
+
+            if (m_FetchingTile) {
+                lock (ms_FetcherLock) {
+                    ms_FetcherLock.Recursion--;
+                }
+            }
         }
 
         void UpdateMaterialBlend() {
             if (m_MeshRenderer != null) {
                 m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
-                //m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(30f, 1f, (1f - m_MaterialBlend)));
-            }
-        }
-
-        public int GetKey() {
-            unchecked // Overflow is fine, just wrap
-            {
-                int hash = 17;
-                hash = hash * 23 + "mapbox".GetHashCode();
-                hash = hash * 23 + "mapbox://styles/2000egypt/ckn0u14us1gyt17mslzfx343e".GetHashCode();
-                hash = hash * 23 + ID.GetHashCode();
-                return hash;
+                m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
             }
         }
     }

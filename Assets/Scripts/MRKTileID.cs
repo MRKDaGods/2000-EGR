@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MRK {
     public class MRKTileID {
@@ -63,6 +64,10 @@ namespace MRK {
             hash = (hash * 397) ^ Z.GetHashCode();
 
             return hash;
+        }
+
+        public Vector3Int ToVector() {
+            return new Vector3Int(X, Y, Z);
         }
     }
 }
