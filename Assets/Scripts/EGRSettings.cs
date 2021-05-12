@@ -21,33 +21,56 @@ namespace MRK {
         VSYNC
     }
 
+    public enum EGRSettingsSensitivity {
+        VeryLow,
+        Low,
+        Medium,
+        High,
+        VeryHigh
+    }
+
+    public enum EGRSettingsResolution {
+        RES100,
+        RES90,
+        RES80,
+        RES75
+    }
+
+    public enum EGRSettingsMapStyle {
+        EGR,
+        Basic,
+        Satellite
+    }
+
     public class EGRSettings {
         static readonly int[] ms_EGRToUnityQualityMap = { 2, 2, 3, 3 };
+        static readonly float[] ms_ResolutionMap = { 1f, 0.9f, 0.8f, 0.75f };
+        static readonly float[] ms_SensitivityMap = { 0.1f, 0.3f, 0.5f, 0.7f, 0.9f };
         static int ms_Counter;
+        static int ms_InitialWidth;
+        static int ms_InitialHeight;
 
         public static EGRSettingsQuality Quality { get; set; }
         public static EGRSettingsFPS FPS { get; set; }
-        public static float SensitivityGlobeX { get; set; }
-        public static float SensitivityGlobeY { get; set; }
-        public static float SensitivityGlobeZ { get; set; }
-        public static float SensitivityMapX { get; set; }
-        public static float SensitivityMapY { get; set; }
-        public static float SensitivityMapZ { get; set; }
+        public static EGRSettingsResolution Resolution { get; set; }
+        public static EGRSettingsSensitivity GlobeSensitivity { get; set; }
+        public static EGRSettingsSensitivity MapSensitivity { get; set; }
+        public static EGRSettingsMapStyle MapStyle { get; set; }
         public static bool ShowTime { get; set; }
         public static bool ShowDistance { get; set; }
 
         public static void Load() {
+            if (ms_InitialWidth == 0 || ms_InitialHeight == 0) {
+                ms_InitialWidth = Screen.width;
+                ms_InitialHeight = Screen.height;
+            }
+
             Quality = (EGRSettingsQuality)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_QUALITY, 1);
             FPS = (EGRSettingsFPS)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FPS, 1);
-
-            SensitivityGlobeX = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_X, 0.5f);
-            SensitivityGlobeY = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_Y, 0.5f);
-            SensitivityGlobeZ = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_Z, 0.5f);
-
-            SensitivityMapX = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_X, 0.5f);
-            SensitivityMapY = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_Y, 0.5f);
-            SensitivityMapZ = PlayerPrefs.GetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_Z, 0.5f);
-
+            Resolution = (EGRSettingsResolution)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_RESOLUTION, 0);
+            GlobeSensitivity = (EGRSettingsSensitivity)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE, 2);
+            MapSensitivity = (EGRSettingsSensitivity)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP, 2);
+            MapStyle = (EGRSettingsMapStyle)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_STYLE, 0);
             ShowTime = PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_TIME, 1).ToBool();
             ShowDistance = PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, 1).ToBool();
         }
@@ -56,15 +79,10 @@ namespace MRK {
             //write to player prefs
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_QUALITY, (int)Quality);
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FPS, (int)FPS);
-
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_X, SensitivityGlobeX);
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_Y, SensitivityGlobeY);
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE_Z, SensitivityGlobeZ);
-
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_X, SensitivityMapX);
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_Y, SensitivityMapY);
-            PlayerPrefs.SetFloat(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP_Z, SensitivityMapZ);
-
+            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_RESOLUTION, (int)Resolution);
+            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_GLOBE, (int)GlobeSensitivity);
+            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SENSITIVITY_MAP, (int)MapSensitivity);
+            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_STYLE, (int)MapStyle);
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_TIME, ShowTime ? 1 : 0);
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, ShowDistance ? 1 : 0);
 
@@ -80,8 +98,19 @@ namespace MRK {
                 Application.targetFrameRate = ((int)FPS) * 30 + 30;
             }
 
+            float resFactor = ms_ResolutionMap[(int)Resolution];
+            Screen.SetResolution(Mathf.FloorToInt(ms_InitialWidth * resFactor), Mathf.FloorToInt(ms_InitialHeight * resFactor), false);
+
             EGREventManager.Instance.BroadcastEvent<EGREventGraphicsApplied>(new EGREventGraphicsApplied(Quality, FPS, ms_Counter == 0));
             ms_Counter++;
+        }
+
+        public static float GetGlobeSensitivity() {
+            return ms_SensitivityMap[(int)GlobeSensitivity];
+        }
+
+        public static float GetMapSensitivity() {
+            return ms_SensitivityMap[(int)MapSensitivity];
         }
     }
 }

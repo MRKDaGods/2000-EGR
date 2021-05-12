@@ -8,65 +8,39 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsMapSettings : EGRScreen {
-        Transform m_Layout;
+    public class EGRScreenOptionsMapSettings : EGRScreenAnimatedLayout {
+        EGRUIMultiSelectorSettings m_SensitivitySelector;
+        EGRUIMultiSelectorSettings m_StyleSelector;
 
         protected override void OnScreenInit() {
+            base.OnScreenInit();
+
             GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
-            m_Layout = GetTransform("Layout");
+            GetElement<Button>("Layout/Preview").onClick.AddListener(OnPreviewClick);
+
+            m_SensitivitySelector = GetElement<EGRUIMultiSelectorSettings>("SensitivitySelector");
+            m_StyleSelector = GetElement<EGRUIMultiSelectorSettings>("StyleSelector");
         }
 
-        protected override void OnScreenShowAnim() {
-            base.OnScreenShowAnim();
-
-            VerticalLayoutGroup vlayout = m_Layout.GetComponent<VerticalLayoutGroup>();
-            vlayout.enabled = true;
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
-            vlayout.enabled = false;
-
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
-
-            PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                if (gfx.GfxHasScrollView()) continue;
-
-                gfx.DOColor(gfx.color, TweenMonitored(0.3f + i * 0.03f))
-                    .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color);
-
-                if (gfx.ParentHasGfx(typeof(ScrollRect)))
-                    continue;
-
-                gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.2f + i * 0.03f))
-                    .ChangeStartValue(2f * gfx.transform.position)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.Position);
-            }
+        protected override void OnScreenShow() {
+            m_SensitivitySelector.SelectedIndex = (int)EGRSettings.MapSensitivity;
+            m_StyleSelector.SelectedIndex = (int)EGRSettings.MapStyle;
         }
 
-        protected override bool OnScreenHideAnim(Action callback) {
-            base.OnScreenHideAnim(callback);
+        protected override void OnScreenHide() {
+            EGRSettings.MapSensitivity = (EGRSettingsSensitivity)m_SensitivitySelector.SelectedIndex;
+            EGRSettings.MapStyle = (EGRSettingsMapStyle)m_StyleSelector.SelectedIndex;
+            EGRSettings.Save();
+        }
 
-            SetTweenCount(m_LastGraphicsBuf.Length);
+        void OnPreviewClick() {
+            EGRScreenMapChooser mapChooser = Manager.GetScreen<EGRScreenMapChooser>();
+            mapChooser.MapStyleCallback = OnMapStyleChosen;
+            mapChooser.ShowScreen();
+        }
 
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                gfx.DOColor(Color.clear, TweenMonitored(0.2f + i * 0.03f))
-                    .SetEase(Ease.OutSine)
-                    .OnComplete(OnTweenFinished);
-            }
-
-            return true;
+        void OnMapStyleChosen(int style) {
+            m_StyleSelector.SelectedIndex = style;
         }
     }
 }

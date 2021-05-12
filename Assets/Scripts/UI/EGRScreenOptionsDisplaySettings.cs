@@ -6,67 +6,63 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsDisplaySettings : EGRScreen {
-        Transform m_Layout;
+    public class EGRScreenOptionsDisplaySettings : EGRScreenAnimatedLayout {
+        EGRUIMultiSelectorSettings m_QualitySelector;
+        EGRUIMultiSelectorSettings m_FPSSelector;
+        EGRUIMultiSelectorSettings m_ResolutionSelector;
+        bool m_GraphicsModified;
+
+        protected override string m_LayoutPath => "Scroll View/Viewport/Content/Layout";
 
         protected override void OnScreenInit() {
-            GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
-            m_Layout = GetTransform("Scroll View/Viewport/Content/Layout");
+            base.OnScreenInit();
+
+            GetElement<Button>("bBack").onClick.AddListener(OnBackClick);
+
+            m_QualitySelector = GetElement<EGRUIMultiSelectorSettings>("QualitySelector");
+            m_FPSSelector = GetElement<EGRUIMultiSelectorSettings>("FpsSelector");
+            m_ResolutionSelector = GetElement<EGRUIMultiSelectorSettings>("ResolutionSelector");
         }
 
-        protected override void OnScreenShowAnim() {
-            base.OnScreenShowAnim();
+        protected override void OnScreenShow() {
+            m_QualitySelector.SelectedIndex = (int)EGRSettings.Quality;
+            m_FPSSelector.SelectedIndex = (int)EGRSettings.FPS;
+            m_ResolutionSelector.SelectedIndex = (int)EGRSettings.Resolution;
 
-            VerticalLayoutGroup vlayout = m_Layout.GetComponent<VerticalLayoutGroup>();
-            vlayout.enabled = true;
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
-            vlayout.enabled = false;
-
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
-
-            PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                if (gfx.GfxHasScrollView()) continue;
-
-                gfx.DOColor(gfx.color, TweenMonitored(0.3f + i * 0.03f))
-                    .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color);
-
-                if (gfx.ParentHasGfx(typeof(ScrollRect)))
-                    continue;
-
-                gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.2f + i * 0.03f))
-                    .ChangeStartValue(2f * gfx.transform.position)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.Position);
-            }
+            m_GraphicsModified = false;
         }
 
-        protected override bool OnScreenHideAnim(Action callback) {
-            base.OnScreenHideAnim(callback);
+        protected override void OnScreenHide() {
+            EGRSettings.Save();
 
-            SetTweenCount(m_LastGraphicsBuf.Length);
+            if (m_GraphicsModified)
+                EGRSettings.Apply();
+        }
 
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
+        void OnBackClick() {
+            if ((EGRSettingsQuality)m_QualitySelector.SelectedIndex != EGRSettings.Quality || (EGRSettingsFPS)m_FPSSelector.SelectedIndex != EGRSettings.FPS) {
+                m_GraphicsModified = true;
 
-                gfx.DOColor(Color.clear, TweenMonitored(0.2f + i * 0.03f))
-                    .SetEase(Ease.OutSine)
-                    .OnComplete(OnTweenFinished);
+                EGRPopupConfirmation popup = Manager.GetPopup<EGRPopupConfirmation>();
+                popup.SetYesButtonText(Localize(EGRLanguageData.APPLY));
+                popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+                popup.ShowPopup(Localize(EGRLanguageData.SETTINGS), Localize(EGRLanguageData.GRAPHIC_SETTINGS_WERE_MODIFIED_nWOULD_YOU_LIKE_TO_APPLY_THEM_), OnUnsavedClose, null);
+                return;
             }
 
-            return true;
+            HideScreen();
+        }
+
+        void OnUnsavedClose(EGRPopup popup, EGRPopupResult result) {
+            if (result == EGRPopupResult.YES) {
+                EGRSettings.Quality = (EGRSettingsQuality)m_QualitySelector.SelectedIndex;
+                EGRSettings.FPS = (EGRSettingsFPS)m_FPSSelector.SelectedIndex;
+            }
+
+            HideScreen();
         }
     }
 }

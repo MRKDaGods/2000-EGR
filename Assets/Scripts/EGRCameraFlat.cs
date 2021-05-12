@@ -141,7 +141,7 @@ namespace MRK {
 
             m_Delta[0] = 0f;
 
-            var offset2D = new Vector2d(-delta.x * 3f * EGRSettings.SensitivityMapX, -delta.y * 3f * EGRSettings.SensitivityMapY);
+            var offset2D = new Vector2d(-delta.x * 3f, -delta.y * 3f) * EGRSettings.GetMapSensitivity();
             var gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
             var newLatLong = MRKMapUtils.MetersToLatLon(
                 MRKMapUtils.LatLonToMeters(m_Map.CenterLatLng) + (offset2D / m_Map.WorldRelativeScale) / gameobjectScalingMultiplier);
@@ -175,7 +175,7 @@ namespace MRK {
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
-            m_TargetZoom += (newdeltaMag - olddeltaMag) * Time.deltaTime * 2f * EGRSettings.SensitivityMapZ;
+            m_TargetZoom += (newdeltaMag - olddeltaMag) * Time.deltaTime * 2f * EGRSettings.GetMapSensitivity();
 
             if (m_TargetZoom < 0.5f) {
                 m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
@@ -208,7 +208,7 @@ namespace MRK {
             //if (m_MapInterface.IsInTransition)
             //    return;
 
-            m_TargetZoom += delta * Time.deltaTime * 100f * EGRSettings.SensitivityMapZ;
+            m_TargetZoom += delta * Time.deltaTime * 100f * EGRSettings.GetMapSensitivity();
 
             if (m_TargetZoom < 0.5f) {
                 m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());

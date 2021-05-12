@@ -16,13 +16,13 @@ MonoBehaviour:
   safeModeOptions:
     nestedTweenFailureBehaviour: 0
   timeScale: 1
-  useSmoothDeltaTime: 0
+  useSmoothDeltaTime: 1
   maxSmoothUnscaledTime: 0.15
   rewindCallbackMode: 0
   showUnityEditorReport: 0
   logBehaviour: 0
   drawGizmos: 1
-  defaultRecyclable: 0
+  defaultRecyclable: 1
   defaultAutoPlay: 3
   defaultUpdateType: 1
   defaultTimeScaleIndependent: 0

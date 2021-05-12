@@ -18,8 +18,9 @@ namespace MRK.UI {
 
             public RectTransform Transform => m_Transform;
             public float Multiplier { get; set; }
+            public int Index { get; private set; }
 
-            public MapStyle(Transform root, StyleInfo style) {
+            public MapStyle(Transform root, StyleInfo style, int idx) {
                 m_Transform = (RectTransform)root;
 
                 m_Indicator = m_Transform.Find("Indicator").gameObject;
@@ -30,13 +31,11 @@ namespace MRK.UI {
                 m_Transform.GetComponent<Button>().onClick.AddListener(OnStyleClicked);
 
                 Multiplier = 1f;
+                Index = idx;
             }
 
             void OnStyleClicked() {
-                if (ms_Instance.m_SelectedStyle == this)
-                    ms_Instance.HideScreen();
-                else 
-                    ms_Instance.OnStyleClicked(this);
+                ms_Instance.OnStyleClicked(this);
             }
 
             public void SetIndicatorState(bool active) {
@@ -56,6 +55,8 @@ namespace MRK.UI {
         float m_CurrentMultiplier;
         MapStyle m_SelectedStyle;
 
+        public Action<int> MapStyleCallback { get; set; }
+
         protected override void OnScreenInit() {
             ms_Instance = this;
 
@@ -65,7 +66,7 @@ namespace MRK.UI {
             int styleIdx = 0;
             foreach (StyleInfo style in m_Styles) {
                 GameObject obj = Instantiate(m_MapPrefab, m_MapPrefab.transform.parent);
-                m_MapStyles[styleIdx++] = new MapStyle(obj.transform as RectTransform, style);
+                m_MapStyles[styleIdx++] = new MapStyle(obj.transform as RectTransform, style, styleIdx - 1);
 
                 obj.SetActive(true);
             }
@@ -111,6 +112,15 @@ namespace MRK.UI {
 
             if (m_Tween != null)
                 DOTween.Kill(m_Tween);
+
+            if (m_SelectedStyle == style) {
+                HideScreen();
+
+                if (MapStyleCallback != null)
+                    MapStyleCallback(m_SelectedStyle.Index);
+
+                return;
+            }
 
             //okay so
             m_Layout.childControlHeight = false;

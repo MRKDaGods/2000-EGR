@@ -40,12 +40,12 @@ namespace MRK.UI {
             //set values from settings
             m_Quality.SelectedIndex = (int)EGRSettings.Quality;
             m_FPS.SelectedIndex = (int)EGRSettings.FPS;
-            m_GlobeX.DOValue(EGRSettings.SensitivityGlobeX, 0.4f).ChangeStartValue(0f);
-            m_GlobeY.DOValue(EGRSettings.SensitivityGlobeY, 0.4f).ChangeStartValue(0f);
-            m_GlobeZ.DOValue(EGRSettings.SensitivityGlobeZ, 0.4f).ChangeStartValue(0f);
-            m_MapX.DOValue(EGRSettings.SensitivityMapX, 0.4f).ChangeStartValue(0f);
-            m_MapY.DOValue(EGRSettings.SensitivityMapY, 0.4f).ChangeStartValue(0f);
-            m_MapZ.DOValue(EGRSettings.SensitivityMapZ, 0.4f).ChangeStartValue(0f);
+            //m_GlobeX.DOValue(EGRSettings.SensitivityGlobeX, 0.4f).ChangeStartValue(0f);
+            //m_GlobeY.DOValue(EGRSettings.SensitivityGlobeY, 0.4f).ChangeStartValue(0f);
+            //m_GlobeZ.DOValue(EGRSettings.SensitivityGlobeZ, 0.4f).ChangeStartValue(0f);
+            //m_MapX.DOValue(EGRSettings.SensitivityMapX, 0.4f).ChangeStartValue(0f);
+            //m_MapY.DOValue(EGRSettings.SensitivityMapY, 0.4f).ChangeStartValue(0f);
+            //m_MapZ.DOValue(EGRSettings.SensitivityMapZ, 0.4f).ChangeStartValue(0f);
             m_ShowTime.selectedSegmentIndex = EGRSettings.ShowTime ? 0 : 1; //SHOW = 0, HIDE = 1 based on hierarchy
             m_ShowDist.selectedSegmentIndex = EGRSettings.ShowDistance ? 0 : 1;
         }
@@ -61,14 +61,14 @@ namespace MRK.UI {
                 return;
             }
 
-            EGRSettings.SensitivityGlobeX = m_GlobeX.value;
-            EGRSettings.SensitivityGlobeY = m_GlobeY.value;
-            EGRSettings.SensitivityGlobeZ = m_GlobeZ.value;
-            EGRSettings.SensitivityMapX = m_MapX.value;
-            EGRSettings.SensitivityMapY = m_MapY.value;
-            EGRSettings.SensitivityMapZ = m_MapZ.value;
-            EGRSettings.ShowTime = m_ShowTime.selectedSegmentIndex == 0;
-            EGRSettings.ShowDistance = m_ShowDist.selectedSegmentIndex == 0;
+            //EGRSettings.SensitivityGlobeX = m_GlobeX.value;
+            //EGRSettings.SensitivityGlobeY = m_GlobeY.value;
+            //EGRSettings.SensitivityGlobeZ = m_GlobeZ.value;
+            //EGRSettings.SensitivityMapX = m_MapX.value;
+            //EGRSettings.SensitivityMapY = m_MapY.value;
+            //EGRSettings.SensitivityMapZ = m_MapZ.value;
+            //EGRSettings.ShowTime = m_ShowTime.selectedSegmentIndex == 0;
+            //EGRSettings.ShowDistance = m_ShowDist.selectedSegmentIndex == 0;
 
             HideScreen();
         }

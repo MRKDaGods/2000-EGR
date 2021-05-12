@@ -130,7 +130,7 @@ namespace MRK {
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
-            m_TargetDistance -= (newdeltaMag - olddeltaMag) * Time.deltaTime * 400f * EGRSettings.SensitivityGlobeZ;
+            m_TargetDistance -= (newdeltaMag - olddeltaMag) * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
             if (m_TargetDistance < 3500f) {
                 if (!m_IsSwitching) {
@@ -233,7 +233,7 @@ namespace MRK {
             if (m_IsSwitching)
                 return;
 
-            m_TargetDistance -= delta * Time.deltaTime * 400f * EGRSettings.SensitivityGlobeZ;
+            m_TargetDistance -= delta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
             if (m_TargetDistance < 3500f) {
                 if (!m_IsSwitching) {
@@ -308,8 +308,8 @@ namespace MRK {
                 return;
 
             float factor = Mathf.Clamp01(m_CurrentDistance / 10000f + 0.5f);
-            m_TargetRotation.x += delta.x * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.x * EGRSettings.SensitivityGlobeX * factor;
-            m_TargetRotation.y -= delta.y * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.y * EGRSettings.SensitivityGlobeY * factor;
+            m_TargetRotation.x += delta.x * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.x * EGRSettings.GetGlobeSensitivity() * factor;
+            m_TargetRotation.y -= delta.y * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.y * EGRSettings.GetGlobeSensitivity() * factor;
 
             //m_TargetRotation.x = ClampAngle(m_TargetRotation.x, float.NegativeInfinity, float.PositiveInfinity);
             m_TargetRotation.y = ClampAngle(m_TargetRotation.y, -80f, 80f);

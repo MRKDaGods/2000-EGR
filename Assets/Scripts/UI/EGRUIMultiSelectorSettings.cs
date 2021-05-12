@@ -38,6 +38,9 @@ namespace MRK.UI {
         }
 
         void UpdateActiveMarker() {
+            if (m_ActiveMarkers == null)
+                return;
+
             for (int i = 0; i < m_ActiveMarkers.Length; i++) {
                 m_ActiveMarkers[i].SetActive(m_SelectedIndex == i);
             }

@@ -337,6 +337,7 @@ namespace MRK.UI {
         Action[] m_ButtonInfoDelegates;
         [SerializeField]
         MarkerSprite[] m_MarkerSprites;
+        bool m_MouseDown;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -398,6 +399,7 @@ namespace MRK.UI {
             m_Map.OnEGRMapZoomUpdated += OnMapZoomUpdated;
 
             Client.RegisterMapModeDelegate(OnMapModeChanged);
+            Client.RegisterControllerReceiver(OnControllerMessageReceived);
 
             //map mode might've changed when visible=false
             OnMapModeChanged(Client.MapMode);
@@ -412,6 +414,7 @@ namespace MRK.UI {
             m_Map.OnEGRMapZoomUpdated -= OnMapZoomUpdated;
 
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
+            Client.UnregisterControllerReceiver(OnControllerMessageReceived);
 
             Manager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen();
 
@@ -442,6 +445,42 @@ namespace MRK.UI {
             m_CamDistLabel.gameObject.SetActive(/*isGlobe*/false);
             m_ScaleBar.SetActive(mode == EGRMapMode.Flat);
             Client.ActiveEGRCamera.ResetStates();
+        }
+
+        void OnControllerMessageReceived(EGRControllerMessage msg) {
+            if (Client.MapMode != EGRMapMode.Globe)
+                return;
+
+            return; //TODO
+
+            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
+                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
+                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
+
+                switch (kind) {
+
+                    case EGRControllerMouseEventKind.Down:
+                        m_MouseDown = true;
+                        break;
+
+                    case EGRControllerMouseEventKind.Up:
+                        if (m_MouseDown) {
+                            m_MouseDown = false;
+                            ChangeObservedTransform((Vector3)msg.Payload[1]);
+                        }
+                        break;
+
+                }
+            }
+        }
+
+        void ChangeObservedTransform(Vector3 pos) {
+            Ray ray = Client.ActiveCamera.ScreenPointToRay(pos);
+
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, Client.ActiveCamera.farClipPlane)) {
+                Debug.Log(hit.transform.name);
+            }
         }
 
         public void SetDistanceText(string txt) {

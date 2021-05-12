@@ -8,65 +8,32 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsGlobeSettings : EGRScreen {
-        Transform m_Layout;
+    public class EGRScreenOptionsGlobeSettings : EGRScreenAnimatedLayout {
+        EGRUIMultiSelectorSettings m_SensitivitySelector;
+        EGRUIMultiSelectorSettings m_DistanceSelector;
+        EGRUIMultiSelectorSettings m_TimeSelector;
 
         protected override void OnScreenInit() {
+            base.OnScreenInit();
+
             GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
-            m_Layout = GetTransform("Layout");
+
+            m_SensitivitySelector = GetElement<EGRUIMultiSelectorSettings>("SensitivitySelector");
+            m_DistanceSelector = GetElement<EGRUIMultiSelectorSettings>("DistanceSelector");
+            m_TimeSelector = GetElement<EGRUIMultiSelectorSettings>("TimeSelector");
         }
 
-        protected override void OnScreenShowAnim() {
-            base.OnScreenShowAnim();
-
-            VerticalLayoutGroup vlayout = m_Layout.GetComponent<VerticalLayoutGroup>();
-            vlayout.enabled = true;
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)m_Layout);
-            vlayout.enabled = false;
-
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
-
-            PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                if (gfx.GfxHasScrollView()) continue;
-
-                gfx.DOColor(gfx.color, TweenMonitored(0.3f + i * 0.03f))
-                    .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color);
-
-                if (gfx.ParentHasGfx(typeof(ScrollRect)))
-                    continue;
-
-                gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.2f + i * 0.03f))
-                    .ChangeStartValue(2f * gfx.transform.position)
-                    .SetEase(Ease.OutSine);
-
-                SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.Position);
-            }
+        protected override void OnScreenShow() {
+            m_SensitivitySelector.SelectedIndex = (int)EGRSettings.GlobeSensitivity;
+            m_DistanceSelector.SelectedIndex = EGRSettings.ShowDistance ? 0 : 1;
+            m_TimeSelector.SelectedIndex = EGRSettings.ShowTime ? 0 : 1;
         }
 
-        protected override bool OnScreenHideAnim(Action callback) {
-            base.OnScreenHideAnim(callback);
-
-            SetTweenCount(m_LastGraphicsBuf.Length);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                gfx.DOColor(Color.clear, TweenMonitored(0.2f + i * 0.03f))
-                    .SetEase(Ease.OutSine)
-                    .OnComplete(OnTweenFinished);
-            }
-
-            return true;
+        protected override void OnScreenHide() {
+            EGRSettings.GlobeSensitivity = (EGRSettingsSensitivity)m_SensitivitySelector.SelectedIndex;
+            EGRSettings.ShowDistance = m_DistanceSelector.SelectedIndex == 0;
+            EGRSettings.ShowTime = m_TimeSelector.SelectedIndex == 0;
+            EGRSettings.Save();
         }
     }
 }
