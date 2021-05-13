@@ -1,10 +1,12 @@
-#if DEBUG
+﻿#if DEBUG
 #define STATS_ENABLED
 #endif
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
 using MRK.Networking.Utils;
 
 namespace MRK.Networking
@@ -25,7 +27,7 @@ namespace MRK.Networking
     internal enum ConnectRequestResult
     {
         None,
-        P2PConnection, //when peer connecting
+        P2PLose, //when peer connecting
         Reconnection,  //when peer was connected
         NewConnection  //when peer was disconnected
     }
@@ -35,6 +37,13 @@ namespace MRK.Networking
         None,
         Reject,
         Disconnect
+    }
+
+    internal enum ShutdownResult
+    {
+        None,
+        Success,
+        WasConnected
     }
 
     /// <summary>
@@ -53,10 +62,8 @@ namespace MRK.Networking
         private int _timeSinceLastPacket;
         private long _remoteDelta;
 
-        //Common            
+        //Common
         private readonly NetPacketPool _packetPool;
-        private readonly object _flushLock = new object();
-        private readonly object _sendLock = new object();
         private readonly object _shutdownLock = new object();
 
         internal volatile NetPeer NextPeer;
@@ -64,7 +71,7 @@ namespace MRK.Networking
 
         internal byte ConnectionNum
         {
-            get { return _connectNum; }
+            get => _connectNum;
             private set
             {
                 _connectNum = value;
@@ -73,11 +80,11 @@ namespace MRK.Networking
                 _pongPacket.ConnectionNumber = value;
             }
         }
- 
+
         //Channels
-        private readonly Queue<NetPacket> _unreliableChannel;
+        private readonly ConcurrentQueue<NetPacket> _unreliableChannel;
+        private readonly ConcurrentQueue<BaseChannel> _channelSendQueue;
         private readonly BaseChannel[] _channels;
-        private BaseChannel _headChannel;
 
         //MTU
         private int _mtu;
@@ -97,9 +104,9 @@ namespace MRK.Networking
             public int TotalSize;
             public byte ChannelId;
         }
-        private ushort _fragmentId;
+        private int _fragmentId;
         private readonly Dictionary<ushort, IncomingFragments> _holdedFragments;
-        private readonly Dictionary<ushort, ushort> _deliveredFramgnets;
+        private readonly Dictionary<ushort, ushort> _deliveredFragments;
 
         //Merging
         private readonly NetPacket _mergeData;
@@ -133,12 +140,12 @@ namespace MRK.Networking
         /// <summary>
         /// Current connection state
         /// </summary>
-        public ConnectionState ConnectionState { get { return _connectionState; } }
+        public ConnectionState ConnectionState => _connectionState;
 
         /// <summary>
         /// Connection time for internal purposes
         /// </summary>
-        internal long ConnectTime { get { return _connectTime; } }
+        internal long ConnectTime => _connectTime;
 
         /// <summary>
         /// Peer id can be used as key in your dictionary of peers
@@ -148,36 +155,30 @@ namespace MRK.Networking
         /// <summary>
         /// Current ping in milliseconds
         /// </summary>
-        public int Ping { get { return _avgRtt/2; } }
+        public int Ping => _avgRtt/2;
 
         /// <summary>
         /// Current MTU - Maximum Transfer Unit ( maximum udp packet size without fragmentation )
         /// </summary>
-        public int Mtu { get { return _mtu; } }
+        public int Mtu => _mtu;
 
         /// <summary>
         /// Delta with remote time in ticks (not accurate)
         /// positive - remote time > our time
         /// </summary>
-        public long RemoteTimeDelta
-        {
-            get { return _remoteDelta; }
-        }
+        public long RemoteTimeDelta => _remoteDelta;
 
         /// <summary>
         /// Remote UTC time (not accurate)
         /// </summary>
-        public DateTime RemoteUtcTime
-        {
-            get { return new DateTime(DateTime.UtcNow.Ticks + _remoteDelta); }
-        }
+        public DateTime RemoteUtcTime => new DateTime(DateTime.UtcNow.Ticks + _remoteDelta);
 
         /// <summary>
         /// Time since last packet received (including internal library packets)
         /// </summary>
-        public int TimeSinceLastPacket { get { return _timeSinceLastPacket; } }
+        public int TimeSinceLastPacket => _timeSinceLastPacket;
 
-        internal double ResendDelay { get { return _resendDelay; } }
+        internal double ResendDelay => _resendDelay;
 
         /// <summary>
         /// Application defined object containing data about the connection
@@ -196,26 +197,52 @@ namespace MRK.Networking
             Statistics = new NetStatistics();
             _packetPool = netManager.NetPacketPool;
             NetManager = netManager;
-            SetMtu(0);
+
+            if (netManager.MtuOverride > 0)
+                OverrideMtu(netManager.MtuOverride);
+            else if (netManager.UseSafeMtu)
+                SetMtu(0);
+            else
+                SetMtu(1);
 
             EndPoint = remoteEndPoint;
             _connectionState = ConnectionState.Connected;
             _mergeData = new NetPacket(PacketProperty.Merged, NetConstants.MaxPacketSize);
             _pongPacket = new NetPacket(PacketProperty.Pong, 0);
             _pingPacket = new NetPacket(PacketProperty.Ping, 0) {Sequence = 1};
-           
-            _unreliableChannel = new Queue<NetPacket>(64);
-            _headChannel = null;
+
+            _unreliableChannel = new ConcurrentQueue<NetPacket>();
             _holdedFragments = new Dictionary<ushort, IncomingFragments>();
-            _deliveredFramgnets = new Dictionary<ushort, ushort>();
+            _deliveredFragments = new Dictionary<ushort, ushort>();
 
             _channels = new BaseChannel[netManager.ChannelsCount * 4];
+            _channelSendQueue = new ConcurrentQueue<BaseChannel>();
         }
 
         private void SetMtu(int mtuIdx)
         {
-            int extraLayerSpace = NetManager._extraPacketLayer != null ? NetManager._extraPacketLayer.ExtraPacketSizeForLayer : 0;
-            _mtu = NetConstants.PossibleMtu[mtuIdx] - extraLayerSpace;
+            _mtuIdx = mtuIdx;
+            _mtu = NetConstants.PossibleMtu[mtuIdx] - NetManager.ExtraPacketSizeForLayer;
+        }
+
+        private void OverrideMtu(int mtuValue)
+        {
+            _mtu = mtuValue;
+            _finishMtu = true;
+        }
+
+        /// <summary>
+        /// Returns packets count in queue for reliable channel
+        /// </summary>
+        /// <param name="channelNumber">number of channel 0-63</param>
+        /// <param name="ordered">type of channel ReliableOrdered or ReliableUnordered</param>
+        /// <returns>packets count in channel queue</returns>
+        public int GetPacketsCountInReliableQueue(byte channelNumber, bool ordered)
+        {
+            int idx = channelNumber * 4 +
+                       (byte) (ordered ? DeliveryMethod.ReliableOrdered : DeliveryMethod.ReliableUnordered);
+            var channel = _channels[idx];
+            return channel != null ? ((ReliableChannel)channel).PacketsInQueue : 0;
         }
 
         private BaseChannel CreateChannel(byte idx)
@@ -238,14 +265,15 @@ namespace MRK.Networking
                     newChannel = new SequencedChannel(this, true, idx);
                     break;
             }
-            _channels[idx] = newChannel;
-            newChannel.Next = _headChannel;
-            _headChannel = newChannel;
+            BaseChannel prevChannel = Interlocked.CompareExchange(ref _channels[idx], newChannel, null);
+            if (prevChannel != null)
+                return prevChannel;
+
             return newChannel;
         }
 
         //"Connect to" constructor
-        internal NetPeer(NetManager netManager, IPEndPoint remoteEndPoint, int id, byte connectNum, NetDataWriter connectData) 
+        internal NetPeer(NetManager netManager, IPEndPoint remoteEndPoint, int id, byte connectNum, NetDataWriter connectData)
             : this(netManager, remoteEndPoint, id)
         {
             _connectTime = DateTime.UtcNow.Ticks;
@@ -253,7 +281,7 @@ namespace MRK.Networking
             ConnectionNum = connectNum;
 
             //Make initial packet
-            _connectRequestPacket = NetConnectRequestPacket.Make(connectData, _connectTime);
+            _connectRequestPacket = NetConnectRequestPacket.Make(connectData, remoteEndPoint.Serialize(), _connectTime);
             _connectRequestPacket.ConnectionNumber = connectNum;
 
             //Send request
@@ -294,14 +322,14 @@ namespace MRK.Networking
             //check connection id
             if (packet.ConnectionId != _connectTime)
             {
-                NetDebug.Write(NetLogLevel.Trace, "[NC] Invalid connectId: {0}", _connectTime);
+                NetDebug.Write(NetLogLevel.Trace, "[NC] Invalid connectId: {1} != our({0})", _connectTime, packet.ConnectionId);
                 return false;
             }
             //check connect num
             ConnectionNum = packet.ConnectionNumber;
 
             NetDebug.Write(NetLogLevel.Trace, "[NC] Received connection accept");
-            _timeSinceLastPacket = 0;
+            Interlocked.Exchange(ref _timeSinceLastPacket, 0);
             _connectionState = ConnectionState.Connected;
             return true;
         }
@@ -467,10 +495,10 @@ namespace MRK.Networking
         }
 
         private void SendInternal(
-            byte[] data, 
-            int start, 
-            int length, 
-            byte channelNumber, 
+            byte[] data,
+            int start,
+            int length,
+            byte channelNumber,
             DeliveryMethod deliveryMethod,
             object userData)
         {
@@ -491,7 +519,7 @@ namespace MRK.Networking
                 channel = CreateChannel((byte)(channelNumber*4 + (byte)deliveryMethod));
             }
 
-            //Prepare  
+            //Prepare
             NetDebug.Write("[RS]Packet: " + property);
 
             //Check fragmentation
@@ -502,7 +530,7 @@ namespace MRK.Networking
             {
                 //if cannot be fragmented
                 if (deliveryMethod != DeliveryMethod.ReliableOrdered && deliveryMethod != DeliveryMethod.ReliableUnordered)
-                    throw new TooBigPacketException("Unreliable packet size exceeded maximum of " + (mtu - headerSize) + " bytes");
+                    throw new TooBigPacketException("Unreliable or ReliableSequenced packet size exceeded maximum of " + (mtu - headerSize) + " bytes, Check allowed size by GetMaxSinglePacketSize()");
 
                 int packetFullSize = mtu - headerSize;
                 int packetDataSize = packetFullSize - NetConstants.FragmentHeaderSize;
@@ -519,12 +547,7 @@ namespace MRK.Networking
                 if (totalPackets > ushort.MaxValue)
                     throw new TooBigPacketException("Data was split in " + totalPackets + " fragments, which exceeds " + ushort.MaxValue);
 
-                ushort currentFramentId;
-                lock (_sendLock)
-                {
-                    currentFramentId = _fragmentId;
-                    _fragmentId++;
-                }
+                ushort currentFragmentId = (ushort)Interlocked.Increment(ref _fragmentId);
 
                 for(ushort partIdx = 0; partIdx < totalPackets; partIdx++)
                 {
@@ -533,12 +556,12 @@ namespace MRK.Networking
                     NetPacket p = _packetPool.GetPacket(headerSize + sendLength + NetConstants.FragmentHeaderSize);
                     p.Property = property;
                     p.UserData = userData;
-                    p.FragmentId = currentFramentId;
+                    p.FragmentId = currentFragmentId;
                     p.FragmentPart = partIdx;
                     p.FragmentsTotal = (ushort)totalPackets;
                     p.MarkFragmented();
 
-                    Buffer.BlockCopy(data, partIdx * packetDataSize, p.RawData, NetConstants.FragmentTotalSize, sendLength);
+                    Buffer.BlockCopy(data, partIdx * packetDataSize, p.RawData, NetConstants.FragmentedHeaderTotalSize, sendLength);
                     channel.AddToQueue(p);
 
                     length -= sendLength;
@@ -553,9 +576,13 @@ namespace MRK.Networking
             packet.UserData = userData;
 
             if (channel == null) //unreliable
+            {
                 _unreliableChannel.Enqueue(packet);
+            }
             else
+            {
                 channel.AddToQueue(packet);
+            }
         }
 
         public void Disconnect(byte[] data)
@@ -592,7 +619,12 @@ namespace MRK.Networking
             return DisconnectResult.None;
         }
 
-        internal bool Shutdown(byte[] data, int start, int length, bool force)
+        internal void AddToReliableChannelSendQueue(BaseChannel channel)
+        {
+            _channelSendQueue.Enqueue(channel);
+        }
+
+        internal ShutdownResult Shutdown(byte[] data, int start, int length, bool force)
         {
             lock (_shutdownLock)
             {
@@ -600,22 +632,25 @@ namespace MRK.Networking
                 if (_connectionState == ConnectionState.Disconnected ||
                     _connectionState == ConnectionState.ShutdownRequested)
                 {
-                    return false;
+                    return ShutdownResult.None;
                 }
+
+                var result = _connectionState == ConnectionState.Connected
+                    ? ShutdownResult.WasConnected
+                    : ShutdownResult.Success;
 
                 //don't send anything
                 if (force)
                 {
                     _connectionState = ConnectionState.Disconnected;
-                    return true;
+                    return result;
                 }
 
                 //reset time for reconnect protection
-                _timeSinceLastPacket = 0;
+                Interlocked.Exchange(ref _timeSinceLastPacket, 0);
 
                 //send shutdown packet
-                _shutdownPacket = new NetPacket(PacketProperty.Disconnect, length);
-                _shutdownPacket.ConnectionNumber = _connectNum;
+                _shutdownPacket = new NetPacket(PacketProperty.Disconnect, length) {ConnectionNumber = _connectNum};
                 FastBitConverter.GetBytes(_shutdownPacket.RawData, 1, _connectTime);
                 if (_shutdownPacket.Size >= _mtu)
                 {
@@ -629,7 +664,7 @@ namespace MRK.Networking
                 _connectionState = ConnectionState.ShutdownRequested;
                 NetDebug.Write("[Peer] Send disconnect");
                 NetManager.SendRaw(_shutdownPacket, EndPoint);
-                return true;
+                return result;
             }
         }
 
@@ -641,15 +676,14 @@ namespace MRK.Networking
             _resendDelay = 25.0 + _avgRtt * 2.1; // 25 ms + double rtt
         }
 
-        internal void AddIncomingPacket(NetPacket p)
+        internal void AddReliablePacket(DeliveryMethod method, NetPacket p)
         {
             if (p.IsFragmented)
             {
                 NetDebug.Write("Fragment. Id: {0}, Part: {1}, Total: {2}", p.FragmentId, p.FragmentPart, p.FragmentsTotal);
                 //Get needed array from dictionary
                 ushort packetFragId = p.FragmentId;
-                IncomingFragments incomingFragments;
-                if (!_holdedFragments.TryGetValue(packetFragId, out incomingFragments))
+                if (!_holdedFragments.TryGetValue(packetFragId, out var incomingFragments))
                 {
                     incomingFragments = new IncomingFragments
                     {
@@ -663,8 +697,8 @@ namespace MRK.Networking
                 var fragments = incomingFragments.Fragments;
 
                 //Error check
-                if (p.FragmentPart >= fragments.Length || 
-                    fragments[p.FragmentPart] != null || 
+                if (p.FragmentPart >= fragments.Length ||
+                    fragments[p.FragmentPart] != null ||
                     p.ChannelId != incomingFragments.ChannelId)
                 {
                     _packetPool.Recycle(p);
@@ -678,44 +712,60 @@ namespace MRK.Networking
                 incomingFragments.ReceivedCount++;
 
                 //Increase total size
-                incomingFragments.TotalSize += p.Size - NetConstants.FragmentTotalSize;
+                incomingFragments.TotalSize += p.Size - NetConstants.FragmentedHeaderTotalSize;
 
                 //Check for finish
                 if (incomingFragments.ReceivedCount != fragments.Length)
                     return;
 
-                int resultingPacketHeaderSize = NetPacket.GetHeaderSize(p.Property);
+                //just simple packet
+                NetPacket resultingPacket = _packetPool.GetPacket(incomingFragments.TotalSize);
 
-                NetPacket resultingPacket = _packetPool.GetPacket(resultingPacketHeaderSize + incomingFragments.TotalSize);
-                resultingPacket.Property = p.Property;
-                resultingPacket.ChannelId = incomingFragments.ChannelId;
-
-                int firstFragmentSize = fragments[0].Size - NetConstants.FragmentTotalSize;
+                int pos = 0;
                 for (int i = 0; i < incomingFragments.ReceivedCount; i++)
                 {
+                    var fragment = fragments[i];
+                    int writtenSize = fragment.Size - NetConstants.FragmentedHeaderTotalSize;
+
+                    if (pos+writtenSize > resultingPacket.RawData.Length)
+                    {
+                        _holdedFragments.Remove(packetFragId);
+                        NetDebug.WriteError("Fragment error pos: {0} >= resultPacketSize: {1} , totalSize: {2}", 
+                            pos + writtenSize, 
+                            resultingPacket.RawData.Length,
+                            incomingFragments.TotalSize);
+                        return;
+                    }
+                    if (fragment.Size > fragment.RawData.Length)
+                    {
+                        _holdedFragments.Remove(packetFragId);
+                        NetDebug.WriteError("Fragment error size: {0} > fragment.RawData.Length: {1}", fragment.Size, fragment.RawData.Length);
+                        return;
+                    }
+
                     //Create resulting big packet
-                    int fragmentSize = fragments[i].Size - NetConstants.FragmentTotalSize;
                     Buffer.BlockCopy(
-                        fragments[i].RawData,
-                        NetConstants.FragmentTotalSize,
+                        fragment.RawData,
+                        NetConstants.FragmentedHeaderTotalSize,
                         resultingPacket.RawData,
-                        resultingPacketHeaderSize + firstFragmentSize * i,
-                        fragmentSize);
+                        pos,
+                        writtenSize);
+                    pos += writtenSize;
 
                     //Free memory
-                    _packetPool.Recycle(fragments[i]);
+                    _packetPool.Recycle(fragment);
                     fragments[i] = null;
                 }
 
-                //Send to process
-                NetManager.ReceiveFromPeer(resultingPacket, this);
-
                 //Clear memory
                 _holdedFragments.Remove(packetFragId);
+
+                //Send to process
+                NetManager.CreateReceiveEvent(resultingPacket, method, 0, this);
             }
             else //Just simple packet
             {
-                NetManager.ReceiveFromPeer(p, this);
+                NetManager.CreateReceiveEvent(p, method, NetConstants.ChanneledHeaderSize, this);
             }
         }
 
@@ -749,8 +799,7 @@ namespace MRK.Networking
 
                 lock (_mtuMutex)
                 {
-                    _mtuIdx++;
-                    SetMtu(_mtuIdx);
+                    SetMtu(_mtuIdx+1);
                 }
                 //if maxed - finish.
                 if (_mtuIdx == NetConstants.PossibleMtu.Length - 1)
@@ -783,7 +832,7 @@ namespace MRK.Networking
                     return;
 
                 //Send increased packet
-                int newMtu = NetConstants.PossibleMtu[_mtuIdx + 1];
+                int newMtu = NetConstants.PossibleMtu[_mtuIdx + 1] - NetManager.ExtraPacketSizeForLayer;
                 var p = _packetPool.GetPacket(newMtu);
                 p.Property = PacketProperty.MtuCheck;
                 FastBitConverter.GetBytes(p.RawData, 1, newMtu);         //place into start
@@ -800,16 +849,28 @@ namespace MRK.Networking
             //current or new request
             switch (_connectionState)
             {
-                //P2P case or just ID update
+                //P2P case
                 case ConnectionState.Outgoing:
-                    //change connect id if newer
-                    if (connRequest.ConnectionTime >= _connectTime)
+                    //fast check
+                    if (connRequest.ConnectionTime < _connectTime)
                     {
-                        //Change connect id
-                        _connectTime = connRequest.ConnectionTime;
-                        ConnectionNum = connRequest.ConnectionNumber;
+                        return ConnectRequestResult.P2PLose;
                     }
-                    return ConnectRequestResult.P2PConnection;
+                    //slow rare case check
+                    else if (connRequest.ConnectionTime == _connectTime)
+                    {
+                        var remoteBytes = EndPoint.Serialize();
+                        var localBytes = connRequest.TargetAddress;
+                        for (int i = remoteBytes.Size-1; i >= 0; i--)
+                        {
+                            byte rb = remoteBytes[i];
+                            if (rb == localBytes[i])
+                                continue;
+                            if (rb < localBytes[i])
+                                return ConnectRequestResult.P2PLose;
+                        }
+                    }
+                    break;
 
                 case ConnectionState.Connected:
                     //Old connect request
@@ -828,9 +889,7 @@ namespace MRK.Networking
                 case ConnectionState.Disconnected:
                 case ConnectionState.ShutdownRequested:
                     if (connRequest.ConnectionTime >= _connectTime)
-                    {
                         return ConnectRequestResult.NewConnection;
-                    }
                     break;
             }
             return ConnectRequestResult.None;
@@ -840,18 +899,25 @@ namespace MRK.Networking
         internal void ProcessPacket(NetPacket packet)
         {
             //not initialized
-            if (_connectionState == ConnectionState.Outgoing)
+            if (_connectionState == ConnectionState.Outgoing || _connectionState == ConnectionState.Disconnected)
             {
                 _packetPool.Recycle(packet);
                 return;
             }
-            if (packet.ConnectionNumber != _connectNum && packet.Property != PacketProperty.ShutdownOk) //without connectionNum
+            if (packet.Property == PacketProperty.ShutdownOk)
+            {
+                if (_connectionState == ConnectionState.ShutdownRequested)
+                    _connectionState = ConnectionState.Disconnected;
+                _packetPool.Recycle(packet);
+                return;
+            }
+            if (packet.ConnectionNumber != _connectNum)
             {
                 NetDebug.Write(NetLogLevel.Trace, "[RR]Old packet");
                 _packetPool.Recycle(packet);
                 return;
             }
-            _timeSinceLastPacket = 0;
+            Interlocked.Exchange(ref _timeSinceLastPacket, 0);
 
             NetDebug.Write("[RR]PacketProperty: {0}", packet.Property);
             switch (packet.Property)
@@ -862,15 +928,20 @@ namespace MRK.Networking
                     {
                         ushort size = BitConverter.ToUInt16(packet.RawData, pos);
                         pos += 2;
-                        NetPacket mergedPacket = _packetPool.GetPacket(size);
-                        if (!mergedPacket.FromBytes(packet.RawData, pos, size))
-                        {
-                            _packetPool.Recycle(packet);
+                        if (packet.RawData.Length - pos < size)
                             break;
-                        }
+
+                        NetPacket mergedPacket = _packetPool.GetPacket(size);
+                        Buffer.BlockCopy(packet.RawData, pos, mergedPacket.RawData, 0, size);
+                        mergedPacket.Size = size;
+
+                        if (!mergedPacket.Verify())
+                            break;
+
                         pos += size;
                         ProcessPacket(mergedPacket);
                     }
+                    _packetPool.Recycle(packet);
                     break;
                 //If we get ping, send pong
                 case PacketProperty.Ping:
@@ -915,7 +986,7 @@ namespace MRK.Networking
 
                 //Simple packet without acks
                 case PacketProperty.Unreliable:
-                    AddIncomingPacket(packet);
+                    NetManager.CreateReceiveEvent(packet, DeliveryMethod.Unreliable, NetConstants.HeaderSize, this);
                     return;
 
                 case PacketProperty.MtuCheck:
@@ -923,12 +994,6 @@ namespace MRK.Networking
                     ProcessMtuPacket(packet);
                     break;
 
-                case PacketProperty.ShutdownOk:
-                    if(_connectionState == ConnectionState.ShutdownRequested)
-                        _connectionState = ConnectionState.Disconnected;
-                    _packetPool.Recycle(packet);
-                    break;            
-                
                 default:
                     NetDebug.WriteError("Error! Unexpected packet type: " + packet.Property);
                     break;
@@ -950,10 +1015,13 @@ namespace MRK.Networking
                 //Send without length information and merging
                 bytesSent = NetManager.SendRaw(_mergeData.RawData, NetConstants.HeaderSize + 2, _mergePos - 2, EndPoint);
             }
-#if STATS_ENABLED
-            Statistics.PacketsSent++;
-            Statistics.BytesSent += (ulong)bytesSent;
-#endif
+
+            if (NetManager.EnableStatistics)
+            {
+                Statistics.IncrementPacketsSent();
+                Statistics.AddBytesSent(bytesSent);
+            }
+
             _mergePos = 0;
             _mergeCount = 0;
         }
@@ -967,10 +1035,13 @@ namespace MRK.Networking
             {
                 NetDebug.Write(NetLogLevel.Trace, "[P]SendingPacket: " + packet.Property);
                 int bytesSent = NetManager.SendRaw(packet, EndPoint);
-#if STATS_ENABLED
-                Statistics.PacketsSent++;
-                Statistics.BytesSent += (ulong)bytesSent;
-#endif
+
+                if (NetManager.EnableStatistics)
+                {
+                    Statistics.IncrementPacketsSent();
+                    Statistics.AddBytesSent(bytesSent);
+                }
+
                 return;
             }
             if (_mergePos + mergedPacketSize > _mtu)
@@ -983,39 +1054,9 @@ namespace MRK.Networking
             //DebugWriteForce("Merged: " + _mergePos + "/" + (_mtu - 2) + ", count: " + _mergeCount);
         }
 
-        /// <summary>
-        /// Flush all queued packets
-        /// </summary>
-        public void Flush()
-        {
-            if (_connectionState != ConnectionState.Connected)
-                return;
-            lock (_flushLock)
-            {
-                BaseChannel currentChannel = _headChannel;
-                while (currentChannel != null)
-                {
-                    currentChannel.SendNextPackets();
-                    currentChannel = currentChannel.Next;
-                }
-
-                lock (_unreliableChannel)
-                {
-                    while (_unreliableChannel.Count > 0)
-                    {
-                        NetPacket packet = _unreliableChannel.Dequeue();
-                        SendUserData(packet);
-                        NetManager.NetPacketPool.Recycle(packet);
-                    }
-                }
-
-                SendMerged();
-            }
-        }
-
         internal void Update(int deltaTime)
         {
-            _timeSinceLastPacket += deltaTime;
+            Interlocked.Add(ref _timeSinceLastPacket, deltaTime);
             switch (_connectionState)
             {
                 case ConnectionState.Connected:
@@ -1079,8 +1120,7 @@ namespace MRK.Networking
                 //ping timeout
                 if (_pingTimer.IsRunning)
                     UpdateRoundTripTime((int)_pingTimer.ElapsedMilliseconds);
-                _pingTimer.Reset();
-                _pingTimer.Start();
+                _pingTimer.Restart();
                 NetManager.SendRaw(_pingPacket, EndPoint);
             }
 
@@ -1096,7 +1136,25 @@ namespace MRK.Networking
             UpdateMtuLogic(deltaTime);
 
             //Pending send
-            Flush();
+            int count = _channelSendQueue.Count;
+            while (count-- > 0)
+            {
+                if (!_channelSendQueue.TryDequeue(out var channel))
+                    break;
+                if (channel.SendAndCheckQueue())
+                {
+                    // still has something to send, re-add it to the send queue
+                    _channelSendQueue.Enqueue(channel);
+                }
+            }
+
+            while (_unreliableChannel.TryDequeue(out var packet))
+            {
+                SendUserData(packet);
+                NetManager.NetPacketPool.Recycle(packet);
+            }
+
+            SendMerged();
         }
 
         //For reliable channel
@@ -1106,17 +1164,16 @@ namespace MRK.Networking
             {
                 if (packet.IsFragmented)
                 {
-                    ushort fragCount;
-                    _deliveredFramgnets.TryGetValue(packet.FragmentId, out fragCount);
+                    _deliveredFragments.TryGetValue(packet.FragmentId, out ushort fragCount);
                     fragCount++;
                     if (fragCount == packet.FragmentsTotal)
                     {
                         NetManager.MessageDelivered(this, packet.UserData);
-                        _deliveredFramgnets.Remove(packet.FragmentId);
+                        _deliveredFragments.Remove(packet.FragmentId);
                     }
                     else
                     {
-                        _deliveredFramgnets[packet.FragmentId] = fragCount;
+                        _deliveredFragments[packet.FragmentId] = fragCount;
                     }
                 }
                 else

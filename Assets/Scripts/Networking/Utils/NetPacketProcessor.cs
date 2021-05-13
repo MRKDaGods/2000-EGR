@@ -46,9 +46,8 @@ namespace MRK.Networking.Utils
 
         protected virtual SubscribeDelegate GetCallbackFromData(NetDataReader reader)
         {
-            var hash = reader.GetULong();
-            SubscribeDelegate action;
-            if (!_callbacks.TryGetValue(hash, out action))
+            ulong hash = reader.GetULong();
+            if (!_callbacks.TryGetValue(hash, out var action))
             {
                 throw new ParseException("Undefined packet in NetDataReader");
             }
@@ -160,22 +159,6 @@ namespace MRK.Networking.Utils
             packet.Serialize(writer);
         }
 
-        public byte[] Write<T>(T packet) where T : class, new()
-        {
-            _netDataWriter.Reset();
-            WriteHash<T>(_netDataWriter);
-            _netSerializer.Serialize(_netDataWriter, packet);
-            return _netDataWriter.CopyData();
-        }
-
-        public byte[] WriteNetSerializable<T>(T packet) where T : INetSerializable
-        {
-            _netDataWriter.Reset();
-            WriteHash<T>(_netDataWriter);
-            packet.Serialize(_netDataWriter);
-            return _netDataWriter.CopyData();
-        }
-
         /// <summary>
         /// Reads one packet from NetDataReader and calls OnReceive delegate
         /// </summary>
@@ -191,7 +174,7 @@ namespace MRK.Networking.Utils
         /// Register and subscribe to packet receive event
         /// </summary>
         /// <param name="onReceive">event that will be called when packet deserialized with ReadPacket method</param>
-        /// <param name="packetConstructor">Method that constructs packet intead of slow Activator.CreateInstance</param>
+        /// <param name="packetConstructor">Method that constructs packet instead of slow Activator.CreateInstance</param>
         /// <exception cref="InvalidTypeException"><typeparamref name="T"/>'s fields are not supported, or it has no fields</exception>
         public void Subscribe<T>(Action<T> onReceive, Func<T> packetConstructor) where T : class, new()
         {
@@ -208,7 +191,7 @@ namespace MRK.Networking.Utils
         /// Register and subscribe to packet receive event (with userData)
         /// </summary>
         /// <param name="onReceive">event that will be called when packet deserialized with ReadPacket method</param>
-        /// <param name="packetConstructor">Method that constructs packet intead of slow Activator.CreateInstance</param>
+        /// <param name="packetConstructor">Method that constructs packet instead of slow Activator.CreateInstance</param>
         /// <exception cref="InvalidTypeException"><typeparamref name="T"/>'s fields are not supported, or it has no fields</exception>
         public void Subscribe<T, TUserData>(Action<T, TUserData> onReceive, Func<T> packetConstructor) where T : class, new()
         {
@@ -223,7 +206,7 @@ namespace MRK.Networking.Utils
 
         /// <summary>
         /// Register and subscribe to packet receive event
-        /// This metod will overwrite last received packet class on receive (less garbage)
+        /// This method will overwrite last received packet class on receive (less garbage)
         /// </summary>
         /// <param name="onReceive">event that will be called when packet deserialized with ReadPacket method</param>
         /// <exception cref="InvalidTypeException"><typeparamref name="T"/>'s fields are not supported, or it has no fields</exception>
@@ -240,7 +223,7 @@ namespace MRK.Networking.Utils
 
         /// <summary>
         /// Register and subscribe to packet receive event
-        /// This metod will overwrite last received packet class on receive (less garbage)
+        /// This method will overwrite last received packet class on receive (less garbage)
         /// </summary>
         /// <param name="onReceive">event that will be called when packet deserialized with ReadPacket method</param>
         /// <exception cref="InvalidTypeException"><typeparamref name="T"/>'s fields are not supported, or it has no fields</exception>
@@ -256,7 +239,7 @@ namespace MRK.Networking.Utils
         }
 
         public void SubscribeNetSerializable<T, TUserData>(
-            Action<T, TUserData> onReceive, 
+            Action<T, TUserData> onReceive,
             Func<T> packetConstructor) where T : INetSerializable
         {
             _callbacks[GetHash<T>()] = (reader, userData) =>

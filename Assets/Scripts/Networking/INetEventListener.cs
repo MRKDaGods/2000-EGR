@@ -1,5 +1,6 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using MRK.Networking.Utils;
 
 namespace MRK.Networking
 {
@@ -25,7 +26,9 @@ namespace MRK.Networking
         DisconnectPeerCalled,
         ConnectionRejected,
         InvalidProtocol,
-        UnknownHost
+        UnknownHost,
+        Reconnect,
+        PeerToPeerConnection
     }
 
     /// <summary>
@@ -84,7 +87,7 @@ namespace MRK.Networking
         /// </summary>
         /// <param name="remoteEndPoint">From address (IP and Port)</param>
         /// <param name="reader">Message data</param>
-        /// <param name="messageType">Message type (simple, discovery request or responce)</param>
+        /// <param name="messageType">Message type (simple, discovery request or response)</param>
         void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType);
 
         /// <summary>
@@ -111,7 +114,16 @@ namespace MRK.Networking
         void OnMessageDelivered(NetPeer peer, object userData);
     }
 
-    public class EventBasedNetListener : INetEventListener, IDeliveryEventListener
+    public interface INtpEventListener
+    {
+        /// <summary>
+        /// Ntp response
+        /// </summary>
+        /// <param name="packet"></param>
+        void OnNtpResponse(NtpPacket packet);
+    }
+
+    public class EventBasedNetListener : INetEventListener, IDeliveryEventListener, INtpEventListener
     {
         public delegate void OnPeerConnected(NetPeer peer);
         public delegate void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo);
@@ -121,6 +133,7 @@ namespace MRK.Networking
         public delegate void OnNetworkLatencyUpdate(NetPeer peer, int latency);
         public delegate void OnConnectionRequest(ConnectionRequest request);
         public delegate void OnDeliveryEvent(NetPeer peer, object userData);
+        public delegate void OnNtpResponseEvent(NtpPacket packet);
 
         public event OnPeerConnected PeerConnectedEvent;
         public event OnPeerDisconnected PeerDisconnectedEvent;
@@ -130,6 +143,7 @@ namespace MRK.Networking
         public event OnNetworkLatencyUpdate NetworkLatencyUpdateEvent;
         public event OnConnectionRequest ConnectionRequestEvent;
         public event OnDeliveryEvent DeliveryEvent;
+        public event OnNtpResponseEvent NtpResponseEvent;
 
         public void ClearPeerConnectedEvent()
         {
@@ -169,6 +183,11 @@ namespace MRK.Networking
         public void ClearDeliveryEvent()
         {
             DeliveryEvent = null;
+        }
+
+        public void ClearNtpResponseEvent()
+        {
+            NtpResponseEvent = null;
         }
 
         void INetEventListener.OnPeerConnected(NetPeer peer)
@@ -217,6 +236,12 @@ namespace MRK.Networking
         {
             if (DeliveryEvent != null)
                 DeliveryEvent(peer, userData);
+        }
+
+        void INtpEventListener.OnNtpResponse(NtpPacket packet)
+        {
+            if (NtpResponseEvent != null)
+                NtpResponseEvent(packet);
         }
     }
 }

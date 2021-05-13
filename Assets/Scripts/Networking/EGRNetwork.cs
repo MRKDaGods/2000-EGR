@@ -29,6 +29,7 @@ namespace MRK.Networking {
 
         const int INVALID_BUFFERED_REQUEST = -1;
         const float PACKET_TIMEOUT = 5f; //secs
+        const float CONNECTION_DELAY = 2f;
 
         NetManager m_Network;
         EventBasedNetListener m_Listener;
@@ -41,6 +42,7 @@ namespace MRK.Networking {
         List<int> m_RequestClearBuffer;
         string m_XorKey;
         readonly Dictionary<ulong, EGRDownloadContext> m_ActiveDownloads;
+        float m_LastConnectTime;
 
         NetPeer Remote => m_Network.FirstPeer;
         public bool IsConnected => Remote != null && Remote.ConnectionState == ConnectionState.Connected;
@@ -54,6 +56,8 @@ namespace MRK.Networking {
 
             m_Listener = new EventBasedNetListener();
             m_Network = new NetManager(m_Listener);
+            m_Network.AutoRecycle = true;
+            m_Network.ReconnectDelay = 2000;
 
             m_Endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
 
@@ -102,6 +106,12 @@ namespace MRK.Networking {
 
         void OnPacketReceived(EGREventPacketReceived evt) {
             switch (evt.Packet.PacketType) {
+
+                case PacketType.TEST: {
+                        PacketInTestPacket packet = (PacketInTestPacket)evt.Packet;
+                        EGRMain.Log($"{packet.ByteLength} - {packet.ReadStr}");
+                    }
+                    break;
 
                 case PacketType.XKEY: {
                         m_XorKey = ((PacketInXorKey)evt.Packet).XorKey;
@@ -183,8 +193,12 @@ namespace MRK.Networking {
 
         public void UpdateNetwork() {
             if (!IsConnected) {
-                if (m_InitiatedConnection)
-                    Connect();
+                if (m_InitiatedConnection) {
+                    if (Time.time - m_LastConnectTime > CONNECTION_DELAY) {
+                        m_LastConnectTime = Time.time;
+                        Connect();
+                    }
+                }
 
                 if (m_HasConnected)
                     OnDisconnected(null, new DisconnectInfo());

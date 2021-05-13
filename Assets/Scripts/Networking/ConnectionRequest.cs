@@ -4,12 +4,6 @@ using MRK.Networking.Utils;
 
 namespace MRK.Networking
 {
-    public enum ConnectionRequestType
-    {
-        Incoming,
-        PeerToPeer
-    }
-
     internal enum ConnectionRequestResult
     {
         None,
@@ -24,7 +18,6 @@ namespace MRK.Networking
         private int _used;
 
         public readonly NetDataReader Data;
-        public ConnectionRequestType Type { get; private set; }
 
         internal ConnectionRequestResult Result { get; private set; }
         internal long ConnectionTime;
@@ -48,14 +41,12 @@ namespace MRK.Networking
         internal ConnectionRequest(
             long connectionId,
             byte connectionNumber,
-            ConnectionRequestType type,
             NetDataReader netDataReader,
             IPEndPoint endPoint,
             NetManager listener)
         {
             ConnectionTime = connectionId;
             ConnectionNumber = connectionNumber;
-            Type = type;
             RemoteEndPoint = endPoint;
             Data = netDataReader;
             _listener = listener;
@@ -68,15 +59,15 @@ namespace MRK.Networking
             try
             {
                 if (Data.GetString() == key)
-                {
                     Result = ConnectionRequestResult.Accept;
-                    return _listener.OnConnectionSolved(this, null, 0, 0);
-                }
             }
             catch
             {
                 NetDebug.WriteError("[AC] Invalid incoming data");
             }
+            if (Result == ConnectionRequestResult.Accept)
+                return _listener.OnConnectionSolved(this, null, 0, 0);
+
             Result = ConnectionRequestResult.Reject;
             _listener.OnConnectionSolved(this, null, 0, 0);
             return null;
@@ -93,7 +84,7 @@ namespace MRK.Networking
             Result = ConnectionRequestResult.Accept;
             return _listener.OnConnectionSolved(this, null, 0, 0);
         }
-        
+
         public void Reject(byte[] rejectData, int start, int length, bool force)
         {
             if (!TryActivate())

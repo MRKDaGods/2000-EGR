@@ -67,7 +67,7 @@ namespace MRK.UI {
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(Color.clear, TweenMonitored(0.2f + i * 0.03f))
+                gfx.DOColor(Color.clear, TweenMonitored(0.3f))
                     .SetEase(Ease.OutSine)
                     .OnComplete(OnTweenFinished);
             }

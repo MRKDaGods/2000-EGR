@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -31,7 +31,7 @@ namespace MRK.Networking
         {
             if(hostStr == "localhost")
                 return IPAddress.Loopback;
-            
+
             IPAddress ipAddress;
             if (!IPAddress.TryParse(hostStr, out ipAddress))
             {
@@ -46,7 +46,7 @@ namespace MRK.Networking
             return ipAddress;
         }
 
-        private static IPAddress ResolveAddress(string hostStr, AddressFamily addressFamily)
+        public static IPAddress ResolveAddress(string hostStr, AddressFamily addressFamily)
         {
             IPAddress[] addresses = ResolveAddresses(hostStr);
             foreach (IPAddress ip in addresses)
@@ -59,15 +59,11 @@ namespace MRK.Networking
             return null;
         }
 
-        private static IPAddress[] ResolveAddresses(string hostStr)
+        public static IPAddress[] ResolveAddresses(string hostStr)
         {
-#if NETSTANDARD || NETCOREAPP
             var hostTask = Dns.GetHostEntryAsync(hostStr);
             hostTask.GetAwaiter().GetResult();
             var host = hostTask.Result;
-#else
-            var host = Dns.GetHostEntry(hostStr);
-#endif
             return host.AddressList;
         }
 
@@ -75,7 +71,7 @@ namespace MRK.Networking
         /// Get all local ip addresses
         /// </summary>
         /// <param name="addrType">type of address (IPv4, IPv6 or both)</param>
-        /// <returns>List with all local ip adresses</returns>
+        /// <returns>List with all local ip addresses</returns>
         public static List<string> GetLocalIpList(LocalAddrType addrType)
         {
             List<string> targetList = new List<string>();
@@ -97,7 +93,7 @@ namespace MRK.Networking
                 foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     //Skip loopback and disabled network interfaces
-                    if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback || 
+                    if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
                         ni.OperationalStatus != OperationalStatus.Up)
                         continue;
 

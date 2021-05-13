@@ -35,6 +35,8 @@ namespace MRK.Networking.Packets {
 
         //standard response
         STDRSP = 0x20,
+        //test packet
+        TEST = 0x21,
 
         //fetch places
         PLCFETCH = 0x30,
