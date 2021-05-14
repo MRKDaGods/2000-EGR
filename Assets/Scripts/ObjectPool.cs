@@ -31,8 +31,6 @@ namespace MRK {
             }
 
             m_ActiveObjects.Add(use);
-
-            EGRMain.Log($"Renting -> {m_ActiveObjects.Count} - {m_FreeObjects.Count}");
             return use;
         }
     }

@@ -207,10 +207,33 @@ namespace MRK {
             }
         }
 
-        private static Vector2 CubeBezier(Vector2 s, Vector2 st, Vector2 e, Vector2 et, float t) {
+        static Vector2 CubeBezier(Vector2 s, Vector2 st, Vector2 e, Vector2 et, float t) {
             float rt = 1 - t;
             float rtt = rt * t;
             return rt * rt * rt * s + 3 * rt * rtt * st + 3 * rtt * t * et + t * t * t * e;
+        }
+
+        public static void DrawCircle(Vector2 pos, float radius, Color c, int segments = 20) {
+            float _2PI = Mathf.PI * 2f;
+            float advance = _2PI / segments;
+            Vector2 lastSegment = Vector2.zero, intl = Vector2.zero;
+
+            for (float theta = 0f; theta <= _2PI; theta += advance) {
+                Vector2 xy = new Vector2 {
+                    x = pos.x + Mathf.Cos(theta) * radius,
+                    y = pos.y - Mathf.Sin(theta) * radius
+                };
+
+                if (lastSegment != Vector2.zero) {
+                    DrawLine(lastSegment, xy, c, 1.4f);
+                }
+                else
+                    intl = xy;
+
+                lastSegment = xy;
+            }
+
+            DrawLine(lastSegment, intl, c, 1.4f);
         }
     }
 }

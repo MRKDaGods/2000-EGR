@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace MRK {
     public delegate void EGRFetchPlacesCallback(EGRPlace place);
+    public delegate void EGRFetchPlacesV2Callback(List<EGRPlace> places);
 
     public class EGRPlaceManager : EGRBehaviour {
         struct ContextInfo {
@@ -18,7 +19,13 @@ namespace MRK {
         readonly Dictionary<ulong, ContextInfo> m_CIDCtxIndex;
         readonly Random m_Rand;
 
+        readonly Dictionary<int, List<EGRPlace>> m_Places;
+        readonly Dictionary<int, EGRFetchPlacesV2Callback> m_ActiveRequests;
+
         public EGRPlaceManager() {
+            m_Places = new Dictionary<int, List<EGRPlace>>();
+            m_ActiveRequests = new Dictionary<int, EGRFetchPlacesV2Callback>();
+
             m_CachedRects = new Dictionary<ulong, RectD>();
             m_CachedIDs = new Dictionary<ulong, List<ContextInfo>>();
             m_CachedPlaces = new Dictionary<ulong, EGRPlace>();
@@ -41,6 +48,49 @@ namespace MRK {
                 m_CachedRects[ctx] = rect;
                 m_ActiveCallbacks[ctx] = callback;
                 Client.NetFetchPlacesIDs(ctx, minLat, minLng, maxLat, maxLng, Client.FlatMap.AbsoluteZoom, OnFetchPlacesIDs);
+            }
+        }
+
+        public void FetchPlacesInTile(MRKTileID tileID, EGRFetchPlacesV2Callback callback) {
+            int hash = tileID.GetHashCode();
+            if (m_Places.ContainsKey(hash)) {
+                if (callback != null)
+                    callback(m_Places[hash]);
+
+                return;
+            }
+
+            if (!Client.Network.IsConnected) {
+                //no internet
+                return;
+            }
+
+            if (m_ActiveRequests.ContainsKey(hash)) {
+                //already requested
+                return;
+            }
+
+            RectD rect = MRKMapUtils.TileBounds(tileID);
+            Vector2d min = MRKMapUtils.MetersToLatLon(rect.Min);
+            Vector2d max = MRKMapUtils.MetersToLatLon(rect.Max);
+            //for some reason min-max lat is inversed?
+            if (Client.NetFetchPlacesV2(hash, max.x, min.y, min.x, max.y, Client.FlatMap.AbsoluteZoom, OnFetchPlacesV2)) {
+                if (callback != null)
+                    m_ActiveRequests[hash] = callback;
+            }
+        }
+
+        void OnFetchPlacesV2(PacketInFetchPlacesV2 response) {
+            if (m_ActiveRequests.ContainsKey(response.Hash)) {
+                m_ActiveRequests[response.Hash](response.Places);
+                m_ActiveRequests.Remove(response.Hash);
+            }
+
+            m_Places[response.Hash] = response.Places;
+
+            foreach (EGRPlace p in response.Places) {
+                string t = p.Types.Length > 1 ? p.Types[1].ToString() : "";
+                EGRMain.Log($"Received {t} - {p}");
             }
         }
 

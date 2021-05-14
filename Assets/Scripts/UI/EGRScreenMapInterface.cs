@@ -288,7 +288,7 @@ namespace MRK.UI {
                 m_Fill.fillAmount = curZoom - Mathf.Floor(curZoom);
 
                 string unit = "M";
-                if (ratio < 10000f) {
+                if (ratio < 1000f) {
                     ratio *= 100f;
                     unit = "CM";
                 }
@@ -594,7 +594,7 @@ namespace MRK.UI {
                 m_ScaleBar.UpdateScale(m_Map.Zoom, scale);
             }
 
-            if (m_Map.Zoom < 12f) {
+            if (m_Map.Zoom < 10f) {
                 List<EGRPlaceMarker> buffer = new List<EGRPlaceMarker>();
                 foreach (EGRPlaceMarker marker in m_ActiveMarkers.Values)
                     buffer.Add(marker);
@@ -605,13 +605,13 @@ namespace MRK.UI {
                 return;
             }
 
-            if (Time.time - m_LastFetchRequestTime < 2f)
+            if (Time.time - m_LastFetchRequestTime < 0.6f)
                 return;
 
             m_LastFetchRequestTime = Time.time;
 
-            Vector2d minGeoPos = GetMinGeoPos();
-            Vector2d maxGeoPos = GetMaxGeoPos();
+            //Vector2d minGeoPos = GetMinGeoPos();
+            //Vector2d maxGeoPos = GetMaxGeoPos();
 
             //Debug.Log("Fetching places for min(" + minGeoPos.ToString() + "), max(" + maxGeoPos.ToString() + ")");
 
@@ -619,7 +619,17 @@ namespace MRK.UI {
                 Debug.LogError("Cannot fetch places");
             } */
 
-            Client.PlaceManager.FetchPlacesInRegion(minGeoPos.x, minGeoPos.y, maxGeoPos.x, maxGeoPos.y, AddMarker);
+            //Client.PlaceManager.FetchPlacesInRegion(minGeoPos.x, minGeoPos.y, maxGeoPos.x, maxGeoPos.y, AddMarker);
+
+            foreach (MRKTile tile in m_Map.Tiles) {
+                Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched);
+            }
+        }
+
+        void OnPlacesFetched(List<EGRPlace> places) {
+            foreach (EGRPlace place in places) {
+                AddMarker(place);
+            }
         }
 
         void AddMarker(EGRPlace place) {

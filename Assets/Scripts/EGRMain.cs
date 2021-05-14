@@ -466,6 +466,10 @@ namespace MRK {
             return Network.SendPacket(new PacketOutFetchPlacesIDs(ctx, minLat, minLng, maxLat, maxLng, zoom), DeliveryMethod.ReliableOrdered, callback);
         }
 
+        public bool NetFetchPlacesV2(int hash, double minLat, double minLng, double maxLat, double maxLng, int zoom, EGRPacketReceivedCallback<PacketInFetchPlacesV2> callback) {
+            return Network.SendPacket(new PacketOutFetchPlacesV2(hash, minLat, minLng, maxLat, maxLng, zoom), DeliveryMethod.ReliableOrdered, callback);
+        }
+
         public bool NetFetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
             return Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
         }

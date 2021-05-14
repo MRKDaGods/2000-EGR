@@ -11,13 +11,15 @@ namespace MRK {
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Magnitude { get; private set; }
+        public bool Stationary { get; private set; }
 
-        public MRKTileID(int z, int x, int y) {
+        public MRKTileID(int z, int x, int y, bool stationary = false) {
             Z = z;
             X = x;
             Y = y;
 
             Magnitude = x * x + y * y;
+            Stationary = stationary;
         }
 
         public override string ToString() {

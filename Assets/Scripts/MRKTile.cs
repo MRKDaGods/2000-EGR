@@ -27,7 +27,6 @@ namespace MRK {
         float m_MaterialEmission;
 
         public MRKTileID ID { get; private set; }
-        public float RelativeScale { get; private set; }
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
         public bool Dead { get; set; }
@@ -48,7 +47,7 @@ namespace MRK {
         public void InitTile(MRKMap map, MRKTileID id) {
             m_Map = map;
             ID = id;
-            RelativeScale = 1f / Mathf.Cos(Mathf.Deg2Rad * (float)map.CenterLatLng.x);
+            //RelativeScale = 1f / Mathf.Cos(Mathf.Deg2Rad * (float)map.CenterLatLng.x);
             Rect = MRKMapUtils.TileBounds(id);
 
             if (Obj == null) {
@@ -94,7 +93,10 @@ namespace MRK {
                 m_MaterialEmission = m_Map.GetDesiredTilesetEmission();
                 m_MeshRenderer.material = m_Material;
 
-                if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
+                if (ID.Stationary) {
+                    SetTexture(m_Map.StationaryTexture);
+                }
+                else if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
                     SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
                 }
                 else {
@@ -107,7 +109,7 @@ namespace MRK {
         IEnumerator FetchTexture() {
             SetLoadingTexture();
 
-            while (ms_FetcherLock.Recursion > 4) {
+            while (ms_FetcherLock.Recursion > 2) {
                 yield return new WaitForSeconds(0.2f);
             }
 
@@ -119,6 +121,8 @@ namespace MRK {
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion++;
             }
+
+            yield return new WaitForSeconds(0.2f * Random.value);
 
             //incase we get destroyed while loading, we MUST decrement our lock somewhere
             m_FetchingTile = true;

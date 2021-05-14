@@ -1,10 +1,12 @@
+#define MRK_RENDER_TILE_BOUNDS
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace MRK {
-	public class MRKMap : MonoBehaviour {
+	public class MRKMap : EGRBehaviour {
 		const int EX_N = 1, EX_S = 1, EX_W = 1, EX_E = 1;
 
 		[SerializeField]
@@ -25,6 +27,8 @@ namespace MRK {
 		[SerializeField]
 		Texture2D m_LoadingTexture;
 		[SerializeField]
+		Texture2D m_StationaryTexture;
+		[SerializeField]
 		bool m_AutoInit;
 		[SerializeField]
 		string m_Tileset;
@@ -43,8 +47,11 @@ namespace MRK {
 		public float Zoom => m_Zoom;
 		public Material TileMaterial => m_TileMaterial;
 		public Texture2D LoadingTexture => m_LoadingTexture;
+		public Texture2D StationaryTexture => m_StationaryTexture;
 		public string Tileset => m_Tileset;
 		public float TileSize => m_TileSize;
+		public Vector2d CenterMercator => m_CenterMercator;
+		public List<MRKTile> Tiles => m_Tiles;
 
 		public MRKMap() {
 			m_ActiveTileIDs = new List<MRKTileID>();
@@ -87,22 +94,10 @@ namespace MRK {
 			m_SortedToActiveIDs.Clear();
 			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
 
-			//int maxValidTile = (1 << m_AbsoluteZoom) - 1;
-
+			int maxValidTile = (1 << m_AbsoluteZoom) - 1;
 			for (int x = (centerTile.X - EX_W); x <= (centerTile.X + EX_E); x++) {
 				for (int y = (centerTile.Y - EX_N); y <= (centerTile.Y + EX_S); y++) {
-					/* if (x < 0)
-						x = maxValidTile;
-					else if (x > maxValidTile)
-						x = 0;
-
-					if (y < 0)
-						y = maxValidTile;
-					else if (y > maxValidTile)
-						y = 0;
-
-					*/
-					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y));
+					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y, x < 0 || x > maxValidTile || y < 0 || y > maxValidTile));
 				}
 			}
 
@@ -136,6 +131,8 @@ namespace MRK {
 				return sqrMagX.CompareTo(sqrMagY);
 			});
 
+			float scaleFactor = Mathf.Pow(2, m_InitialZoom - m_AbsoluteZoom);
+
 			int siblingIdx = 0;
 			foreach (MRKTileID tileID in m_SortedTileIDs) {
 				MRKTileID realID = m_SortedToActiveIDs[tileID];
@@ -146,8 +143,6 @@ namespace MRK {
 				tile.InitTile(this, realID);
 
 				RectD rect = tile.Rect;
-				float scaleFactor = Mathf.Pow(2, (m_InitialZoom - tile.ID.Z));
-
 				Vector3 position = new Vector3((float)(rect.Center.x - m_CenterMercator.x) * m_WorldRelativeScale * scaleFactor, 
 					 0f, (float)(rect.Center.y - m_CenterMercator.y) * m_WorldRelativeScale * scaleFactor);
 
@@ -161,6 +156,28 @@ namespace MRK {
 
 			transform.position = Vector3.zero;
 		}
+
+#if MRK_RENDER_TILE_BOUNDS
+		void OnGUI() {
+			foreach (MRKTile tile in m_Tiles) {
+				RectD r = tile.Rect;
+
+			 	Vector3 pos = GeoToWorldPosition(MRKMapUtils.MetersToLatLon(r.Min));
+
+				Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos); spos.y = Screen.height - spos.y;
+
+				Vector3 pos2 = GeoToWorldPosition(MRKMapUtils.MetersToLatLon(r.Max));
+
+				Vector3 spos2 = Client.ActiveCamera.WorldToScreenPoint(pos2); spos2.y = Screen.height - spos2.y;
+
+				EGRGL.DrawCircle(spos, 10f, Color.blue);
+				EGRGL.DrawCircle(spos2, 20f, Color.white);
+				EGRGL.DrawLine(spos, spos2, Color.red, 1.5f);
+
+				EGRGL.DrawBox(spos, spos2, Color.magenta, 1.5f);
+            }
+        }
+#endif
 
 		public void UpdateMap(Vector2d latLon, float zoom, bool force = false) {
 			if (zoom > 21 || zoom < 0)
@@ -221,7 +238,7 @@ namespace MRK {
 		}
 
 		public Vector3 GeoToWorldPosition(Vector2d latitudeLongitude) {
-			var scaleFactor = Mathf.Pow(2, (InitialZoom - AbsoluteZoom));
+			float scaleFactor = Mathf.Pow(2f, InitialZoom - AbsoluteZoom);
 			var worldPos = MRKMapUtils.GeoToWorldPosition(latitudeLongitude.x, latitudeLongitude.y, m_CenterMercator, WorldRelativeScale * scaleFactor).ToVector3xz();
 			return transform.TransformPoint(worldPos);
 		}

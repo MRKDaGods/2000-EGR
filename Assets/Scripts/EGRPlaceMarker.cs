@@ -1,4 +1,6 @@
-﻿using MRK.UI;
+﻿#define DEBUG_PLACES
+
+using MRK.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

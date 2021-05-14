@@ -65,14 +65,18 @@ namespace MRK {
             }
 
             string path = $"{dir}\\{id.GetHashCode()}.png";
+#if MRK_PROFILE
             DateTime t = DateTime.Now;
+#endif
 
             using (FileStream fs = File.OpenWrite(path)) {
                 await fs.WriteAsync(tex, 0, tex.Length);
             }
 
+#if MRK_PROFILE
             TimeSpan t0 = DateTime.Now - t;
             Debug.Log($"Saved {id} {t0.TotalMilliseconds}ms");
+#endif
         }
     }
 

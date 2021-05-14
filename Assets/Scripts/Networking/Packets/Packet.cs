@@ -44,6 +44,8 @@ namespace MRK.Networking.Packets {
         TILEFETCH = 0x31,
         //fetch place id
         PLCIDFETCH = 0x32,
+        //fetch place v2
+        PLCFETCHV2 = 0x33,
 
         MAX
     }

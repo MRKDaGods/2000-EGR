@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MRK {
     public class MRKMapUtils {
-		const int TILE_SIZE = 256;
+		const int TILE_SIZE = 1024;
 		const int EARTH_RADIUS = 6378137;
 		const double INITIAL_RESOLUTION = 2 * Math.PI * EARTH_RADIUS / TILE_SIZE;
 		const double ORIGIN_SHIFT = 2 * Math.PI * EARTH_RADIUS / 2;
@@ -34,15 +34,12 @@ namespace MRK {
 		}
 
 		static double Resolution(int zoom) {
-			return INITIAL_RESOLUTION / Math.Pow(2, zoom);
+			return INITIAL_RESOLUTION / (1 << zoom);
 		}
 
 		static Vector2d PixelsToMeters(Vector2d p, int zoom) {
-			var res = Resolution(zoom);
-			var met = new Vector2d();
-			met.x = (p.x * res - ORIGIN_SHIFT);
-			met.y = -(p.y * res - ORIGIN_SHIFT);
-			return met;
+			double res = Resolution(zoom);
+			return new Vector2d(p.x * res - ORIGIN_SHIFT, -(p.y * res - ORIGIN_SHIFT));
 		}
 
 		public static Vector2d LatLonToMeters(double lat, double lon) {
