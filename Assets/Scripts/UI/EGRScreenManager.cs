@@ -170,6 +170,14 @@ namespace MRK.UI {
             MoveScreenToLayer(screen, m_MaxLayerCount);
         }
 
+        public Canvas GetLayer(int layer) {
+            return m_Layers[layer - 1];
+        }
+
+        public Canvas GetLayer(EGRScreen screen) {
+            return GetLayer(screen.Layer);
+        }
+
         public EGRProxyScreen CreateProxy(string name, uint expectedInc) {
             EGRProxyScreen screen = new EGRProxyScreen(name, (uint)SceneChangeIndex + expectedInc);
             m_ProxyPipe.Add(screen);

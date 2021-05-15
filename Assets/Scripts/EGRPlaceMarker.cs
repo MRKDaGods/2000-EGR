@@ -1,4 +1,4 @@
-﻿#define DEBUG_PLACES
+﻿//#define DEBUG_PLACES
 
 using MRK.UI;
 using TMPro;
@@ -11,8 +11,8 @@ namespace MRK {
         EGRColorFade m_Fade;
         Vector3 m_OriginalScale;
         Image m_Sprite;
-        
         static EGRScreenMapInterface ms_MapInterface;
+        static Canvas ms_Canvas;
 
         public EGRPlace Place { get; private set; }
 
@@ -20,8 +20,11 @@ namespace MRK {
             m_Text = GetComponentInChildren<TextMeshProUGUI>();
             m_Sprite = GetComponentInChildren<Image>();
             m_OriginalScale = transform.localScale;
-            if (ms_MapInterface == null)
-                ms_MapInterface = EGRScreenManager.Instance.GetScreen<EGRScreenMapInterface>();
+
+            if (ms_MapInterface == null) {
+                ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
+                ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
+            }
         }
 
         public void SetPlace(EGRPlace place) {
@@ -41,10 +44,12 @@ namespace MRK {
 
             Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
             if (spos.z > 0f) {
-                spos.y = Screen.height - spos.y;
-                spos.y *= -1f;
+                //spos.y = Screen.height - spos.y;
+                //spos.y *= -1f;
 
-                ((RectTransform)transform).anchoredPosition = spos;
+                Vector2 point;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)ms_Canvas.transform, spos, ms_Canvas.worldCamera, out point);
+                transform.position = ms_Canvas.transform.TransformPoint(point);
             }
 
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(Client.FlatMap.Zoom / 21f);

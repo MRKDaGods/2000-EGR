@@ -86,6 +86,7 @@ namespace MRK {
         public bool CamDirty => m_CamDirty;
         public List<EGRScreen> ActiveScreens => m_ActiveScreens;
         public EGRPlaceManager PlaceManager { get; private set; }
+        public bool InitialModeTransition => m_InitialModeTransition;
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -171,7 +172,7 @@ namespace MRK {
                 }
             }
 
-            m_Network = new EGRNetwork("127.0.0.1", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
+            m_Network = new EGRNetwork("192.168.1.15", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
             m_Network.Connect();
         }
 

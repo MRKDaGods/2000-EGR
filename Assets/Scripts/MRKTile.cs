@@ -4,15 +4,15 @@ using System.Linq;
 using UnityEngine;
 using DG.Tweening;
 using System.Collections.Generic;
+using System;
 
 namespace MRK {
     public class MRKTile {
-        class TextureFetcherLock {
-            public int Recursion;
+        public class TextureFetcherLock {
+            public volatile int Recursion;
         }
 
         MeshRenderer m_MeshRenderer;
-        MeshFilter m_MeshFilter;
         MRKMap m_Map;
         static Mesh ms_TileMesh;
         readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>> ms_CachedTiles;
@@ -20,16 +20,21 @@ namespace MRK {
         readonly static MRKRemoteTileFetcher ms_RemoteFetcher;
         readonly static TextureFetcherLock ms_FetcherLock;
         readonly static ObjectPool<Material> ms_MaterialPool;
+        readonly static ObjectPool<GameObject> ms_ObjectPool;
         float m_MaterialBlend;
         object m_Tween;
         Material m_Material;
         bool m_FetchingTile;
         float m_MaterialEmission;
+        CoroutineRunner m_Runnable;
+        int m_ObjPoolIndex;
 
         public MRKTileID ID { get; private set; }
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
         public bool Dead { get; set; }
+
+        public static TextureFetcherLock FetcherLock => ms_FetcherLock;
 
         static MRKTile() {
             ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>();
@@ -37,58 +42,47 @@ namespace MRK {
             ms_RemoteFetcher = new MRKRemoteTileFetcher();
             ms_FetcherLock = new TextureFetcherLock();
             ms_MaterialPool = new ObjectPool<Material>(() => {
-                return Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
+                return UnityEngine.Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
             });
+            ms_ObjectPool = new ObjectPool<GameObject>(() => {
+                GameObject obj = new GameObject();
+                obj.layer = 6; //PostProcessing
+                obj.AddComponent<MeshFilter>().mesh = ms_TileMesh;
+                //obj.AddComponent<MeshRenderer>();
+
+                return obj;
+            }, true);
         }
 
-        public MRKTile() {
+        static void CreateTileMesh(float size) {
+            float halfSize = size / 2;
+            ms_TileMesh = new Mesh {
+                vertices = new Vector3[4] { new Vector3(-halfSize, 0f, -halfSize), new Vector3(halfSize, 0f, -halfSize), 
+                    new Vector3(halfSize, 0, halfSize), new Vector3(-halfSize, 0, halfSize) },
+                normals = new Vector3[4] { Vector3.up, Vector3.up, Vector3.up, Vector3.up },
+                triangles = new int[6] { 0, 2, 1, 0, 3, 2 },
+                uv = new Vector2[4] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) }
+            };
         }
 
         public void InitTile(MRKMap map, MRKTileID id) {
             m_Map = map;
             ID = id;
-            //RelativeScale = 1f / Mathf.Cos(Mathf.Deg2Rad * (float)map.CenterLatLng.x);
             Rect = MRKMapUtils.TileBounds(id);
 
+            if (ms_TileMesh == null) {
+                CreateTileMesh(m_Map.TileSize);
+            }
+
             if (Obj == null) {
-                Obj = new GameObject();
-                Obj.layer = 6; //PostProcessing
+                Reference<int> objIdx = new Reference<int>();
+                Obj = ms_ObjectPool.Rent(objIdx);
+                m_ObjPoolIndex = objIdx.Value;
+                Obj.SetActive(true);
                 Obj.transform.parent = map.transform;
-                Obj.name = $"{id.Z} / {id.X} / {id.Y} inited";
-                m_MeshFilter = Obj.AddComponent<MeshFilter>();
+                Obj.name = $"{objIdx.Value} {id.Z} / {id.X} / {id.Y} inited";
+
                 m_MeshRenderer = Obj.AddComponent<MeshRenderer>();
-
-                if (ms_TileMesh == null) {
-                    float halfSize = m_Map.TileSize / 2;
-
-                    Vector3[] verts = new Vector3[4];
-                    Vector3[] norms = new Vector3[4];
-                    verts[0] = new Vector3(-halfSize, 0, -halfSize);
-                    verts[1] = new Vector3(halfSize, 0, -halfSize);
-                    verts[2] = new Vector3(halfSize, 0, halfSize);
-                    verts[3] = new Vector3(-halfSize, 0, halfSize);
-                    norms[0] = Vector3.up;
-                    norms[1] = Vector3.up;
-                    norms[2] = Vector3.up;
-                    norms[3] = Vector3.up;
-
-                    int[] trilist = new int[6] { 0, 2, 1, 0, 3, 2 };
-
-                    Vector2[] uvlist = new Vector2[4] {
-                        new Vector2(0,0),
-                        new Vector2(1,0),
-                        new Vector2(1,1),
-                        new Vector2(0,1)
-                    };
-
-                    ms_TileMesh = new Mesh();
-                    ms_TileMesh.vertices = verts;
-                    ms_TileMesh.normals = norms;
-                    ms_TileMesh.triangles = trilist;
-                    ms_TileMesh.uv = uvlist;
-                }
-
-                m_MeshFilter.mesh = ms_TileMesh;
                 m_Material = ms_MaterialPool.Rent();
                 m_MaterialEmission = m_Map.GetDesiredTilesetEmission();
                 m_MeshRenderer.material = m_Material;
@@ -100,8 +94,13 @@ namespace MRK {
                     SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
                 }
                 else {
-                    if (m_Map.gameObject.activeInHierarchy)
-                        m_Map.StartCoroutine(FetchTexture());
+                    m_Runnable = Obj.GetComponent<CoroutineRunner>();
+                    if (m_Runnable == null)
+                        m_Runnable = Obj.AddComponent<CoroutineRunner>();
+
+                    m_Runnable.enabled = true;
+                    if (Obj.activeInHierarchy)
+                        m_Runnable.Run(FetchTexture());
                 }
             }
         }
@@ -109,9 +108,27 @@ namespace MRK {
         IEnumerator FetchTexture() {
             SetLoadingTexture();
 
+            int tileHash = ID.GetHashCode();
+
             while (ms_FetcherLock.Recursion > 2) {
                 yield return new WaitForSeconds(0.2f);
             }
+
+            //check for zoom/pan velocity
+            EGRCameraFlat cam = EGRMain.Instance.ActiveEGRCamera as EGRCameraFlat;
+            if (cam == null) {
+                yield break; //we're not even in the map, but still trying to fetch texture?
+            }
+
+            //DateTime t0 = DateTime.Now;
+            float sqrMag;
+            do {
+                sqrMag = cam.GetVelocity().sqrMagnitude;
+                yield return new WaitForSeconds(0.2f);
+            }
+            while (sqrMag > 5f*5f);
+
+            //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
 
             //cancel fetch if we got disposed, kinda evil eh?
             if (Obj == null || !Obj.activeInHierarchy) {
@@ -120,9 +137,8 @@ namespace MRK {
 
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion++;
+                //Debug.Log($"{m_ObjPoolIndex} Increment");
             }
-
-            yield return new WaitForSeconds(0.2f * Random.value);
 
             //incase we get destroyed while loading, we MUST decrement our lock somewhere
             m_FetchingTile = true;
@@ -135,6 +151,7 @@ namespace MRK {
 
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion--;
+                //Debug.Log($"{m_ObjPoolIndex} Decrement");
             }
 
             m_FetchingTile = false;
@@ -181,11 +198,26 @@ namespace MRK {
             if (m_Tween != null)
                 DOTween.Kill(m_Tween);
 
+            //elbt3 da 3amel 2l2, destroy!!
+            if (m_MeshRenderer != null) {
+                m_MeshRenderer.material = null;
+                UnityEngine.Object.DestroyImmediate(m_MeshRenderer);
+            }
+
             ms_MaterialPool.Free(m_Material);
+
+            Obj.SetActive(false);
+            ms_ObjectPool.Free(Obj);
+
+            if (m_Runnable != null) {
+                m_Runnable.enabled = false;
+                //Object.DestroyImmediate(m_Runnable);
+            }
 
             if (m_FetchingTile) {
                 lock (ms_FetcherLock) {
                     ms_FetcherLock.Recursion--;
+                    //Debug.Log($"{m_ObjPoolIndex} Decrement");
                 }
             }
         }

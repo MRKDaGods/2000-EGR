@@ -278,6 +278,10 @@ namespace MRK {
 #endif
         }
 
+        public Vector3 GetVelocity() {
+            return new Vector3((float)(m_TargetLatLong.x - m_CurrentLatLong.x), (float)(m_TargetLatLong.y - m_CurrentLatLong.y), m_TargetZoom - m_CurrentZoom) * 10f;
+        }
+
         void OnMapZoomUpdated(int z1, int z2) {
             Debug.Log($"Zoom updated from {z1} to {z2}");
 

@@ -62,10 +62,18 @@ namespace MRK {
         }
 
         void Start() {
+			//m_TileMaterial.SetTexture("_SecTex", m_LoadingTexture);
+
 			if (m_AutoInit) {
 				Initialize(m_CenterLatLng, Mathf.FloorToInt(m_Zoom));
 			}
 		}
+
+#if MRK_DEBUG_FETCHER_LOCK
+		void Update() {
+			Debug.Log(MRKTile.FetcherLock.Recursion);
+        }
+#endif
 
         public void Initialize(Vector2d center, int zoom) {
 			m_AbsoluteZoom = zoom;
@@ -114,7 +122,7 @@ namespace MRK {
 				//tile.Dead = true;
 				tile.OnDestroy();
 				//m_TilePool.Free(tile);
-				Destroy(tile.Obj);
+				//Destroy(tile.Obj);
 				m_Tiles.Remove(tile);
             }
 
@@ -137,15 +145,14 @@ namespace MRK {
 			foreach (MRKTileID tileID in m_SortedTileIDs) {
 				MRKTileID realID = m_SortedToActiveIDs[tileID];
 				MRKTile tile = m_Tiles.Find(x => x.ID == realID);
-				if (tile == null) {
+				if (tile == null)
 					tile = new MRKTile();
-				}
+
 				tile.InitTile(this, realID);
 
 				RectD rect = tile.Rect;
-				Vector3 position = new Vector3((float)(rect.Center.x - m_CenterMercator.x) * m_WorldRelativeScale * scaleFactor, 
-					 0f, (float)(rect.Center.y - m_CenterMercator.y) * m_WorldRelativeScale * scaleFactor);
-
+				Vector3 position = new Vector3((float)(rect.Center.x - m_CenterMercator.x) * m_WorldRelativeScale * scaleFactor, 0f,
+					(float)(rect.Center.y - m_CenterMercator.y) * m_WorldRelativeScale * scaleFactor);
 				tile.Obj.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 				tile.Obj.transform.localPosition = position;
 				tile.Obj.transform.SetSiblingIndex(siblingIdx++);

@@ -38,7 +38,6 @@ namespace MRK.UI {
         NavButton[] m_NavButtons;
         Image m_BaseBg;
         readonly GameObject[] m_Regions;
-        readonly GameObject[] m_Titles;
         EGRScreen[] m_RegionScreens;
         Scrollbar m_ActiveScroll;
         bool m_Down;
@@ -67,7 +66,6 @@ namespace MRK.UI {
 
         public EGRScreenMain() {
             m_Regions = new GameObject[4];
-            m_Titles = new GameObject[3];
         }
 
         protected override void OnScreenInit() {
@@ -96,7 +94,6 @@ namespace MRK.UI {
             m_PageCount = m_Regions.Length; // Mathf.CeilToInt(m_Texts.Length / 3f);
 
             UpdateNavButtonsVisibility();
-            UpdateTitleVisibility();
         }
 
         protected override void OnScreenShow() {
@@ -253,6 +250,10 @@ namespace MRK.UI {
         }
 
         public void ProcessAction(int s, int idx, string txt) {
+            //do not proceed if we're still transitioning from General->Globe
+            if (Client.InitialModeTransition)
+                return;
+
             Client.SetPostProcessState(true);
 
             m_RegionScreens[m_CurrentPage].HideScreen(null, 0.1f, true);
@@ -266,22 +267,6 @@ namespace MRK.UI {
             }, 0.1f, true);
 
             Debug.Log($"DOWN {s} - {idx} - {txt}");
-        }
-
-        int GetDesiredTitleIdx(float pos) {
-            if (pos <= 0.04794369f)
-                return 2;
-
-            if (pos <= 0.4221286f)
-                return 1;
-
-            return 0;
-        }
-
-        void UpdateTitleVisibility() {
-            for (int i = 0; i < m_Titles.Length; i++) {
-                //m_Titles[i].SetActive(i == m_CurrentTitleIdx);
-            }
         }
 
         void OnScrollValueChanged(float newVal) {
