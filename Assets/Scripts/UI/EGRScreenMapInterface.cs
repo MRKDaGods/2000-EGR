@@ -395,8 +395,9 @@ namespace MRK.UI {
             //hide bg since it's only for designing
             GetElement<Image>(Images.BaseBg).gameObject.SetActive(false);
 
-            m_Map.OnEGRMapUpdated += OnMapUpdated;
-            m_Map.OnEGRMapZoomUpdated += OnMapZoomUpdated;
+            m_Map.OnMapUpdated += OnMapUpdated;
+            m_Map.OnMapFullyUpdated += OnMapFullyUpdated;
+            m_Map.OnMapZoomUpdated += OnMapZoomUpdated;
 
             Client.RegisterMapModeDelegate(OnMapModeChanged);
             Client.RegisterControllerReceiver(OnControllerMessageReceived);
@@ -410,8 +411,9 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenHide() {
-            m_Map.OnEGRMapUpdated -= OnMapUpdated;
-            m_Map.OnEGRMapZoomUpdated -= OnMapZoomUpdated;
+            m_Map.OnMapUpdated -= OnMapUpdated;
+            m_Map.OnMapFullyUpdated -= OnMapFullyUpdated;
+            m_Map.OnMapZoomUpdated -= OnMapZoomUpdated;
 
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
@@ -566,22 +568,6 @@ namespace MRK.UI {
             HideScreen();
         }
 
-        void OnMapZoomUpdated(int oldZoom, int newZoom) {
-            if (m_TransitionImg.gameObject.activeInHierarchy)
-                return;
-
-            Debug.Log($"Zoom updated {oldZoom} -> {newZoom}");
-            SetTransitionTex(Client.CaptureScreenBuffer());
-        }
-
-        Vector2d GetMinGeoPos() {
-            return m_Map.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(0f, 0f, Client.ActiveCamera.transform.localPosition.y)));
-        }
-
-        Vector2d GetMaxGeoPos() {
-            return m_Map.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Client.ActiveCamera.transform.localPosition.y)));
-        }
-
         void OnMapUpdated() {
             if (Client.MapMode != EGRMapMode.Flat)
                 return;
@@ -593,7 +579,17 @@ namespace MRK.UI {
                 float scale = (float)MRKMapUtils.LatLonToMeters(delta).x / (Screen.width * 0.0264583333f);
                 m_ScaleBar.UpdateScale(m_Map.Zoom, scale);
             }
+        }
 
+        void OnMapZoomUpdated(int oldZoom, int newZoom) {
+            if (m_TransitionImg.gameObject.activeInHierarchy)
+                return;
+
+            Debug.Log($"Zoom updated {oldZoom} -> {newZoom}");
+            SetTransitionTex(Client.CaptureScreenBuffer());
+        }
+
+        void OnMapFullyUpdated() {
             if (m_Map.Zoom < 10f) {
                 List<EGRPlaceMarker> buffer = new List<EGRPlaceMarker>();
                 foreach (EGRPlaceMarker marker in m_ActiveMarkers.Values)
@@ -609,17 +605,6 @@ namespace MRK.UI {
                 return;
 
             m_LastFetchRequestTime = Time.time;
-
-            //Vector2d minGeoPos = GetMinGeoPos();
-            //Vector2d maxGeoPos = GetMaxGeoPos();
-
-            //Debug.Log("Fetching places for min(" + minGeoPos.ToString() + "), max(" + maxGeoPos.ToString() + ")");
-
-            /*if (!Client.NetFetchPlaces(minGeoPos.x, minGeoPos.y, maxGeoPos.x, maxGeoPos.y, m_Map.AbsoluteZoom, OnFetchPlaces)) {
-                Debug.LogError("Cannot fetch places");
-            } */
-
-            //Client.PlaceManager.FetchPlacesInRegion(minGeoPos.x, minGeoPos.y, maxGeoPos.x, maxGeoPos.y, AddMarker);
 
             foreach (MRKTile tile in m_Map.Tiles) {
                 Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched);

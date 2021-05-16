@@ -27,12 +27,10 @@ namespace MRK {
         bool m_FetchingTile;
         float m_MaterialEmission;
         CoroutineRunner m_Runnable;
-        int m_ObjPoolIndex;
 
         public MRKTileID ID { get; private set; }
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
-        public bool Dead { get; set; }
 
         public static TextureFetcherLock FetcherLock => ms_FetcherLock;
 
@@ -77,7 +75,6 @@ namespace MRK {
             if (Obj == null) {
                 Reference<int> objIdx = new Reference<int>();
                 Obj = ms_ObjectPool.Rent(objIdx);
-                m_ObjPoolIndex = objIdx.Value;
                 Obj.SetActive(true);
                 Obj.transform.parent = map.transform;
                 Obj.name = $"{objIdx.Value} {id.Z} / {id.X} / {id.Y} inited";
@@ -108,8 +105,6 @@ namespace MRK {
         IEnumerator FetchTexture() {
             SetLoadingTexture();
 
-            int tileHash = ID.GetHashCode();
-
             while (ms_FetcherLock.Recursion > 2) {
                 yield return new WaitForSeconds(0.2f);
             }
@@ -123,7 +118,7 @@ namespace MRK {
             //DateTime t0 = DateTime.Now;
             float sqrMag;
             do {
-                sqrMag = cam.GetVelocity().sqrMagnitude;
+                sqrMag = cam.GetMapVelocity().sqrMagnitude;
                 yield return new WaitForSeconds(0.2f);
             }
             while (sqrMag > 5f*5f);

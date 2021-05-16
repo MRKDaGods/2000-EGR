@@ -99,6 +99,7 @@ namespace MRK {
 
             Screen.fullScreen = false;
             Application.targetFrameRate = 60;
+            Application.runInBackground = true;
             Physics.autoSimulation = false;
 
             m_Loggers.Add(new UnityLogger());
@@ -108,6 +109,8 @@ namespace MRK {
 
             m_GlobeCamera = m_GlobalMap.GetComponent<EGRCameraGlobe>();
             m_FlatCamera = m_FlatMap.GetComponent<EGRCameraFlat>();
+            m_FlatMap.SetMapController(m_FlatCamera);
+
             m_GeneralCamera = GameObject.Find("EGRGeneralCamera").GetComponent<EGRCameraGeneral>();
 
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();

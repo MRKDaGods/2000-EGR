@@ -18,7 +18,6 @@ namespace MRK {
 		readonly List<MRKTileID> m_ActiveTileIDs;
 		readonly List<MRKTileID> m_SortedTileIDs;
 		readonly Dictionary<MRKTileID, MRKTileID> m_SortedToActiveIDs;
-		readonly ObjectPool<MRKTile> m_TilePool;
 		readonly List<MRKTile> m_Tiles;
 		int m_InitialZoom;
 		int m_AbsoluteZoom;
@@ -36,9 +35,12 @@ namespace MRK {
 		float m_TileSize = 100f;
 		[SerializeField]
 		float[] m_DesiredTilesetEmission;
+		IMRKMapController m_MapController;
+		bool m_AwaitingMapFullUpdateEvent;
 
-		public event Action OnEGRMapUpdated;
-		public event Action<int, int> OnEGRMapZoomUpdated;
+		public event Action OnMapUpdated;
+		public event Action<int, int> OnMapZoomUpdated;
+		public event Action OnMapFullyUpdated;
 
 		public Vector2d CenterLatLng => m_CenterLatLng;
 		public float WorldRelativeScale => m_WorldRelativeScale;
@@ -57,11 +59,10 @@ namespace MRK {
 			m_ActiveTileIDs = new List<MRKTileID>();
 			m_SortedTileIDs = new List<MRKTileID>();
 			m_SortedToActiveIDs = new Dictionary<MRKTileID, MRKTileID>();
-			m_TilePool = new ObjectPool<MRKTile>(null);
 			m_Tiles = new List<MRKTile>();
-        }
+		}
 
-        void Start() {
+		void Start() {
 			//m_TileMaterial.SetTexture("_SecTex", m_LoadingTexture);
 
 			if (m_AutoInit) {
@@ -69,13 +70,26 @@ namespace MRK {
 			}
 		}
 
-#if MRK_DEBUG_FETCHER_LOCK
 		void Update() {
-			Debug.Log(MRKTile.FetcherLock.Recursion);
-        }
-#endif
+			//wait for velocity to go down
+			if (m_AwaitingMapFullUpdateEvent) {
+				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
+				if (sqrMagnitude <= float.Epsilon) {
+					m_AwaitingMapFullUpdateEvent = false;
 
-        public void Initialize(Vector2d center, int zoom) {
+					//raise map full update
+					if (OnMapFullyUpdated != null) {
+						OnMapFullyUpdated();
+                    }
+                }
+            }
+
+#if MRK_DEBUG_FETCHER_LOCK
+			Debug.Log(MRKTile.FetcherLock.Recursion);
+#endif
+		}
+
+		public void Initialize(Vector2d center, int zoom) {
 			m_AbsoluteZoom = zoom;
 			m_Zoom = m_AbsoluteZoom;
 			m_InitialZoom = m_AbsoluteZoom;
@@ -87,10 +101,10 @@ namespace MRK {
 
 		public void UpdateTileset() {
 			m_Tileset = EGRSettings.GetCurrentTileset();
-        }
+		}
 
-        void UpdateScale() {
-			var referenceTileRect = MRKMapUtils.TileBounds(MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom));
+		void UpdateScale() {
+			RectD referenceTileRect = MRKMapUtils.TileBounds(MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom));
 			m_WorldRelativeScale = m_TileSize / (float)referenceTileRect.Size.x;
 		}
 
@@ -118,19 +132,15 @@ namespace MRK {
 			}
 
 			foreach (MRKTile tile in buf) {
-				//tile.Obj.SetActive(false);
-				//tile.Dead = true;
 				tile.OnDestroy();
-				//m_TilePool.Free(tile);
-				//Destroy(tile.Obj);
 				m_Tiles.Remove(tile);
-            }
+			}
 
 			foreach (MRKTileID id in m_ActiveTileIDs) {
 				MRKTileID sortedID = new MRKTileID(0, id.X - centerTile.X, id.Y - centerTile.Y);
 				m_SortedTileIDs.Add(sortedID);
 				m_SortedToActiveIDs[sortedID] = id;
-            }
+			}
 
 			m_SortedTileIDs.Sort((x, y) => {
 				int sqrMagX = x.Magnitude;
@@ -169,7 +179,7 @@ namespace MRK {
 			foreach (MRKTile tile in m_Tiles) {
 				RectD r = tile.Rect;
 
-			 	Vector3 pos = GeoToWorldPosition(MRKMapUtils.MetersToLatLon(r.Min));
+				Vector3 pos = GeoToWorldPosition(MRKMapUtils.MetersToLatLon(r.Min));
 
 				Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos); spos.y = Screen.height - spos.y;
 
@@ -182,8 +192,8 @@ namespace MRK {
 				EGRGL.DrawLine(spos, spos2, Color.red, 1.5f);
 
 				EGRGL.DrawBox(spos, spos2, Color.magenta, 1.5f);
-            }
-        }
+			}
+		}
 #endif
 
 		public void UpdateMap(Vector2d latLon, float zoom, bool force = false) {
@@ -193,12 +203,15 @@ namespace MRK {
 			//zoom didnt change
 			if (!force && Math.Abs(m_Zoom - zoom) <= Mathf.Epsilon && !latLon.IsNotEqual(m_CenterLatLng)) return;
 
+			//we are raising the full update event sometime soon
+			m_AwaitingMapFullUpdateEvent = true;
+
 			int newZoom = Mathf.FloorToInt(zoom);
 			int oldZoom = AbsoluteZoom;
 			bool egrMapZoomUpdated = newZoom != oldZoom;
 			if (egrMapZoomUpdated) {
-				if (OnEGRMapZoomUpdated != null)
-					OnEGRMapZoomUpdated(oldZoom, newZoom);
+				if (OnMapZoomUpdated != null)
+					OnMapZoomUpdated(oldZoom, newZoom);
 			}
 
 			bool egrMapUpdated = latLon.IsNotEqual(CenterLatLng) || egrMapZoomUpdated || Mathf.Abs(zoom - m_Zoom) > Mathf.Epsilon;
@@ -234,8 +247,8 @@ namespace MRK {
 
 			//EGR
 			if (egrMapUpdated) {
-				if (OnEGRMapUpdated != null)
-					OnEGRMapUpdated();
+				if (OnMapUpdated != null)
+					OnMapUpdated();
 			}
 		}
 
@@ -256,6 +269,10 @@ namespace MRK {
 				return m_DesiredTilesetEmission[idx];
 
 			return 1f;
-        }
+		}
+
+		public void SetMapController(IMRKMapController controller) {
+			m_MapController = controller;
+		}
 	}
 }
