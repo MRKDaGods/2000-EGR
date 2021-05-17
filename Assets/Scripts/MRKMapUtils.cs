@@ -15,6 +15,12 @@ namespace MRK {
 		public const double LONGITUDE_MAX = 180;
 		public const double WEBMERC_MAX = 20037508.342789244;
 
+		readonly static Dictionary<int, RectD> ms_TileBoundsCache;
+
+		static MRKMapUtils() {
+			ms_TileBoundsCache = new Dictionary<int, RectD>();
+        }
+
 		public static MRKTileID CoordinateToTileId(Vector2d coord, int zoom) {
 			double lat = coord.x;
 			double lng = coord.y;
@@ -28,9 +34,19 @@ namespace MRK {
 		}
 
 		public static RectD TileBounds(MRKTileID unwrappedTileId) {
-			var min = PixelsToMeters(new Vector2d(unwrappedTileId.X * TILE_SIZE, unwrappedTileId.Y * TILE_SIZE), unwrappedTileId.Z);
-			var max = PixelsToMeters(new Vector2d((unwrappedTileId.X + 1) * TILE_SIZE, (unwrappedTileId.Y + 1) * TILE_SIZE), unwrappedTileId.Z);
-			return new RectD(min, max - min);
+			int hash = unwrappedTileId.GetHashCode();
+			if (ms_TileBoundsCache.ContainsKey(hash))
+				return ms_TileBoundsCache[hash];
+
+			Vector2d min = PixelsToMeters(new Vector2d(unwrappedTileId.X * TILE_SIZE, unwrappedTileId.Y * TILE_SIZE), unwrappedTileId.Z);
+			Vector2d max = PixelsToMeters(new Vector2d((unwrappedTileId.X + 1) * TILE_SIZE, (unwrappedTileId.Y + 1) * TILE_SIZE), unwrappedTileId.Z);
+			RectD rect = new RectD(min, max - min);
+
+			if (ms_TileBoundsCache.Count > 10000)
+				ms_TileBoundsCache.Clear();
+
+			ms_TileBoundsCache[hash] = rect;
+			return rect;
 		}
 
 		static double Resolution(int zoom) {

@@ -13,8 +13,10 @@ namespace MRK {
         Image m_Sprite;
         static EGRScreenMapInterface ms_MapInterface;
         static Canvas ms_Canvas;
+        float m_InitialMarkerWidth;
 
         public EGRPlace Place { get; private set; }
+        public int TileHash { get; set; }
 
         void Awake() {
             m_Text = GetComponentInChildren<TextMeshProUGUI>();
@@ -25,6 +27,8 @@ namespace MRK {
                 ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
                 ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
             }
+
+            m_InitialMarkerWidth = m_Text.rectTransform.rect.width;
         }
 
         public void SetPlace(EGRPlace place) {
@@ -33,6 +37,7 @@ namespace MRK {
 
             if (Place != null) {
                 m_Text.text = Place.Name;
+                m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.preferredWidth, m_InitialMarkerWidth));
                 m_Sprite.sprite = ms_MapInterface.GetSpriteForPlaceType(Place.Types[Mathf.Min(2, Place.Types.Length) - 1]);
 
                 m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
@@ -53,7 +58,7 @@ namespace MRK {
             }
 
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(Client.FlatMap.Zoom / 21f);
-            m_Sprite.color = Color.white.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(Client.FlatMap.Zoom / 21f));
+            m_Sprite.color = Color.white.AlterAlpha(Mathf.Lerp(0f, ms_MapInterface.EvaluateMarkerOpacity(Client.FlatMap.Zoom / 21f), m_Fade.Delta));
 
             if (!m_Fade.Done) {
                 m_Fade.Update();

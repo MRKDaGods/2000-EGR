@@ -4,12 +4,22 @@ using System.Collections.Generic;
 
 namespace MRK {
     public delegate void EGRFetchPlacesCallback(EGRPlace place);
-    public delegate void EGRFetchPlacesV2Callback(List<EGRPlace> places);
+    public delegate void EGRFetchPlacesV2Callback(List<EGRPlace> places, int tileHash);
 
     public class EGRPlaceManager : EGRBehaviour {
         struct ContextInfo {
             public ulong Context;
             public ulong CID;
+        }
+
+        class TileInfo {
+            public int Hash;
+            public MRKTileID ID;
+            public List<EGRPlace> Places;
+            public EGRFetchPlacesV2Callback ActiveCallback;
+            public RectD Bounds;
+            public Vector2d Minimum;
+            public Vector2d Maximum;
         }
 
         readonly Dictionary<ulong, RectD> m_CachedRects;
@@ -19,12 +29,16 @@ namespace MRK {
         readonly Dictionary<ulong, ContextInfo> m_CIDCtxIndex;
         readonly Random m_Rand;
 
+        readonly Dictionary<int, TileInfo> m_TileInfos;
         readonly Dictionary<int, List<EGRPlace>> m_Places;
         readonly Dictionary<int, EGRFetchPlacesV2Callback> m_ActiveRequests;
+        readonly Dictionary<int, string> m_TileHashes;
 
         public EGRPlaceManager() {
+            m_TileInfos = new Dictionary<int, TileInfo>();
             m_Places = new Dictionary<int, List<EGRPlace>>();
             m_ActiveRequests = new Dictionary<int, EGRFetchPlacesV2Callback>();
+            m_TileHashes = new Dictionary<int, string>();
 
             m_CachedRects = new Dictionary<ulong, RectD>();
             m_CachedIDs = new Dictionary<ulong, List<ContextInfo>>();
@@ -51,11 +65,33 @@ namespace MRK {
             }
         }
 
+        TileInfo GetTileInfo(MRKTileID id) {
+            int hash = id.GetHashCode();
+            if (!m_TileInfos.ContainsKey(hash)) {
+                RectD bounds = MRKMapUtils.TileBounds(id);
+                Vector2d min = MRKMapUtils.MetersToLatLon(bounds.Min);
+                Vector2d max = MRKMapUtils.MetersToLatLon(bounds.Max);
+
+                m_TileInfos[hash] = new TileInfo {
+                    Hash = hash,
+                    ID = id,
+                    Places = null,
+                    ActiveCallback = null,
+                    Bounds = bounds,
+                    Minimum = new Vector2d(max.x, min.y), //Lats are reversed
+                    Maximum = new Vector2d(min.x, max.y)
+                };
+            }
+
+            return m_TileInfos[hash];
+        }
+
         public void FetchPlacesInTile(MRKTileID tileID, EGRFetchPlacesV2Callback callback) {
-            int hash = tileID.GetHashCode();
-            if (m_Places.ContainsKey(hash)) {
+            TileInfo tileInfo = GetTileInfo(tileID);
+
+            if (tileInfo.Places != null) {
                 if (callback != null)
-                    callback(m_Places[hash]);
+                    callback(tileInfo.Places, tileInfo.Hash);
 
                 return;
             }
@@ -65,33 +101,69 @@ namespace MRK {
                 return;
             }
 
-            if (m_ActiveRequests.ContainsKey(hash)) {
+            if (tileInfo.ActiveCallback != null) {
                 //already requested
                 return;
             }
 
-            RectD rect = MRKMapUtils.TileBounds(tileID);
-            Vector2d min = MRKMapUtils.MetersToLatLon(rect.Min);
-            Vector2d max = MRKMapUtils.MetersToLatLon(rect.Max);
-            //for some reason min-max lat is inversed?
-            if (Client.NetFetchPlacesV2(hash, max.x, min.y, min.x, max.y, Client.FlatMap.AbsoluteZoom, OnFetchPlacesV2)) {
+            if (Client.NetFetchPlacesV2(tileInfo.Hash, tileInfo.Minimum.x, tileInfo.Minimum.y, tileInfo.Maximum.x, tileInfo.Maximum.y, Client.FlatMap.AbsoluteZoom, OnFetchPlacesV2)) {
                 if (callback != null)
-                    m_ActiveRequests[hash] = callback;
+                    tileInfo.ActiveCallback = callback;
             }
         }
 
         void OnFetchPlacesV2(PacketInFetchPlacesV2 response) {
-            if (m_ActiveRequests.ContainsKey(response.Hash)) {
-                m_ActiveRequests[response.Hash](response.Places);
-                m_ActiveRequests.Remove(response.Hash);
+            TileInfo tileInfo = m_TileInfos[response.Hash];
+
+            //nothing, we may have been discarded as you know
+            //search fo2, maybe we got some CIDs pre fetched earlier or something?
+            //basically carry out the EXACT server sided place check but here in our client
+            //carry out a memory search
+            foreach (KeyValuePair<int, TileInfo> pair in m_TileInfos) {
+                //skip ourselves
+                if (pair.Key == tileInfo.Hash)
+                    continue;
+
+                //skip tiles with a greater or equal zoom value
+                if (pair.Value.ID.Z >= tileInfo.ID.Z)
+                    continue;
+
+                //useless shit
+                if (pair.Value.Places == null || pair.Value.Places.Count == 0)
+                    continue;
+
+                Vector2d min = pair.Value.Minimum;
+                Vector2d max = pair.Value.Maximum;
+                //do they contain us?
+                if (tileInfo.Minimum.x >= min.x && tileInfo.Minimum.y >= min.y && tileInfo.Maximum.x <= max.x && tileInfo.Maximum.y <= max.y) {
+                    //yep!
+                    response.Places.AddRange(pair.Value.Places);
+                    //tada now we have em
+                }
             }
 
-            m_Places[response.Hash] = response.Places;
+            //TODO file search
+
+            if (tileInfo.ActiveCallback != null) {
+                tileInfo.ActiveCallback(response.Places, tileInfo.Hash);
+                tileInfo.ActiveCallback = null;
+            }
+
+            tileInfo.Places = response.Places;
+            //EGRMain.Log($"Tile[{response.Hash}] Hash -> " + response.TileHash);
 
             foreach (EGRPlace p in response.Places) {
                 string t = p.Types.Length > 1 ? p.Types[1].ToString() : "";
                 EGRMain.Log($"Received {t} - {p}");
             }
+        }
+
+        public List<EGRPlace> GetPlacesInTile(int tileHash) {
+            TileInfo tileInfo;
+            if (!m_TileInfos.TryGetValue(tileHash, out tileInfo))
+                return null;
+
+            return tileInfo.Places;
         }
 
         void OnFetchPlacesIDs(PacketInFetchPlacesIDs response) {

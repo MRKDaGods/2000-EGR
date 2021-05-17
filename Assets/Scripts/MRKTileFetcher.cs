@@ -42,7 +42,7 @@ namespace MRK {
                 yield break;
             }
 
-            UnityWebRequest req = UnityWebRequestTexture.GetTexture($"file:///{path}", true);
+            UnityWebRequest req = UnityWebRequestTexture.GetTexture($"file:///{path}", false);
             req.SendWebRequest();
 
             while (!req.isDone) {

@@ -80,6 +80,10 @@ namespace MRK {
             lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
         }
 
+        public static void SetLineMaterial(Material material) {
+            lineMaterial = material;
+        }
+
         public static void DrawLine(Vector2 start, Vector2 end, Color scolor, Color ecolor, float width) {
             if (Event.current == null)
                 return;

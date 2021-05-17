@@ -25,10 +25,17 @@ namespace MRK {
             m_FreeObjects.Add(obj);
         }
 
-        public T Rent(Reference<int> poolIndex = null) {
+        public void Reserve(int count) {
+            for (int i = 0; i < count; i++) {
+                T rented = Rent(null, true);
+                Free(rented);
+            }
+        }
+
+        public T Rent(Reference<int> poolIndex = null, bool forceNew = false) {
             T use = default;
 
-            if (m_FreeObjects.Count > 0) {
+            if (m_FreeObjects.Count > 0 && !forceNew) {
                 use = m_FreeObjects[0];
                 m_FreeObjects.Remove(use);
             }

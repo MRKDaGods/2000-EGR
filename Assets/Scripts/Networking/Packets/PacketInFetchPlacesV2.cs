@@ -5,6 +5,7 @@ namespace MRK.Networking.Packets {
     public class PacketInFetchPlacesV2 : Packet {
         public int Hash { get; private set; }
         public List<EGRPlace> Places { get; private set; }
+        public string TileHash { get; private set; }
 
         public PacketInFetchPlacesV2() : base(PacketNature.In, PacketType.PLCFETCHV2) {
         }
@@ -37,6 +38,8 @@ namespace MRK.Networking.Packets {
 
                 Places.Add(new EGRPlace(name, type, cid, addr, lat, lng, ex, chain, types));
             }
+
+            TileHash = stream.ReadString();
         }
     }
 }

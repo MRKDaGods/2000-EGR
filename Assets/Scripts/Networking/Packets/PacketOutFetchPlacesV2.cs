@@ -19,6 +19,7 @@
 
         public override void Write(PacketDataStream stream) {
             stream.WriteInt32(m_Hash);
+            stream.WriteString(""); //tile hash
             stream.WriteDouble(m_MinLat);
             stream.WriteDouble(m_MinLng);
             stream.WriteDouble(m_MaxLat);

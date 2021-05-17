@@ -9,6 +9,7 @@ namespace MRK {
 
         public bool Done => m_Delta >= 1f;// || Current == m_Final;
         public Color Current { get; private set; }
+        public float Delta => m_Delta;
 
         public EGRColorFade(Color i, Color f, float s = 1f) {
             m_Initial = i;

@@ -321,7 +321,7 @@ namespace MRK.UI {
         float m_LastTimeUpdate;
         float m_LastFetchRequestTime;
         readonly Dictionary<string, EGRPlaceMarker> m_ActiveMarkers;
-        readonly List<EGRPlaceMarker> m_FreeMarkers;
+        readonly ObjectPool<EGRPlaceMarker> m_MarkerPool;
         [SerializeField]
         AnimationCurve m_MarkerScaleCurve;
         [SerializeField]
@@ -338,6 +338,8 @@ namespace MRK.UI {
         [SerializeField]
         MarkerSprite[] m_MarkerSprites;
         bool m_MouseDown;
+        readonly HashSet<int> m_PendingDestroyedTiles;
+        readonly Dictionary<int, bool> m_TilePlaceFetchStates;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -347,8 +349,13 @@ namespace MRK.UI {
 
         public EGRScreenMapInterface() {
             m_ActiveMarkers = new Dictionary<string, EGRPlaceMarker>();
-            m_FreeMarkers = new List<EGRPlaceMarker>();
+            m_MarkerPool = new ObjectPool<EGRPlaceMarker>(() => {
+                return Instantiate(m_MarkerPrefab, transform).AddComponent<EGRPlaceMarker>();
+            });
+
             m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
+            m_PendingDestroyedTiles = new HashSet<int>();
+            m_TilePlaceFetchStates = new Dictionary<int, bool>();
         }
 
         protected override void OnScreenInit() {
@@ -402,6 +409,8 @@ namespace MRK.UI {
             Client.RegisterMapModeDelegate(OnMapModeChanged);
             Client.RegisterControllerReceiver(OnControllerMessageReceived);
 
+            EventManager.Register<EGREventTileDestroyed>(OnTileDestroyed);
+
             //map mode might've changed when visible=false
             OnMapModeChanged(Client.MapMode);
 
@@ -418,7 +427,9 @@ namespace MRK.UI {
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
 
-            Manager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen();
+            EventManager.Unregister<EGREventTileDestroyed>(OnTileDestroyed);
+
+            Manager.MainScreen.ShowScreen();
 
             Client.SetPostProcessState(false);
             m_ContextLabel.gameObject.SetActive(false);
@@ -504,7 +515,7 @@ namespace MRK.UI {
             m_TransitionImg.gameObject.SetActive(true);
 
             m_TransitionImg.DOColor(Color.white.AlterAlpha(0f), 0.6f)
-                .ChangeStartValue(Color.white.AlterAlpha(0.8f))
+                .ChangeStartValue(Color.white.AlterAlpha(1f))
                 .SetEase(Ease.Linear)
                 .OnComplete(() => {
                     m_TransitionImg.gameObject.SetActive(false);
@@ -606,30 +617,61 @@ namespace MRK.UI {
 
             m_LastFetchRequestTime = Time.time;
 
+            m_TilePlaceFetchStates.Clear();
+
             foreach (MRKTile tile in m_Map.Tiles) {
+                m_TilePlaceFetchStates[tile.ID.GetHashCode()] = false;
                 Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched);
             }
         }
 
-        void OnPlacesFetched(List<EGRPlace> places) {
+        void OnPlacesFetched(List<EGRPlace> places, int tileHash) {
             foreach (EGRPlace place in places) {
-                AddMarker(place);
+                AddMarker(place, tileHash);
+            }
+
+            m_TilePlaceFetchStates[tileHash] = true;
+            foreach (KeyValuePair<int, bool> pair in m_TilePlaceFetchStates) {
+                if (!pair.Value) {
+                    return;
+                }
+            }
+
+            //All places have been fetched
+            //process pending destroy stuff
+            lock (m_PendingDestroyedTiles) {
+                foreach (int hash in m_PendingDestroyedTiles) {
+                    List<EGRPlace> _places = Client.PlaceManager.GetPlacesInTile(hash);
+                    //no places?
+                    if (_places == null || _places.Count == 0)
+                        continue;
+
+                    foreach (EGRPlace place in _places) {
+                        //check if place is actually owned by tile and not superceeded by another
+                        EGRPlaceMarker marker;
+                        if (!m_ActiveMarkers.TryGetValue(place.CID, out marker))
+                            continue;
+
+                        if (marker.TileHash == hash) {
+                            FreeMarker(marker);
+                        }
+                    }
+                }
+
+                m_PendingDestroyedTiles.Clear();
             }
         }
 
-        void AddMarker(EGRPlace place) {
-            if (m_ActiveMarkers.ContainsKey(place.CID)) {
+        void AddMarker(EGRPlace place, int tileHash) {
+            EGRPlaceMarker _marker;
+            if (m_ActiveMarkers.TryGetValue(place.CID, out _marker)) {
+                //we must associate each marker to a tile hash
+                _marker.TileHash = tileHash;
                 return;
             }
 
-            EGRPlaceMarker marker;
-            if (m_FreeMarkers.Count > 0) {
-                marker = m_FreeMarkers[0];
-                m_FreeMarkers.RemoveAt(0);
-            }
-            else
-                marker = Instantiate(m_MarkerPrefab, transform).AddComponent<EGRPlaceMarker>();
-
+            EGRPlaceMarker marker = m_MarkerPool.Rent();
+            marker.TileHash = tileHash;
             marker.SetPlace(place);
             m_ActiveMarkers[place.CID] = marker;
         }
@@ -637,8 +679,19 @@ namespace MRK.UI {
         void FreeMarker(EGRPlaceMarker marker) {
             EGRPlaceMarker mrk = m_ActiveMarkers[marker.Place.CID];
             m_ActiveMarkers.Remove(marker.Place.CID);
+            mrk.TileHash = -1;
             mrk.SetPlace(null);
-            m_FreeMarkers.Add(mrk);
+            m_MarkerPool.Free(mrk);
+        }
+
+        public void WarmUpMarkers() {
+            m_MarkerPool.Reserve(100);
+        }
+
+        void OnTileDestroyed(EGREventTileDestroyed evt) {
+            lock (m_PendingDestroyedTiles) {
+                m_PendingDestroyedTiles.Add(evt.Tile.ID.GetHashCode());
+            }
         }
 
         /* void OnFetchPlaces(PacketInFetchPlaces response) {

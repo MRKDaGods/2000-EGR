@@ -1,4 +1,4 @@
-#define MRK_RENDER_TILE_BOUNDS
+//#define MRK_RENDER_TILE_BOUNDS
 
 using System;
 using System.Collections;
@@ -133,6 +133,10 @@ namespace MRK {
 
 			foreach (MRKTile tile in buf) {
 				tile.OnDestroy();
+
+				//tell the map interface to dispose markers owned by such tiles
+				EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile));
+
 				m_Tiles.Remove(tile);
 			}
 

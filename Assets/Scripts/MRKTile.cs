@@ -87,9 +87,6 @@ namespace MRK {
                 if (ID.Stationary) {
                     SetTexture(m_Map.StationaryTexture);
                 }
-                else if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
-                    SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
-                }
                 else {
                     m_Runnable = Obj.GetComponent<CoroutineRunner>();
                     if (m_Runnable == null)
@@ -132,46 +129,50 @@ namespace MRK {
 
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion++;
-                //Debug.Log($"{m_ObjPoolIndex} Increment");
             }
 
             //incase we get destroyed while loading, we MUST decrement our lock somewhere
             m_FetchingTile = true;
 
-            string tileset = m_Map.Tileset;
-            MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
+            if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
+                SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
+            }
+            else {
+                string tileset = m_Map.Tileset;
+                MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
-            MRKTileFetcherContext context = new MRKTileFetcherContext();
-            yield return fetcher.Fetch(context, tileset, ID);
+                MRKTileFetcherContext context = new MRKTileFetcherContext();
+                yield return fetcher.Fetch(context, tileset, ID);
+
+                if (context.Error) {
+                    Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID}");
+                }
+                else {
+                    SetTexture(context.Texture);
+                    if (context.Texture != null) {
+                        if (!ms_CachedTiles.ContainsKey(tileset)) {
+                            ms_CachedTiles[tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
+                        }
+
+                        ms_CachedTiles[tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
+
+                        if (context.Texture.isReadable)
+                            MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID);
+                    }
+                }
+            }
 
             lock (ms_FetcherLock) {
                 ms_FetcherLock.Recursion--;
-                //Debug.Log($"{m_ObjPoolIndex} Decrement");
             }
 
             m_FetchingTile = false;
-
-            if (context.Error) {
-                Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID}");
-            }
-            else {
-                SetTexture(context.Texture);
-                if (context.Texture != null) {
-                    if (!ms_CachedTiles.ContainsKey(tileset)) {
-                        ms_CachedTiles[tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
-                    }
-
-                    ms_CachedTiles[tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
-
-                    if (context.Texture.isReadable)
-                        MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID);
-                }
-            }
         }
 
         public void SetLoadingTexture() {
             if (m_MeshRenderer != null) {
-                m_MeshRenderer.material.SetTexture("_SecTex", m_Map.LoadingTexture);
+                //m_MeshRenderer.material.SetTexture("_SecTex", m_Map.LoadingTexture);
+                m_MeshRenderer.material.mainTexture = m_Map.LoadingTexture;
                 m_MaterialBlend = 1f;
                 UpdateMaterialBlend();
             }
@@ -219,8 +220,8 @@ namespace MRK {
 
         void UpdateMaterialBlend() {
             if (m_MeshRenderer != null) {
-                m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
-                m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
+                //m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
+                //m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
             }
         }
     }
