@@ -163,7 +163,7 @@ namespace MRK {
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
-            m_TargetZoom += (newdeltaMag - olddeltaMag) * Time.deltaTime * 2f * EGRSettings.GetMapSensitivity();
+            m_TargetZoom += (newdeltaMag - olddeltaMag) * Time.deltaTime * EGRSettings.GetMapSensitivity();
 
             if (m_TargetZoom < 0.5f) {
                 m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());

@@ -103,7 +103,7 @@ namespace MRK {
             SetLoadingTexture();
 
             while (ms_FetcherLock.Recursion > 2) {
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.8f);
             }
 
             //check for zoom/pan velocity
@@ -113,12 +113,6 @@ namespace MRK {
             }
 
             //DateTime t0 = DateTime.Now;
-            float sqrMag;
-            do {
-                sqrMag = cam.GetMapVelocity().sqrMagnitude;
-                yield return new WaitForSeconds(0.2f);
-            }
-            while (sqrMag > 5f*5f);
 
             //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
 
@@ -133,6 +127,13 @@ namespace MRK {
 
             //incase we get destroyed while loading, we MUST decrement our lock somewhere
             m_FetchingTile = true;
+
+            float sqrMag;
+            do {
+                sqrMag = cam.GetMapVelocity().sqrMagnitude;
+                yield return new WaitForSeconds(0.1f);
+            }
+            while (sqrMag > 5f * 5f);
 
             if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
                 SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
@@ -171,8 +172,7 @@ namespace MRK {
 
         public void SetLoadingTexture() {
             if (m_MeshRenderer != null) {
-                //m_MeshRenderer.material.SetTexture("_SecTex", m_Map.LoadingTexture);
-                m_MeshRenderer.material.mainTexture = m_Map.LoadingTexture;
+                m_MeshRenderer.material.SetTexture("_SecTex", m_Map.LoadingTexture);
                 m_MaterialBlend = 1f;
                 UpdateMaterialBlend();
             }
@@ -220,8 +220,8 @@ namespace MRK {
 
         void UpdateMaterialBlend() {
             if (m_MeshRenderer != null) {
-                //m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
-                //m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
+                m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
+                m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
             }
         }
     }

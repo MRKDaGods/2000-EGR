@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MRK {
 	public class MRKMap : EGRBehaviour {
-		const int EX_N = 1, EX_S = 1, EX_W = 1, EX_E = 1;
+		const int EX_N = 2, EX_S = 2, EX_W = 2, EX_E = 2;
 
 		[SerializeField]
 		float m_Zoom;
