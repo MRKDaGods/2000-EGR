@@ -24,6 +24,8 @@ namespace MRK {
         MRKTilesetProvider[] m_TilesetProviders;
 
         public static MRKTileRequestor Instance { get; private set; }
+        public MRKTilesetProvider[] TilesetProviders => m_TilesetProviders;
+        public MRKFileTileFetcher FileTileFetcher => m_FileFetcher;
 
         public MRKTileRequestor() {
             m_QueuedTiles = new ConcurrentQueue<CachedTileInfo>();

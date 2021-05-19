@@ -12,6 +12,9 @@ namespace MRK.UI {
         EGRUIMultiSelectorSettings m_SensitivitySelector;
         EGRUIMultiSelectorSettings m_StyleSelector;
 
+        public override bool CanChangeBar => true;
+        public override uint BarColor => 0xFF000000;
+
         protected override void OnScreenInit() {
             base.OnScreenInit();
 

@@ -16,6 +16,8 @@ namespace MRK.UI {
         bool m_GraphicsModified;
 
         protected override string m_LayoutPath => "Scroll View/Viewport/Content/Layout";
+        public override bool CanChangeBar => true;
+        public override uint BarColor => 0xFF000000;
 
         protected override void OnScreenInit() {
             base.OnScreenInit();

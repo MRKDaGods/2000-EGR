@@ -21,7 +21,7 @@ namespace MRK {
     }
 
     public class MRKFileTileFetcher : MRKTileFetcher {
-        string GetFolderPath(string tileSet) {
+        public string GetFolderPath(string tileSet) {
             return $"{Application.persistentDataPath}\\Tiles\\{tileSet}";
         }
 
@@ -51,7 +51,7 @@ namespace MRK {
 
             if (req.result != UnityWebRequest.Result.Success) {
                 context.Error = true;
-                Debug.Log(req.error);
+                Debug.Log(req.error + req.downloadHandler.error);
                 yield break;
             }
 

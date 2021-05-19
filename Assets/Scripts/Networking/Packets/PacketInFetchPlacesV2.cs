@@ -4,7 +4,7 @@ namespace MRK.Networking.Packets {
     [PacketRegInfo(PacketNature.In, PacketType.PLCFETCHV2)]
     public class PacketInFetchPlacesV2 : Packet {
         public int Hash { get; private set; }
-        public List<EGRPlace> Places { get; private set; }
+        public HashSet<EGRPlace> Places { get; private set; }
         public string TileHash { get; private set; }
 
         public PacketInFetchPlacesV2() : base(PacketNature.In, PacketType.PLCFETCHV2) {
@@ -14,7 +14,7 @@ namespace MRK.Networking.Packets {
             Hash = stream.ReadInt32();
 
             int len = stream.ReadInt32();
-            Places = new List<EGRPlace>(len);
+            Places = new HashSet<EGRPlace>();
 
             for (int i = 0; i < len; i++) {
                 string name = stream.ReadString();

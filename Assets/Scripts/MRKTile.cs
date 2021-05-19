@@ -27,10 +27,12 @@ namespace MRK {
         bool m_FetchingTile;
         float m_MaterialEmission;
         CoroutineRunner m_Runnable;
+        int m_SiblingIndex;
 
         public MRKTileID ID { get; private set; }
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
+        public int SiblingIndex => m_SiblingIndex;
 
         public static TextureFetcherLock FetcherLock => ms_FetcherLock;
 
@@ -63,9 +65,10 @@ namespace MRK {
             };
         }
 
-        public void InitTile(MRKMap map, MRKTileID id) {
+        public void InitTile(MRKMap map, MRKTileID id, int siblingIdx) {
             m_Map = map;
             ID = id;
+            m_SiblingIndex = siblingIdx;
             Rect = MRKMapUtils.TileBounds(id);
 
             if (ms_TileMesh == null) {
@@ -86,6 +89,9 @@ namespace MRK {
 
                 if (ID.Stationary) {
                     SetTexture(m_Map.StationaryTexture);
+                }
+                else if (m_SiblingIndex < 5 && ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
+                    SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
                 }
                 else {
                     m_Runnable = Obj.GetComponent<CoroutineRunner>();

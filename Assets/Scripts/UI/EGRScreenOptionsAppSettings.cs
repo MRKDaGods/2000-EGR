@@ -8,6 +8,8 @@ namespace MRK.UI {
         Image m_Background;
 
         protected override bool m_IsRTL => false;
+        public override bool CanChangeBar => true;
+        public override uint BarColor => 0xFF000000;
 
         protected override void OnScreenInit() {
             base.OnScreenInit();

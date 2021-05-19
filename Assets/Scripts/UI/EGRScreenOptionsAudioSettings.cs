@@ -9,6 +9,9 @@ using UnityEngine.UI;
 
 namespace MRK.UI {
     public class EGRScreenOptionsAudioSettings : EGRScreenAnimatedLayout {
+        public override bool CanChangeBar => true;
+        public override uint BarColor => 0xFF000000;
+
         protected override void OnScreenInit() {
             base.OnScreenInit();
 

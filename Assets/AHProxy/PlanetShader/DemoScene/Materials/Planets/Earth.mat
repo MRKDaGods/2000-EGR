@@ -80,11 +80,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 30043056a8c241b48913af4daf2e328e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
-    - _AtmosphereDensity: 6.27
+    - _AtmosphereDensity: 6.4
     - _AtmosphereStrength: 4.88
     - _BumpScale: 5
-    - _CityLightIntensity: 1.065
+    - _CityLightIntensity: 2
     - _CityNightIntensity: 0
     - _CloudMapSpecularity: 0.284
     - _CloudPanSpeed: -0.08
@@ -96,9 +97,9 @@ Material:
     - _GlossMapScale: 0.938
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HeightmapIntensity: 1.8
+    - _HeightmapIntensity: 1.05
     - _LightAtmosphereFX: 0.5
-    - _LightStretch: 0.127
+    - _LightStretch: 0.5
     - _Metallic: 0
     - _Mode: 0
     - _NormalMapIntensity: 5

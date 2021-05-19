@@ -130,9 +130,9 @@ namespace MRK {
 
             m_Delta[0] = 0f;
 
-            var offset2D = new Vector2d(-delta.x * 3f, -delta.y * 3f) * EGRSettings.GetMapSensitivity();
-            var gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
-            var newLatLong = MRKMapUtils.MetersToLatLon(
+            Vector2d offset2D = new Vector2d(-delta.x * 3f, -delta.y * 3f) * EGRSettings.GetMapSensitivity();
+            float gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
+            Vector2d newLatLong = MRKMapUtils.MetersToLatLon(
                 MRKMapUtils.LatLonToMeters(m_Map.CenterLatLng) + (offset2D / m_Map.WorldRelativeScale) / gameobjectScalingMultiplier);
 
             //float factor = 2f * Conversions.GetTileScaleInMeters((float)m_Map.CenterLatitudeLongitude.x, m_Map.AbsoluteZoom) / m_Map.UnityTileSize;
@@ -160,6 +160,7 @@ namespace MRK {
             m_Delta[1] = 0f;
             Vector3 prevPos0 = data[0].LastPosition - m_Deltas[0];
             Vector3 prevPos1 = data[1].LastPosition - m_Deltas[1];
+
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
@@ -180,6 +181,27 @@ namespace MRK {
             }
 
             m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.7f)
+                .SetEase(Ease.OutSine);
+
+            //UpdateCenterFromZoom((data[0].LastPosition + data[1].LastPosition) / 2f);
+        }
+
+        void UpdateCenterFromZoom(Vector3 mousePos) {
+            mousePos.z = m_Camera.transform.localPosition.y;
+            m_TargetLatLong = m_CurrentLatLong + (m_Map.WorldToGeoPosition(m_Camera.ScreenToWorldPoint(mousePos)) - m_CurrentLatLong) * 0.5f;
+
+            if (m_PanTweenLat != null) {
+                DOTween.Kill(m_PanTweenLat);
+            }
+
+            if (m_PanTweenLng != null) {
+                DOTween.Kill(m_PanTweenLng);
+            }
+
+            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.7f)
+                .SetEase(Ease.OutBack);
+
+            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.7f)
                 .SetEase(Ease.OutBack);
         }
 
@@ -201,6 +223,8 @@ namespace MRK {
 
             m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.7f)
                 .SetEase(Ease.OutSine);
+
+            //UpdateCenterFromZoom(Input.mousePosition);
         }
 
         void UpdateTransform() {

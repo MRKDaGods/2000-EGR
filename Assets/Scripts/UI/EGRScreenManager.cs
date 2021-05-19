@@ -121,7 +121,7 @@ namespace MRK.UI {
         }
 
         void LateUpdate() {
-            EGRTransitionFactory.Update();
+            //EGRTransitionFactory.Update();
         }
 
         public void AddScreen(string name, EGRScreen screen) {

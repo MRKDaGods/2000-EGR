@@ -76,12 +76,16 @@ namespace MRK {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
 				if (sqrMagnitude <= float.Epsilon) {
 					m_AwaitingMapFullUpdateEvent = false;
+					m_AbsoluteZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
 
 					//raise map full update
 					if (OnMapFullyUpdated != null) {
 						OnMapFullyUpdated();
                     }
-                }
+
+					UpdateScale();
+					UpdatePosition();
+				}
             }
 
 #if MRK_DEBUG_FETCHER_LOCK
@@ -162,7 +166,7 @@ namespace MRK {
 				if (tile == null)
 					tile = new MRKTile();
 
-				tile.InitTile(this, realID);
+				tile.InitTile(this, realID, siblingIdx);
 
 				RectD rect = tile.Rect;
 				Vector3 position = new Vector3((float)(rect.Center.x - m_CenterMercator.x) * m_WorldRelativeScale * scaleFactor, 0f,
@@ -223,7 +227,7 @@ namespace MRK {
 			// Update map zoom, if it has changed.
 			if (Math.Abs(m_Zoom - zoom) > Mathf.Epsilon) {
 				m_Zoom = zoom;
-				m_AbsoluteZoom = Mathf.FloorToInt(m_Zoom);
+				//m_AbsoluteZoom = Mathf.FloorToInt(m_Zoom);
 			}
 
 			// Compute difference in zoom. Will be used to calculate correct scale of the map.

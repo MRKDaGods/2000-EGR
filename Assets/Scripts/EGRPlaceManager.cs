@@ -1,10 +1,13 @@
 ﻿using MRK.Networking.Packets;
+using MRK.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace MRK {
     public delegate void EGRFetchPlacesCallback(EGRPlace place);
-    public delegate void EGRFetchPlacesV2Callback(List<EGRPlace> places, int tileHash);
+    public delegate void EGRFetchPlacesV2Callback(HashSet<EGRPlace> places, int tileHash);
 
     public class EGRPlaceManager : EGRBehaviour {
         struct ContextInfo {
@@ -15,7 +18,7 @@ namespace MRK {
         class TileInfo {
             public int Hash;
             public MRKTileID ID;
-            public List<EGRPlace> Places;
+            public HashSet<EGRPlace> Places;
             public EGRFetchPlacesV2Callback ActiveCallback;
             public RectD Bounds;
             public Vector2d Minimum;
@@ -27,25 +30,19 @@ namespace MRK {
         readonly Dictionary<ulong, EGRPlace> m_CachedPlaces;
         readonly Dictionary<ulong, EGRFetchPlacesCallback> m_ActiveCallbacks;
         readonly Dictionary<ulong, ContextInfo> m_CIDCtxIndex;
-        readonly Random m_Rand;
+        readonly System.Random m_Rand;
 
         readonly Dictionary<int, TileInfo> m_TileInfos;
-        readonly Dictionary<int, List<EGRPlace>> m_Places;
-        readonly Dictionary<int, EGRFetchPlacesV2Callback> m_ActiveRequests;
-        readonly Dictionary<int, string> m_TileHashes;
 
         public EGRPlaceManager() {
             m_TileInfos = new Dictionary<int, TileInfo>();
-            m_Places = new Dictionary<int, List<EGRPlace>>();
-            m_ActiveRequests = new Dictionary<int, EGRFetchPlacesV2Callback>();
-            m_TileHashes = new Dictionary<int, string>();
 
             m_CachedRects = new Dictionary<ulong, RectD>();
             m_CachedIDs = new Dictionary<ulong, List<ContextInfo>>();
             m_CachedPlaces = new Dictionary<ulong, EGRPlace>();
             m_ActiveCallbacks = new Dictionary<ulong, EGRFetchPlacesCallback>();
             m_CIDCtxIndex = new Dictionary<ulong, ContextInfo>();
-            m_Rand = new Random();
+            m_Rand = new System.Random();
         }
 
         public void FetchPlacesInRegion(double minLat, double minLng, double maxLat, double maxLng, EGRFetchPlacesCallback callback) {
@@ -106,7 +103,8 @@ namespace MRK {
                 return;
             }
 
-            if (Client.NetFetchPlacesV2(tileInfo.Hash, tileInfo.Minimum.x, tileInfo.Minimum.y, tileInfo.Maximum.x, tileInfo.Maximum.y, Client.FlatMap.AbsoluteZoom, OnFetchPlacesV2)) {
+            if (Client.NetFetchPlacesV2(tileInfo.Hash, tileInfo.Minimum.x, tileInfo.Minimum.y, tileInfo.Maximum.x, 
+                tileInfo.Maximum.y, Client.FlatMap.AbsoluteZoom, OnFetchPlacesV2)) {
                 if (callback != null)
                     tileInfo.ActiveCallback = callback;
             }
@@ -119,7 +117,23 @@ namespace MRK {
             //search fo2, maybe we got some CIDs pre fetched earlier or something?
             //basically carry out the EXACT server sided place check but here in our client
             //carry out a memory search
-            foreach (KeyValuePair<int, TileInfo> pair in m_TileInfos) {
+
+            //TODO optimize, use local tile zoom and search for tiles with less zoom lvls having minLatLng and max of our local
+
+            for (int z = tileInfo.ID.Z - 1; z > 7; z--) {
+                MRKTileID upperTile = MRKMapUtils.CoordinateToTileId((tileInfo.Minimum + tileInfo.Maximum) / 2f, z);
+                TileInfo upperInfo;
+                if (!m_TileInfos.TryGetValue(upperTile.GetHashCode(), out upperInfo))
+                    continue;
+
+                if (upperInfo.Places != null && upperInfo.Places.Count > 0) {
+                    foreach (EGRPlace place in upperInfo.Places) {
+                        response.Places.Add(place);
+                    }
+                }
+            }
+
+            /*foreach (KeyValuePair<int, TileInfo> pair in m_TileInfos) {
                 //skip ourselves
                 if (pair.Key == tileInfo.Hash)
                     continue;
@@ -137,10 +151,17 @@ namespace MRK {
                 //do they contain us?
                 if (tileInfo.Minimum.x >= min.x && tileInfo.Minimum.y >= min.y && tileInfo.Maximum.x <= max.x && tileInfo.Maximum.y <= max.y) {
                     //yep!
-                    response.Places.AddRange(pair.Value.Places);
+                    //response.Places.AddRange(pair.Value.Places);
                     //tada now we have em
+
+                    for (int i = 10; i > -1; i--) {
+                        if (response.Places.Count % (10 * (i + 1)) == 0) {
+                            yield return new WaitForSeconds(0.5f * (i + 1));
+                            break;
+                        }
+                    }
                 }
-            }
+            }*/
 
             //TODO file search
 
@@ -152,13 +173,10 @@ namespace MRK {
             tileInfo.Places = response.Places;
             //EGRMain.Log($"Tile[{response.Hash}] Hash -> " + response.TileHash);
 
-            foreach (EGRPlace p in response.Places) {
-                string t = p.Types.Length > 1 ? p.Types[1].ToString() : "";
-                EGRMain.Log($"Received {t} - {p}");
-            }
+            EGRMain.Log($"Processed {response.Places.Count} places");
         }
 
-        public List<EGRPlace> GetPlacesInTile(int tileHash) {
+        public HashSet<EGRPlace> GetPlacesInTile(int tileHash) {
             TileInfo tileInfo;
             if (!m_TileInfos.TryGetValue(tileHash, out tileInfo))
                 return null;
@@ -204,6 +222,57 @@ namespace MRK {
             foreach (ContextInfo info in ids) {
                 callback(m_CachedPlaces[info.CID]);
             }
+        }
+
+        public bool ShouldIncludeMarker(EGRPlaceMarker marker) {
+            if (marker == null || marker.Place == null)
+                return false;
+
+            //screen space check
+            Vector3 spos = marker.ScreenPoint;
+            if (spos.x < 0f || spos.x > Screen.width || spos.y < 0f || spos.y > Screen.height)
+                return false;
+
+            //this should be same as server
+            int zMin = 7, zMax = 21;
+            //manual matching for now?
+            EGRPlace place = marker.Place;
+            EGRPlaceType primaryType = place.Types.Length > 1 ? place.Types[1] : EGRPlaceType.None;
+            switch (primaryType) {
+
+                default:
+                case EGRPlaceType.None:
+                    zMin = 15;
+                    break;
+
+                case EGRPlaceType.Mall:
+                    zMin = 5;
+                    zMax = 21;
+                    break;
+
+            }
+
+            int desiredZoom = Client.FlatMap.AbsoluteZoom;
+            return desiredZoom >= zMin && desiredZoom <= zMax;
+        }
+
+        void OnGUI() {
+            /*EGRScreenMapInterface mi = ScreenManager.GetScreen<EGRScreenMapInterface>();
+            if (mi == null || !mi.Visible)
+                return;
+
+            foreach (EGRPlaceMarker marker in mi.ActiveMarkers) {
+                if (marker.Previous == null) {
+                    if (marker.Next == null) //lonely ass child
+                        continue;
+
+                    EGRPlaceMarker next = marker;
+                    while ((next = next.Next) != null) {
+                        EGRPlaceMarker previous = next.Previous;
+                        EGRGL.DrawLine(previous.ScreenPoint, next.ScreenPoint, Color.blue, 1.4f);
+                    }
+                }
+            }*/
         }
     }
 }

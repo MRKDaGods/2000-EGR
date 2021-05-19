@@ -83,6 +83,8 @@ namespace MRK.UI {
                     Client.InitializeMaps();
                     Client.SetPostProcessState(true);
                     Manager.GetScreen<EGRScreenMapInterface>().WarmUpMarkers();
+
+                    Client.FixInvalidTiles();
                 })
             });
         }

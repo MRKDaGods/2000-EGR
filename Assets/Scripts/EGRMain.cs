@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using System.IO;
 
 namespace MRK {
     public enum EGRMapMode {
@@ -99,7 +100,7 @@ namespace MRK {
 
             Screen.fullScreen = false;
             Application.targetFrameRate = 60;
-            Application.runInBackground = true;
+            //Application.runInBackground = true;
             Physics.autoSimulation = false;
 
             m_Loggers.Add(new UnityLogger());
@@ -205,6 +206,8 @@ namespace MRK {
             m_CamStartRot = ActiveCamera.transform.rotation.eulerAngles;
 
             m_OnMapModeChanged?.Invoke(mode);
+
+            SetGlobalCameraClearFlags(mode == EGRMapMode.Flat ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox);
         }
 
         void Update() {
@@ -333,7 +336,7 @@ namespace MRK {
             ActiveCamera.clearFlags = CameraClearFlags.Skybox;
             ActiveCamera.cullingMask = LayerMask.NameToLayer("Everything");
             SetPostProcessState(false);
-            m_Sun.parent.gameObject.SetActive(true);
+            //m_Sun.parent.gameObject.SetActive(true);
         }
 
         public void SetPostProcessState(bool active) {
@@ -345,6 +348,19 @@ namespace MRK {
 
         public T GetActivePostProcessEffect<T>() where T : PostProcessEffectSettings {
             return ActiveEGRCamera.GetComponent<PostProcessVolume>().profile.GetSetting<T>();
+        }
+
+        public void FixInvalidTiles() {
+            foreach (MRKTilesetProvider provider in MRKTileRequestor.Instance.TilesetProviders) {
+                string dir = MRKTileRequestor.Instance.FileTileFetcher.GetFolderPath(provider.Name);
+                if (Directory.Exists(dir)) {
+                    foreach (string filename in Directory.EnumerateFiles(dir, "*.png")) {
+                        if (new FileInfo(filename).Length < 500) {
+                            File.Delete(filename);
+                        }
+                    }
+                }
+            }
         }
 
         static string CalculateHash(string input) {
@@ -408,6 +424,11 @@ namespace MRK {
             m_Sun.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Low);
             m_GlobalMap.transform.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
             m_GlobeCamera.GetComponent<PostProcessVolume>().profile.GetSetting<Bloom>().threshold.value = evt.Quality == EGRSettingsQuality.Ultra ? 0.9f : 1f;
+        }
+
+        public void SetGlobalCameraClearFlags(CameraClearFlags flags) {
+            ActiveCamera.clearFlags = flags;
+            m_ExCamera.clearFlags = flags;
         }
 
         public RenderTexture CaptureScreenBuffer() {

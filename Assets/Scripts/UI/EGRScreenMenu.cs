@@ -110,10 +110,10 @@ namespace MRK.UI {
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            /*m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
             Array.Sort(m_LastGraphicsBuf, (x, y) => {
                 return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
+            }); */
 
             //colors + xpos - blur
             SetTweenCount(m_LastGraphicsBuf.Length * 2 - 1);
