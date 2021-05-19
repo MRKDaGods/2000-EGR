@@ -85,17 +85,19 @@ namespace MRK.UI {
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim(); // no extensive workload down there
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
+            if (m_LastGraphicsBuf == null) {
+                m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+                Array.Sort(m_LastGraphicsBuf, (x, y) => {
+                    return y.transform.position.y.CompareTo(x.transform.position.y);
+                });
+            }
 
             PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
 
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(gfx.color, TweenMonitored(0.6f + i * 0.03f + (i > 10 ? 0.3f : 0f)))
+                gfx.DOColor(gfx.color, TweenMonitored(0.6f + i * 0.03f))
                     .ChangeStartValue(Color.clear)
                     .SetEase(Ease.OutSine);
 
@@ -121,7 +123,7 @@ namespace MRK.UI {
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(Color.clear, TweenMonitored(0.3f + i * 0.03f + (i > 10 ? 0.1f : 0f)))
+                gfx.DOColor(Color.clear, TweenMonitored(0.3f + i * 0.03f))
                     .SetEase(Ease.OutSine)
                     .OnComplete(OnTweenFinished);
 

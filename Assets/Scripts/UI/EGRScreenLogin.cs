@@ -58,7 +58,9 @@ namespace MRK.UI {
             if (m_SkipAnims)
                 return;
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            //we know nothing is going to change here
+            if (m_LastGraphicsBuf == null)
+                m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
 
             PushGfxState(EGRGfxState.Color);
 
@@ -77,7 +79,7 @@ namespace MRK.UI {
             if (m_SkipAnims)
                 return false;
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            //m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
 
             SetTweenCount(m_LastGraphicsBuf.Length);
 

@@ -75,7 +75,12 @@ namespace MRK {
             }
 
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(Client.FlatMap.Zoom / 21f);
-            m_Sprite.color = Color.white.AlterAlpha(Mathf.Lerp(0f, ms_MapInterface.EvaluateMarkerOpacity(Client.FlatMap.Zoom / 21f), m_Fade.Delta));
+            m_Sprite.color = Color.white.AlterAlpha(Mathf.Lerp(0f, ms_MapInterface.EvaluateMarkerOpacity(Client.FlatMap.Zoom / 21f), m_Fade.Delta - (Owner != null ? 0.5f : 0f)));
+
+            if (Owner != null) {
+                if (m_Fade.Done)
+                    m_Fade.Reset();
+            }
 
             if (!m_Fade.Done) {
                 m_Fade.Update();

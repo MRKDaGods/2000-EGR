@@ -88,6 +88,7 @@ namespace MRK {
         public List<EGRScreen> ActiveScreens => m_ActiveScreens;
         public EGRPlaceManager PlaceManager { get; private set; }
         public bool InitialModeTransition => m_InitialModeTransition;
+        public EGRMapMode PreviousMapMode => m_PreviousMapMode;
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -278,11 +279,13 @@ namespace MRK {
                         normal =
                         {
                             textColor = Color.yellow
-                        }
+                        },
+                        richText = true
                     };
                 }
 
-                GUI.Label(new Rect(40f, Screen.height - 50f, 50f, 50f), string.Format("{0:0.0} ms ({1:0.} fps)", m_DeltaTime * 1000f, 1f / m_DeltaTime), m_FPSStyle);
+                GUI.Label(new Rect(40f, Screen.height - 50f, 100f, 50f), string.Format("<b>{0:0.0}</b> ms (<b>{1:0.}</b> fps) {2}", 
+                    m_DeltaTime * 1000f, 1f / m_DeltaTime, DOTween.TotalPlayingTweens()), m_FPSStyle);
             }
 
             Rect safeArea = Screen.safeArea;

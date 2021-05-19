@@ -33,7 +33,19 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenShow() {
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            GetElement<Image>(Images.Bg).gameObject.SetActive(false);
+
+            //reset preview items
+            m_FullName.text = "";
+            m_Email.text = "";
+            m_Password.text = "";
+        }
+
+        protected override void OnScreenShowAnim() {
+            base.OnScreenShow();
+
+            if (m_LastGraphicsBuf == null)
+                m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
 
             PushGfxState(EGRGfxState.Color);
 
@@ -44,19 +56,12 @@ namespace MRK.UI {
                     .ChangeStartValue(Color.clear)
                     .SetEase(Ease.OutSine);
             }
-
-            GetElement<Image>(Images.Bg).gameObject.SetActive(false);
-
-            //reset preview items
-            m_FullName.text = "";
-            m_Email.text = "";
-            m_Password.text = "";
         }
 
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
+            //m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
 
             SetTweenCount(m_LastGraphicsBuf.Length);
 

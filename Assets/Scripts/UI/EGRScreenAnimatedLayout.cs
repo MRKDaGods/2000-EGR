@@ -31,9 +31,6 @@ namespace MRK.UI {
             vlayout.enabled = false;
 
             m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
 
             PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
 
@@ -42,9 +39,11 @@ namespace MRK.UI {
 
                 if (gfx.GfxHasScrollView() || !CanAnimate(gfx, false)) continue;
 
-                gfx.DOColor(gfx.color, TweenMonitored(0.3f + i * 0.03f))
-                    .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
+                if (gfx.name == "imgBg") {
+                    gfx.DOColor(gfx.color, TweenMonitored(0.2f))
+                        .ChangeStartValue(Color.clear)
+                        .SetEase(Ease.OutSine);
+                }
 
                 SetGfxStateMask(gfx, EGRGfxState.Color);
 

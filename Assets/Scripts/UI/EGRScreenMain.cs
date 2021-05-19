@@ -123,10 +123,8 @@ namespace MRK.UI {
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim();
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
+            if (m_LastGraphicsBuf == null)
+                m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(true);
 
             PushGfxState(EGRGfxState.Position | EGRGfxState.Color);
 
@@ -148,10 +146,7 @@ namespace MRK.UI {
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
 
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            });
+            //m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
 
             //colors + xpos - blur
             SetTweenCount(m_LastGraphicsBuf.Length * 2 - 1);
@@ -264,7 +259,7 @@ namespace MRK.UI {
 
             HideScreen(() => {
                 scr.ShowScreen();
-            }, 0.1f, true);
+            }, 0f, true);
 
             Debug.Log($"DOWN {s} - {idx} - {txt}");
         }

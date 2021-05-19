@@ -15,8 +15,8 @@ namespace MRK {
         float m_RotationSpeed;
         float m_BackupDistance;
         float m_DistanceSpeed;
-        object m_RotTween;
-        object m_DistTween;
+        int m_RotTween;
+        Tween m_DistTween;
         Material m_EarthMat;
         [SerializeField]
         AnimationCurve m_CloudTransparencyCurve;
@@ -120,86 +120,6 @@ namespace MRK {
             }
         }
 
-        void ProcessZoom(EGRControllerMouseData[] data) {
-            if (m_IsSwitching)
-                return;
-
-            //m_Delta[1] = 0f;
-            Vector3 prevPos0 = data[0].LastPosition - m_Deltas[0];
-            Vector3 prevPos1 = data[1].LastPosition - m_Deltas[1];
-            float olddeltaMag = (prevPos0 - prevPos1).magnitude;
-            float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
-
-            m_TargetDistance -= (newdeltaMag - olddeltaMag) * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
-
-            if (m_TargetDistance < 3500f) {
-                if (!m_IsSwitching) {
-                    m_IsSwitching = true;
-
-                    if (m_DistTween != null) {
-                        DOTween.Kill(m_DistTween);
-                    }
-
-                    //enable my post processing?
-                    //vignette
-                    Vignette vig = Client.GetActivePostProcessEffect<Vignette>();
-                    vig.active = true;
-
-                    ChromaticAberration aberration = Client.GetActivePostProcessEffect<ChromaticAberration>();
-
-                    Quaternion initialRot = transform.rotation;
-                    transform.DORotate(new Vector3(0f, initialRot.eulerAngles.y + 720f), 1.8f, RotateMode.FastBeyond360);
-
-                    m_TargetDistance = 10000f;
-                    m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.5f)
-                        .SetEase(Ease.OutSine)
-                        .OnUpdate(() => {
-                            vig.intensity.value = ((Tween)m_DistTween).ElapsedPercentage() * 0.65f;
-                        })
-                        .OnComplete(() => {
-                            aberration.active = true;
-                            aberration.intensity.value = 0f;
-
-                            m_TargetDistance = 3000f;
-
-                            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 1.2f)
-                            .SetEase(Ease.InOutExpo)
-                            .OnComplete(() => {
-                                m_IsSwitching = false;
-                                aberration.active = false;
-                                vig.active = false;
-
-                                transform.rotation = initialRot;
-
-                                m_TargetDistance = 5000f;
-
-                                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-
-                                SwitchToFlatMap();
-                            })
-                            .OnUpdate(() => {
-                                float perc = ((Tween)m_DistTween).ElapsedPercentage();
-                                aberration.intensity.value = Mathf.Min(perc * 2f, 1f);
-                            })
-                            .SetDelay(0.3f);
-                        });
-
-                    return;
-                }
-            }
-
-            m_TargetDistance = Mathf.Clamp(m_TargetDistance, 3100f, 20000f);
-
-            if (m_DistTween != null) {
-                DOTween.Kill(m_DistTween);
-            }
-
-            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.3f)
-                .SetEase(Ease.OutBack);
-
-            m_DistanceSpeed = 8f;
-        }
-
         Vector2d GetCurrentGeoPos() {
             RaycastHit hit;
             //if (Physics.Raycast(Client.ActiveCamera.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f)), out hit)) {
@@ -229,18 +149,18 @@ namespace MRK {
             }
         }
 
-        void ProcessZoomScroll(float delta) {
+        void ProcessZoomInternal(float rawDelta) {
             if (m_IsSwitching)
                 return;
 
-            m_TargetDistance -= delta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
+            m_TargetDistance -= rawDelta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
             if (m_TargetDistance < 3500f) {
                 if (!m_IsSwitching) {
                     m_IsSwitching = true;
 
                     if (m_DistTween != null) {
-                        DOTween.Kill(m_DistTween);
+                        DOTween.Kill(m_DistTween.id);
                     }
 
                     //enable my post processing?
@@ -257,7 +177,7 @@ namespace MRK {
                     m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.5f)
                         .SetEase(Ease.OutSine)
                         .OnUpdate(() => {
-                            vig.intensity.value = ((Tween)m_DistTween).ElapsedPercentage() * 0.65f;
+                            vig.intensity.value = m_DistTween.ElapsedPercentage() * 0.65f;
                         })
                         .OnComplete(() => {
                             aberration.active = true;
@@ -281,7 +201,7 @@ namespace MRK {
                                 SwitchToFlatMap();
                             })
                             .OnUpdate(() => {
-                                float perc = ((Tween)m_DistTween).ElapsedPercentage();
+                                float perc = m_DistTween.ElapsedPercentage();
                                 aberration.intensity.value = Mathf.Min(perc * 2f, 1f);
                             })
                             .SetDelay(0.3f);
@@ -294,13 +214,26 @@ namespace MRK {
             m_TargetDistance = Mathf.Clamp(m_TargetDistance, 3100f, 20000f);
 
             if (m_DistTween != null) {
-                DOTween.Kill(m_DistTween);
+                DOTween.Kill(m_DistTween.id);
             }
 
-            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.3f)
-                .SetEase(Ease.OutBack);
+            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.2f).SetEase(Ease.OutBack);
+            m_DistTween.intId = EGRTweenIDs.IntId;
 
             m_DistanceSpeed = 8f;
+        }
+
+        void ProcessZoomScroll(float delta) {
+            ProcessZoomInternal(delta);
+        }
+
+        void ProcessZoom(EGRControllerMouseData[] data) {
+            Vector3 prevPos0 = data[0].LastPosition - m_Deltas[0];
+            Vector3 prevPos1 = data[1].LastPosition - m_Deltas[1];
+            float olddeltaMag = (prevPos0 - prevPos1).magnitude;
+            float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
+
+            ProcessZoomInternal(newdeltaMag - olddeltaMag);
         }
 
         void ProcessRotation(Vector3 delta, bool withTween = true, bool withDelta = true) {
@@ -314,13 +247,14 @@ namespace MRK {
             //m_TargetRotation.x = ClampAngle(m_TargetRotation.x, float.NegativeInfinity, float.PositiveInfinity);
             m_TargetRotation.y = ClampAngle(m_TargetRotation.y, -80f, 80f);
 
-            if (m_RotTween != null) {
+            if (m_RotTween.IsValidTween()) {
                 DOTween.Kill(m_RotTween);
             }
 
             if (withTween) {
-                m_RotTween = DOTween.To(() => m_CurrentRotation, x => m_CurrentRotation = x, m_TargetRotation, 0.7f)
-                    .SetEase(Ease.OutBack);
+                m_RotTween = DOTween.To(() => m_CurrentRotation, x => m_CurrentRotation = x, m_TargetRotation, 0.3f)
+                    .SetEase(Ease.OutBack)
+                    .intId = EGRTweenIDs.IntId;
 
                 m_Delta[0] = 1f;
             }
@@ -381,7 +315,7 @@ namespace MRK {
             if (Client.MapMode != EGRMapMode.Globe || Client.CamDirty)
                 return;
 
-            if (m_DistTween != null || m_RotTween != null)
+            if (m_DistTween != null || m_RotTween.IsValidTween())
                 UpdateTransform();
 
             if (m_Delta[0] < 1f) {

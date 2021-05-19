@@ -15,9 +15,9 @@ namespace MRK {
         float m_CurrentZoom;
         float m_TargetZoom;
         float m_LastZoomTime;
-        object m_PanTweenLat;
-        object m_PanTweenLng;
-        object m_ZoomTween;
+        int m_PanTweenLat;
+        int m_PanTweenLng;
+        int m_ZoomTween;
         EGRScreenMapInterface m_MapInterface;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
@@ -55,14 +55,11 @@ namespace MRK {
                 switch (kind) {
 
                     case EGRControllerMouseEventKind.Down:
-
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
-
                         break;
 
                     case EGRControllerMouseEventKind.Drag:
-
                         //store delta for zoom
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
 
@@ -94,13 +91,10 @@ namespace MRK {
                                 break;
 
                         }
-
                         break;
 
                     case EGRControllerMouseEventKind.Up:
-
                         m_Down[data.Index] = false;
-
                         break;
 
                 }
@@ -141,19 +135,21 @@ namespace MRK {
             m_TargetLatLong.x = Mathd.Clamp(m_TargetLatLong.x, -MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LATITUDE_MAX);
             m_TargetLatLong.y = Mathd.Clamp(m_TargetLatLong.y, -MRKMapUtils.LONGITUDE_MAX, MRKMapUtils.LONGITUDE_MAX);
 
-            if (m_PanTweenLat != null) {
+            if (m_PanTweenLat.IsValidTween()) {
                 DOTween.Kill(m_PanTweenLat);
             }
 
-            if (m_PanTweenLng != null) {
+            if (m_PanTweenLng.IsValidTween()) {
                 DOTween.Kill(m_PanTweenLng);
             }
 
-            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.7f)
-                .SetEase(Ease.OutBack);
+            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.4f)
+                .SetEase(Ease.OutSine)
+                .intId = EGRTweenIDs.IntId;
 
-            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.7f)
-                .SetEase(Ease.OutBack);
+            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.4f)
+                .SetEase(Ease.OutSine)
+                .intId = EGRTweenIDs.IntId;
         }
 
         void ProcessZoom(EGRControllerMouseData[] data) {
@@ -176,18 +172,19 @@ namespace MRK {
 
             m_LastZoomTime = Time.time;
 
-            if (m_ZoomTween != null) {
+            if (m_ZoomTween.IsValidTween()) {
                 DOTween.Kill(m_ZoomTween);
             }
 
-            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.7f)
-                .SetEase(Ease.OutSine);
+            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.2f)
+                .SetEase(Ease.OutSine)
+                .intId = EGRTweenIDs.IntId;
 
             //UpdateCenterFromZoom((data[0].LastPosition + data[1].LastPosition) / 2f);
         }
 
         void UpdateCenterFromZoom(Vector3 mousePos) {
-            mousePos.z = m_Camera.transform.localPosition.y;
+            /*mousePos.z = m_Camera.transform.localPosition.y;
             m_TargetLatLong = m_CurrentLatLong + (m_Map.WorldToGeoPosition(m_Camera.ScreenToWorldPoint(mousePos)) - m_CurrentLatLong) * 0.5f;
 
             if (m_PanTweenLat != null) {
@@ -202,7 +199,7 @@ namespace MRK {
                 .SetEase(Ease.OutBack);
 
             m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.7f)
-                .SetEase(Ease.OutBack);
+                .SetEase(Ease.OutBack);*/
         }
 
         void ProcessZoomScroll(float delta) {
@@ -217,12 +214,13 @@ namespace MRK {
             m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
             m_LastZoomTime = Time.time;
 
-            if (m_ZoomTween != null) {
+            if (m_ZoomTween.IsValidTween()) {
                 DOTween.Kill(m_ZoomTween);
             }
 
-            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.7f)
-                .SetEase(Ease.OutSine);
+            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.2f)
+                .SetEase(Ease.OutSine)
+                .intId = EGRTweenIDs.IntId;
 
             //UpdateCenterFromZoom(Input.mousePosition);
         }

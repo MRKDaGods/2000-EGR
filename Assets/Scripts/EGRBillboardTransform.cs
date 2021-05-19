@@ -17,8 +17,9 @@ namespace MRK {
         float m_SmoothTime;
         Vector3 m_LastLookRot;
         Vector3 m_LastPos;
-        object m_PosTween;
-        object m_RotTween;
+        int m_PosTween;
+        int m_RotTween;
+        Quaternion m_TargetRotation;
 
         void Update() {
             if (m_FixedDistance) {
@@ -26,12 +27,15 @@ namespace MRK {
                 if (m_LastPos == pos)
                     return;
 
+                m_LastPos = pos;
+
                 if (m_Smooth) {
-                    if (m_PosTween != null)
+                    if (m_PosTween.IsValidTween())
                         DOTween.Kill(m_PosTween);
 
                     m_PosTween = transform.DOMove(pos, m_SmoothTime)
-                        .SetEase(Ease.OutBack);
+                        .SetEase(Ease.OutBack)
+                        .intId = EGRTweenIDs.IntId;
                 }
                 else
                     transform.position = pos;
@@ -44,15 +48,23 @@ namespace MRK {
             if (m_LastLookRot == lookRot)
                 return;
 
+            m_LastLookRot = lookRot;
+
             Quaternion rot = Quaternion.LookRotation(lookRot);
             rot.eulerAngles += m_Offset;
 
             if (m_Smooth) {
-                if (m_RotTween != null)
-                    DOTween.Kill(m_RotTween);
+                if (m_TargetRotation != rot) {
+                    m_TargetRotation = rot;
 
-                m_RotTween = transform.DORotateQuaternion(rot, m_SmoothTime)
-                    .SetEase(Ease.OutBack);
+                    if (m_RotTween.IsValidTween()) {
+                        DOTween.Kill(m_RotTween);
+                    }
+
+                    m_RotTween = transform.DORotateQuaternion(m_TargetRotation, m_SmoothTime)
+                        .SetEase(Ease.OutBack)
+                        .intId = EGRTweenIDs.IntId;
+                }
             }
             else
                 transform.rotation = rot;

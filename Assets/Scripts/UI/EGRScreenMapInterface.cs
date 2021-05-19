@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
 using System.Linq;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace MRK.UI {
     public class EGRScreenMapInterface : EGRScreen {
@@ -458,10 +459,17 @@ namespace MRK.UI {
         }
 
         void OnMapModeChanged(EGRMapMode mode) {
-            bool isGlobe = mode == EGRMapMode.Globe;
             m_CamDistLabel.gameObject.SetActive(/*isGlobe*/false);
             m_ScaleBar.SetActive(mode == EGRMapMode.Flat);
             Client.ActiveEGRCamera.ResetStates();
+
+            //from globe to flat
+            if (mode == EGRMapMode.Flat && Client.PreviousMapMode == EGRMapMode.Globe) {
+                LensDistortion lens = Client.GetActivePostProcessEffect<LensDistortion>();
+                DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 25f, 1f)
+                    .ChangeStartValue(0f)
+                    .SetEase(Ease.OutBack);
+            }
         }
 
         void OnControllerMessageReceived(EGRControllerMessage msg) {
@@ -602,7 +610,7 @@ namespace MRK.UI {
             if (m_TransitionImg.gameObject.activeInHierarchy)
                 return;
 
-            Debug.Log($"Zoom updated {oldZoom} -> {newZoom}");
+            //Debug.Log($"Zoom updated {oldZoom} -> {newZoom}");
             m_ZoomHasChanged = true;
         }
 
@@ -612,7 +620,7 @@ namespace MRK.UI {
                 SetTransitionTex(Client.CaptureScreenBuffer());
             }
 
-            if (m_Map.Zoom < 10f) {
+            /* if (m_Map.Zoom < 10f) {
                 List<EGRPlaceMarker> buffer = new List<EGRPlaceMarker>();
                 foreach (EGRPlaceMarker marker in m_ActiveMarkers.Values)
                     buffer.Add(marker);
@@ -621,10 +629,10 @@ namespace MRK.UI {
                     FreeMarker(marker);
 
                 return;
-            }
+            } */
 
-            if (Time.time - m_LastFetchRequestTime < 0.6f)
-                return;
+            //if (Time.time - m_LastFetchRequestTime < 0.6f)
+            //    return;
 
             m_LastFetchRequestTime = Time.time;
 
@@ -753,7 +761,7 @@ namespace MRK.UI {
                     }
 
                     foreach (EGRPlaceMarker overlapper in marker.Overlappers) {
-                        EGRGL.DrawLine(marker.ScreenPoint, overlapper.ScreenPoint, Color.red, 1.4f);
+                        EGRGL.DrawLine(marker.ScreenPoint, overlapper.ScreenPoint, Color.blue, 1.4f);
                     }
                 }
             }

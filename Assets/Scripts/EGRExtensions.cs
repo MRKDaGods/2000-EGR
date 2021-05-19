@@ -148,5 +148,9 @@ namespace MRK {
             Vector3 position = rectTransform.position;
             return new Rect(position.x - rectTransformWidth / 2f, position.y - rectTransformHeight / 2f, rectTransformWidth, rectTransformHeight);
         }
+
+        public static bool IsValidTween(this int i) {
+            return i != -999;
+        }
     }
 }
