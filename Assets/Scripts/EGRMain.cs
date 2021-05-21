@@ -366,7 +366,7 @@ namespace MRK {
             }
         }
 
-        static string CalculateHash(string input) {
+        public static string CalculateHash(string input) {
             using (MD5 md5 = MD5.Create()) {
                 byte[] inputBytes = Encoding.ASCII.GetBytes(input + HASH_SALT);
                 byte[] hashBytes = md5.ComputeHash(inputBytes);
@@ -500,6 +500,10 @@ namespace MRK {
 
         public bool NetFetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
             return Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
+        }
+
+        public bool NetUpdateAccountPassword(string pass, bool logoutAll, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
+            return Network.SendPacket(new PacketOutUpdatePassword(EGRLocalUser.Instance.Token, pass, logoutAll), DeliveryMethod.ReliableOrdered, callback);
         }
 
         void _Log(DateTime timestamp, LogType type, string msg) {

@@ -1,7 +1,4 @@
-﻿using DG.Tweening;
-using System;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 namespace MRK.UI {
     public class EGRScreenOptionsAppSettings : EGRScreenAnimatedLayout {

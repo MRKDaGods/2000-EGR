@@ -176,6 +176,8 @@ namespace MRK.UI {
         protected override void OnScreenHide() {
             m_Save.interactable = false;
             m_ListeningToChanges = false;
+
+            Manager.GetScreen<EGRScreenOptions>().UpdateProfile();
         }
     }
 }

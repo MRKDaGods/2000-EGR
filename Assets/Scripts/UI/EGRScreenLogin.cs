@@ -214,6 +214,7 @@ namespace MRK.UI {
                 }
 
                 EGRLocalUser.Initialize(response.ProxyUser);
+                EGRLocalUser.PasswordHash = response.PasswordHash;
                 Debug.Log(EGRLocalUser.Instance.ToString());
 
                 if (m_RememberMe.isOn) {

@@ -22,5 +22,14 @@ namespace MRK {
         public static bool ValidateEmail(string email) {
             return Regex.IsMatch(email, EMAIL_REGEX, RegexOptions.IgnoreCase);
         }
+
+        public static bool ValidatePassword(ref string pwd) {
+            pwd = pwd.Trim(' ', '\n', '\t', '\r');
+            if (string.IsNullOrEmpty(pwd) || string.IsNullOrWhiteSpace(pwd)) {
+                return false;
+            }
+
+            return pwd.Length >= 8 && pwd.Length <= 32;
+        }
     }
 }

@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using MRK.Networking;
 using MRK.Networking.Packets;
-
+using TMPro;
+using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
-using MRK.Networking;
 
 namespace MRK.UI {
     public class EGRScreenOptionsEmail : EGRScreenAnimatedLayout {
         TMP_InputField m_NewEmail;
         TMP_InputField m_ConfEmail;
+        TMP_InputField m_Password;
         Button m_Save;
 
         public override bool CanChangeBar => true;
@@ -29,6 +23,7 @@ namespace MRK.UI {
 
             m_NewEmail = GetElement<TMP_InputField>("Layout/EmailTb");
             m_ConfEmail = GetElement<TMP_InputField>("Layout/ConfEmailTb");
+            m_Password = GetElement<TMP_InputField>("Layout/PasswordTb");
 
             m_NewEmail.onValueChanged.AddListener(OnTextChanged);
             m_ConfEmail.onValueChanged.AddListener(OnTextChanged);
@@ -40,11 +35,17 @@ namespace MRK.UI {
         protected override void OnScreenShow() {
             m_NewEmail.text = "";
             m_ConfEmail.text = "";
+            m_Password.text = "";
 
             m_Save.interactable = false;
         }
 
         void OnSaveClick() {
+            if (EGRMain.CalculateHash(m_Password.text) != EGRLocalUser.PasswordHash) {
+                MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.INCORRECT_PASSWORD), null, this);
+                return;
+            }
+
             if (m_NewEmail.text != m_ConfEmail.text) {
                 MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.EMAILS_DO_NOT_MATCH), null, this);
                 return;

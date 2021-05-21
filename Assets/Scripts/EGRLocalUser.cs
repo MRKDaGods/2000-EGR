@@ -15,6 +15,8 @@ namespace MRK {
     }
 
     public class EGRLocalUser {
+        public static string PasswordHash;
+
         public string Email { get; private set; }
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
@@ -39,6 +41,10 @@ namespace MRK {
             }
             else
                 Instance = null;
+        }
+
+        public bool IsDeviceID() {
+            return Email.EndsWith("@egr.com");
         }
 
         public override string ToString() {

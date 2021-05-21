@@ -3,6 +3,7 @@
     public class PacketInLoginAccount : Packet {
         public EGRStandardResponse Response { get; private set; }
         public EGRProxyUser ProxyUser { get; private set; }
+        public string PasswordHash { get; private set; }
 
         public PacketInLoginAccount() : base(PacketNature.In, PacketType.LGNACC) {
         }
@@ -21,6 +22,14 @@
                 string email = stream.ReadString();
                 sbyte gender = stream.ReadSByte();
                 string token = stream.ReadString();
+
+                try {
+                    //this is only valid if we login with token or an actual acc
+                    PasswordHash = stream.ReadString();
+                }
+                catch {
+                    PasswordHash = "";
+                }
 
                 ProxyUser = new EGRProxyUser {
                     FirstName = fname,

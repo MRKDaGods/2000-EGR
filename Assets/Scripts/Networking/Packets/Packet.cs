@@ -32,6 +32,8 @@ namespace MRK.Networking.Packets {
         LGNOUT = 0x14,
         //update account info
         UPDACC = 0x15,
+        //update account password
+        UPDACCPWD = 0x16,
 
         //standard response
         STDRSP = 0x20,
