@@ -17,8 +17,8 @@ namespace MRK {
             m_Deltas = new Vector3[2];
         }
 
-        public virtual void SetInterfaceState(bool active) {
-            if (m_InterfaceActive == active)
+        public virtual void SetInterfaceState(bool active, bool force = false) {
+            if (m_InterfaceActive == active && !force)
                 return;
 
             m_InterfaceActive = active;

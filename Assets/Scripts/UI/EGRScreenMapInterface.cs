@@ -340,6 +340,7 @@ namespace MRK.UI {
         [SerializeField]
         MarkerSprite[] m_MarkerSprites;
         bool m_MouseDown;
+        Vector3 m_MouseDownPos;
         readonly HashSet<int> m_PendingDestroyedTiles;
         readonly Dictionary<int, bool> m_TilePlaceFetchStates;
         bool m_ZoomHasChanged;
@@ -351,6 +352,8 @@ namespace MRK.UI {
         public string ContextText => m_ContextLabel.text;
         public bool IsInTransition => m_TransitionImg.gameObject.activeInHierarchy;
         public Dictionary<string, EGRPlaceMarker>.ValueCollection ActiveMarkers => m_ActiveMarkers.Values;
+        public Transform ObservedTransform { get; private set; }
+        public bool ObservedTransformDirty { get; set; }
 
         public EGRScreenMapInterface() {
             m_ActiveMarkers = new Dictionary<string, EGRPlaceMarker>();
@@ -391,6 +394,8 @@ namespace MRK.UI {
 
             for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++)
                 m_ButtonInfos[i].OnDown = m_ButtonInfoDelegates[i];
+
+            ObservedTransform = Client.GlobalMap.transform;
         }
 
         public void OnInterfaceEarlyShow() {
@@ -476,22 +481,23 @@ namespace MRK.UI {
             if (Client.MapMode != EGRMapMode.Globe)
                 return;
 
-            return; //TODO
-
             if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
                 EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
-                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
 
                 switch (kind) {
 
                     case EGRControllerMouseEventKind.Down:
                         m_MouseDown = true;
+                        m_MouseDownPos = (Vector3)msg.Payload[3];
                         break;
 
                     case EGRControllerMouseEventKind.Up:
                         if (m_MouseDown) {
                             m_MouseDown = false;
-                            ChangeObservedTransform((Vector3)msg.Payload[1]);
+
+                            Vector3 pos = (Vector3)msg.Payload[1];
+                            if ((pos - m_MouseDownPos).sqrMagnitude < 4f)
+                                ChangeObservedTransform((Vector3)msg.Payload[1]);
                         }
                         break;
 
@@ -502,15 +508,28 @@ namespace MRK.UI {
         void ChangeObservedTransform(Vector3 pos) {
             Ray ray = Client.ActiveCamera.ScreenPointToRay(pos);
 
+            //simulate physics
+            Physics.Simulate(0.1f);
+
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, Client.ActiveCamera.farClipPlane)) {
-                Debug.Log(hit.transform.name);
+            if (Physics.Raycast(ray, out hit, Client.ActiveCamera.farClipPlane, 1 << 6, QueryTriggerInteraction.Collide)) {
+                if (hit.transform != ObservedTransform) {
+                    ObservedTransform = hit.transform;
+                    ObservedTransformDirty = true;
+                }
             }
         }
 
-        public void SetDistanceText(string txt) {
-            m_CamDistLabel.text = txt;
-            m_DistLabel.text = txt;
+        public void SetDistanceText(string txt, bool animated = false) {
+            //legacy distance label
+            //m_CamDistLabel.text = txt;
+
+            if (m_DistLabel.gameObject.activeInHierarchy) {
+                if (animated)
+                    StartCoroutine(SetTextEnumerator(x => m_DistLabel.text = x, txt, 0.9f, "m"));
+                else
+                    m_DistLabel.text = txt;
+            }
         }
 
         public void SetContextText(string txt) {
@@ -588,6 +607,12 @@ namespace MRK.UI {
             SetMapButtons(new MapButtonInfo[0]);
 
             m_EGRCamera.SetInterfaceState(false);
+
+            if (ObservedTransform != Client.GlobalMap.transform) {
+                ObservedTransform = Client.GlobalMap.transform;
+                ObservedTransformDirty = true;
+            }
+
             HideScreen();
         }
 

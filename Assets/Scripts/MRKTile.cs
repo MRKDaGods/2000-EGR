@@ -152,7 +152,7 @@ namespace MRK {
                 yield return fetcher.Fetch(context, tileset, ID);
 
                 if (context.Error) {
-                    Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID}");
+                    Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
                 }
                 else {
                     SetTexture(context.Texture);

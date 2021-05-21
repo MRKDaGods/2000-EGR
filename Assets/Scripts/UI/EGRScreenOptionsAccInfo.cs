@@ -146,7 +146,7 @@ namespace MRK.UI {
             }
 
             MessageBox.ShowButton(false);
-            MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.SAVING___), null, this);
+            MessageBox.ShowPopup(Localize(EGRLanguageData.ACCOUNT_INFO), Localize(EGRLanguageData.SAVING___), null, this);
         }
 
         void OnNetSave(PacketInStandardResponse response) {

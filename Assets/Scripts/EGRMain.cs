@@ -177,7 +177,7 @@ namespace MRK {
                 }
             }
 
-            m_Network = new EGRNetwork("192.168.1.15", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
+            m_Network = new EGRNetwork("37.58.62.171", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
             m_Network.Connect();
         }
 
@@ -261,7 +261,7 @@ namespace MRK {
                 m_DeltaTime += (Time.unscaledDeltaTime - m_DeltaTime) * 0.1f;
             }
 
-            if (m_MapMode == EGRMapMode.Globe) {
+            if (m_MapMode == EGRMapMode.Globe && !m_GlobeCamera.IsLocked) {
                 foreach (Transform trans in m_Planets) {
                     trans.RotateAround(m_Sun.position, Vector3.up, 5f * Time.deltaTime * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 73557f)));
                 }
@@ -358,7 +358,7 @@ namespace MRK {
                 string dir = MRKTileRequestor.Instance.FileTileFetcher.GetFolderPath(provider.Name);
                 if (Directory.Exists(dir)) {
                     foreach (string filename in Directory.EnumerateFiles(dir, "*.png")) {
-                        if (new FileInfo(filename).Length < 500) {
+                        if (new FileInfo(filename).Length < 5000) {
                             File.Delete(filename);
                         }
                     }

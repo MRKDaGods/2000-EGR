@@ -22,11 +22,11 @@ namespace MRK {
 
     public class MRKFileTileFetcher : MRKTileFetcher {
         public string GetFolderPath(string tileSet) {
-            return $"{Application.persistentDataPath}\\Tiles\\{tileSet}";
+            return $"{Application.persistentDataPath}{Path.DirectorySeparatorChar}Tiles{Path.DirectorySeparatorChar}{tileSet}";
         }
 
         public bool Exists(string tileSet, MRKTileID id) {
-            return File.Exists($"{GetFolderPath(tileSet)}\\{id.GetHashCode()}.png");
+            return File.Exists($"{GetFolderPath(tileSet)}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png");
         }
 
         public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
@@ -35,8 +35,8 @@ namespace MRK {
                 context.Error = true;
                 yield break;
             }
-
-            string path = $"{dir}\\{id.GetHashCode()}.png";
+            
+            string path = $"{dir}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png";
             if (!File.Exists(path)) {
                 context.Error = true;
                 yield break;
@@ -50,6 +50,7 @@ namespace MRK {
             }
 
             if (req.result != UnityWebRequest.Result.Success) {
+                context.Data = req.downloadHandler.data;
                 context.Error = true;
                 Debug.Log(req.error + req.downloadHandler.error);
                 yield break;
@@ -64,7 +65,7 @@ namespace MRK {
                 Directory.CreateDirectory(dir);
             }
 
-            string path = $"{dir}\\{id.GetHashCode()}.png";
+            string path = $"{dir}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png";
 #if MRK_PROFILE
             DateTime t = DateTime.Now;
 #endif

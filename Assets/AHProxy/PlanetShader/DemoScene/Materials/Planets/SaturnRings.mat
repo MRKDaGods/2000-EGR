@@ -13,7 +13,7 @@ Material:
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 3100
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -67,6 +67,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _Bands: 8
     - _BumpScale: 1
@@ -83,11 +84,11 @@ Material:
     - _Opacity: 1
     - _OutlineBrightness: 0.448
     - _Parallax: 0.02
-    - _RingLighten: 2.57
+    - _RingLighten: 4.54
     - _RingThickness: 2.77
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _Specularity: 0
+    - _Specularity: 0.098
     - _SrcBlend: 5
     - _UVSec: 0
     - _ZWrite: 0

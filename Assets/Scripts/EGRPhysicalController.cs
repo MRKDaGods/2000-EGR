@@ -5,10 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MRK
-{
-    public class EGRPhysicalController : EGRController
-    {
+namespace MRK {
+    public class EGRPhysicalController : EGRController {
         EGRControllerKeyData[] m_KeyData;
         EGRControllerMouseData[] m_MouseData;
 
@@ -17,8 +15,7 @@ namespace MRK
         public override Vector3 LookVelocity => new Vector3(Mathf.Clamp(Input.GetAxis("Mouse X"), -1f, 1f), 0f, Mathf.Clamp(Input.GetAxis("Mouse Y"), -1f, 1f));
         public override Vector2 Sensitivity => new Vector2(30f, 30f);
 
-        public override void InitController()
-        {
+        public override void InitController() {
             //we don't know the exact count of keys, so rather than reallocating n times, we can just use an automated list
             List<EGRControllerKeyData> keys = new List<EGRControllerKeyData>();
             for (KeyCode key = KeyCode.Backspace; key < KeyCode.JoystickButton0; key++)
@@ -30,21 +27,16 @@ namespace MRK
                 m_MouseData[i] = new EGRControllerMouseData { Index = i, Handle = true };
         }
 
-        public override void UpdateController()
-        {
-            foreach (EGRControllerMouseData data in m_MouseData)
-            {
+        public override void UpdateController() {
+            foreach (EGRControllerMouseData data in m_MouseData) {
                 bool mouseDown = Input.GetMouseButton(data.Index);
                 Vector3 mousePos = Input.mousePosition;//GUIUtility.ScreenToGUIPoint(Input.mousePosition);
                 //mousePos.y = Screen.height - mousePos.y;
-                if (!mouseDown)
-                {
-                    if (data.MouseDown)
-                    {
+                if (!mouseDown) {
+                    if (data.MouseDown) {
                         data.Handle = true;
                         data.MouseDown = mouseDown;
-                        m_ReceivedDelegate?.Invoke(new EGRControllerMessage
-                        {
+                        m_ReceivedDelegate?.Invoke(new EGRControllerMessage {
                             Kind = EGRControllerMessageKind.Physical,
                             ContextualKind = EGRControllerMessageContextualKind.Mouse,
                             Proposer = data,
@@ -56,14 +48,11 @@ namespace MRK
                         });
                     }
                 }
-                else
-                {
-                    if (data.Handle)
-                    {
+                else {
+                    if (data.Handle) {
                         bool mouseState = data.MouseDown; //old ks
                         data.MouseDown = mouseDown;
-                        EGRControllerMessage message = new EGRControllerMessage
-                        {
+                        EGRControllerMessage message = new EGRControllerMessage {
                             Kind = EGRControllerMessageKind.Physical,
                             ContextualKind = EGRControllerMessageContextualKind.Mouse,
                             Proposer = data,
@@ -77,12 +66,10 @@ namespace MRK
                         data.Handle = !(bool)message.Payload[2];
                     }
                 }
-                if (data.LastPosition != mousePos)
-                {
+                if (data.LastPosition != mousePos) {
                     Vector3 lastPos = data.LastPosition;
                     data.LastPosition = mousePos;
-                    m_ReceivedDelegate?.Invoke(new EGRControllerMessage
-                    {
+                    m_ReceivedDelegate?.Invoke(new EGRControllerMessage {
                         Kind = EGRControllerMessageKind.Physical,
                         ContextualKind = EGRControllerMessageContextualKind.Mouse,
                         Proposer = data,
@@ -94,19 +81,17 @@ namespace MRK
                     });
                 }
             }
-            foreach (EGRControllerKeyData data in m_KeyData)
-            {
+
+            //we dont use keyboard rn
+            /*foreach (EGRControllerKeyData data in m_KeyData) {
                 bool keyDown = Input.GetKey(data.KeyCode);
-                if (!keyDown)
-                {
-                    if (data.KeyDown)
-                    {
-                        m_ReceivedDelegate?.Invoke(new EGRControllerMessage
-                        {
+                if (!keyDown) {
+                    if (data.KeyDown) {
+                        m_ReceivedDelegate?.Invoke(new EGRControllerMessage {
                             Kind = EGRControllerMessageKind.Physical,
                             ContextualKind = EGRControllerMessageContextualKind.Keyboard,
                             Proposer = data,
-                            Payload = new object[] 
+                            Payload = new object[]
                             {
                                 EGRControllerKeyEventKind.Up
                             }
@@ -115,14 +100,11 @@ namespace MRK
                     data.Handle = true;
                     data.KeyDown = keyDown;
                 }
-                else
-                {
-                    if (data.Handle)
-                    {
+                else {
+                    if (data.Handle) {
                         bool keyState = data.KeyDown; //old ks
                         data.KeyDown = keyDown;
-                        EGRControllerMessage message = new EGRControllerMessage
-                        {
+                        EGRControllerMessage message = new EGRControllerMessage {
                             Kind = EGRControllerMessageKind.Physical,
                             ContextualKind = EGRControllerMessageContextualKind.Keyboard,
                             Proposer = data,
@@ -135,7 +117,7 @@ namespace MRK
                         data.Handle = !(bool)message.Payload[2];
                     }
                 }
-            }
+            } */
         }
     }
 }

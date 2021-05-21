@@ -15,7 +15,7 @@ namespace MRK {
         float m_RotationSpeed;
         float m_BackupDistance;
         float m_DistanceSpeed;
-        int m_RotTween;
+        object m_RotTween;
         Tween m_DistTween;
         Material m_EarthMat;
         [SerializeField]
@@ -24,6 +24,10 @@ namespace MRK {
         bool m_IsSwitching;
         GameObject m_DummyRaycastObject;
         float m_TimeOfDayRotation;
+        bool m_PositionLocked;
+        bool m_RotationLocked;
+
+        public bool IsLocked => m_PositionLocked || m_RotationLocked;
 
         public EGRCameraGlobe() : base() {
             m_CurrentDistance = m_TargetDistance = m_BackupDistance = 9000f;
@@ -155,7 +159,7 @@ namespace MRK {
 
             m_TargetDistance -= rawDelta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
-            if (m_TargetDistance < 3500f) {
+            if (m_TargetDistance < 3500f && m_MapInterface.ObservedTransform == transform) {
                 if (!m_IsSwitching) {
                     m_IsSwitching = true;
 
@@ -237,7 +241,7 @@ namespace MRK {
         }
 
         void ProcessRotation(Vector3 delta, bool withTween = true, bool withDelta = true) {
-            if (m_LastController == null)
+            if (m_LastController == null || IsLocked)
                 return;
 
             float factor = Mathf.Clamp01(m_CurrentDistance / 10000f + 0.5f);
@@ -247,14 +251,13 @@ namespace MRK {
             //m_TargetRotation.x = ClampAngle(m_TargetRotation.x, float.NegativeInfinity, float.PositiveInfinity);
             m_TargetRotation.y = ClampAngle(m_TargetRotation.y, -80f, 80f);
 
-            if (m_RotTween.IsValidTween()) {
+            if (m_RotTween != null) {
                 DOTween.Kill(m_RotTween);
             }
 
             if (withTween) {
-                m_RotTween = DOTween.To(() => m_CurrentRotation, x => m_CurrentRotation = x, m_TargetRotation, 0.3f)
-                    .SetEase(Ease.OutBack)
-                    .intId = EGRTweenIDs.IntId;
+                m_RotTween = DOTween.To(() => m_CurrentRotation, x => m_CurrentRotation = x, m_TargetRotation, 0.4f)
+                    .SetEase(Ease.OutBack);
 
                 m_Delta[0] = 1f;
             }
@@ -281,20 +284,46 @@ namespace MRK {
         }
 
         public void UpdateTransform() {
+            if (m_MapInterface == null) {
+                m_MapInterface = EGRScreenManager.Instance.GetScreen<EGRScreenMapInterface>();
+
+                if (m_MapInterface == null)
+                    return;
+            }
+
+            if (m_MapInterface.ObservedTransformDirty) {
+                m_CurrentDistance = m_TargetDistance = m_MapInterface.ObservedTransform.localScale.x * 6.5f;
+            }
+
             Quaternion rotation = Quaternion.Euler(m_CurrentRotation.y, m_CurrentRotation.x, 0);
 
             Vector3 negDistance = new Vector3(0f, 0f, -m_CurrentDistance);
-            Vector3 position = rotation * negDistance + transform.position;
+            Vector3 position = rotation * negDistance + m_MapInterface.ObservedTransform.position;
+
+            if (m_MapInterface.ObservedTransformDirty) {
+                m_MapInterface.ObservedTransformDirty = false;
+                m_PositionLocked = m_RotationLocked = true;
+
+                m_Camera.transform.DOMove(position, 1f).SetEase(Ease.OutQuad).OnComplete(() => {
+                    m_PositionLocked = false;
+
+                    if (!m_InterfaceActive && !m_PositionLocked && !m_RotationLocked) {
+                        SetInterfaceState(false, true);
+                    }
+                });
+
+                m_Camera.transform.DORotate(rotation.eulerAngles, 0.3f).SetEase(Ease.OutSine).OnComplete(() => m_RotationLocked = false);
+                m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m", true);
+            }
+
+            if (m_PositionLocked || m_RotationLocked)
+                return;
 
             m_Camera.transform.rotation = rotation;
             m_Camera.transform.position = position;
 
-            if (m_MapInterface == null) {
-                m_MapInterface = EGRScreenManager.Instance.GetScreen<EGRScreenMapInterface>(EGRUI_Main.EGRScreen_MapInterface.SCREEN_NAME);
-            }
-
-            if (m_MapInterface != null && m_MapInterface.Visible) {
-                m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - transform.localScale.x)}m");
+            if (m_MapInterface.Visible) {
+                //m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m");
             }
 
             float transparency = Mathf.Clamp01((Mathf.Min(4200f, m_CurrentDistance) - 3300f) / 3300f);
@@ -306,7 +335,7 @@ namespace MRK {
             Quaternion rotation = Quaternion.Euler(m_CurrentRotation.y, m_CurrentRotation.x, 0);
 
             Vector3 negDistance = new Vector3(0f, 0f, -m_CurrentDistance);
-            Vector3 position = rotation * negDistance + transform.position;
+            Vector3 position = rotation * negDistance + m_MapInterface.ObservedTransform.position;
 
             return (position, rotation.eulerAngles);
         }
@@ -315,7 +344,7 @@ namespace MRK {
             if (Client.MapMode != EGRMapMode.Globe || Client.CamDirty)
                 return;
 
-            if (m_DistTween != null || m_RotTween.IsValidTween())
+            if (m_DistTween != null || m_RotTween != null)
                 UpdateTransform();
 
             if (m_Delta[0] < 1f) {
@@ -354,11 +383,11 @@ namespace MRK {
             //return Mathf.Clamp(angle, min, max);
         }
 
-        public override void SetInterfaceState(bool active) {
-            if (active == m_InterfaceActive)
+        public override void SetInterfaceState(bool active, bool force = false) {
+            if (active == m_InterfaceActive && !force)
                 return;
 
-            base.SetInterfaceState(active);
+            base.SetInterfaceState(active, force);
 
             if (m_InterfaceActive) {
                 m_CurrentRotation = new Vector2(ClampAngle(m_CurrentRotation.x), ClampAngle(m_CurrentRotation.y));

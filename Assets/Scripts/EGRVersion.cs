@@ -9,9 +9,12 @@ namespace MRK {
             Release = (byte)'\0'
         }
 
+        static bool ms_LoadedBuild;
+        static int ms_Build;
+
         public static int Major = 0;
-        public static int Minor = 1;
-        public static int Revision = 1;
+        public static int Minor = 4;
+        public static int Revision = 2;
 
 #if UNITY_EDITOR
         static bool ms_Dirty;
@@ -30,19 +33,24 @@ namespace MRK {
 
                 return build;
 #else
-                return 1;
+                if (!ms_LoadedBuild) {
+                    ms_LoadedBuild = true;
+                    ms_Build = int.Parse(Resources.Load<TextAsset>("BuildInfo/Build").text);
+                }
+
+                return ms_Build;
 #endif
             }
         }
 
-        public static Staging Stage = Staging.Development;
+        public static Staging Stage = Staging.Beta;
 
         public static string VersionString() {
             return $"{Major}.{Minor}.{Revision}{(char)Stage}.{Build}";
         }
 
         public static string VersionSignature() {
-            return ((Major + 1) ^ Minor * Revision * 10000 + Build).ToString();
+            return ((Major ^ 397) * (Minor ^ 397) * Revision * 10000 + Build).ToString();
         }
     }
 }

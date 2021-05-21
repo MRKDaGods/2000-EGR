@@ -23,6 +23,15 @@ namespace MRK.UI {
                 Manager.GetScreen<EGRScreenOptionsAccInfo>().ShowScreen();
             });
 
+            GetElement<Button>("Layout/ChngEmail").onClick.AddListener(() => {
+                if (EGRLocalUser.Instance.Email.EndsWith("@egr.com")) {
+                    MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.ACCOUNTS_LINKED_WITH_A_DEVICE_ID_CAN_NOT_HAVE_THEIR_EMAILS_CHANGED), null, this);
+                    return;
+                }
+
+                Manager.GetScreen<EGRScreenOptionsEmail>().ShowScreen();
+            });
+
             GetElement<Button>("Layout/Logout").onClick.AddListener(OnLogoutClick);
 
             TextMeshProUGUI bInfo = GetElement<TextMeshProUGUI>(Labels.BuildInfo);
