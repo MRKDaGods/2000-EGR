@@ -16,6 +16,7 @@ namespace MRK {
             public byte[] Texture;
             public string Tileset;
             public MRKTileID ID;
+            public bool Low;
         }
 
         readonly ConcurrentQueue<CachedTileInfo> m_QueuedTiles;
@@ -40,15 +41,17 @@ namespace MRK {
             StartCoroutine(Loop());
         }
 
-        public void AddToSaveQueue(byte[] tex, string tileset, MRKTileID id) {
-            m_QueuedTiles.Enqueue(new CachedTileInfo { Texture = tex, Tileset = tileset, ID = id });
+        public void AddToSaveQueue(byte[] tex, string tileset, MRKTileID id, bool low) {
+            Debug.Log("Added to queue " + tex.Length);
+            m_QueuedTiles.Enqueue(new CachedTileInfo { Texture = tex, Tileset = tileset, ID = id, Low = low });
         }
 
         IEnumerator Loop() {
             while (true) {
                 CachedTileInfo tile;
                 if (m_QueuedTiles.TryPeek(out tile)) {
-                    Task t = m_FileFetcher.SaveToDisk(tile.Tileset, tile.ID, tile.Texture);
+                    Debug.Log("Saving " + tile.Texture.Length);
+                    Task t = m_FileFetcher.SaveToDisk(tile.Tileset, tile.ID, tile.Texture, tile.Low);
                     while (!t.IsCompleted)
                         yield return new WaitForSeconds(0.2f);
 

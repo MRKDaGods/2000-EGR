@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define MRK_PROFILE
+
+using System;
 using System.Collections;
 using System.Linq;
 using System.Text;
@@ -11,7 +13,7 @@ using MRK.Networking.Packets;
 
 namespace MRK {
     public abstract class MRKTileFetcher {
-        public abstract IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id);
+        public abstract IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false);
     }
 
     public class MRKTileFetcherContext {
@@ -25,18 +27,20 @@ namespace MRK {
             return $"{Application.persistentDataPath}{Path.DirectorySeparatorChar}Tiles{Path.DirectorySeparatorChar}{tileSet}";
         }
 
-        public bool Exists(string tileSet, MRKTileID id) {
-            return File.Exists($"{GetFolderPath(tileSet)}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png");
+        public bool Exists(string tileSet, MRKTileID id, bool low = false) {
+            string lowPrefix = low ? "low_" : "";
+            return File.Exists($"{GetFolderPath(tileSet)}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png");
         }
 
-        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
+        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false) {
             string dir = GetFolderPath(tileSet);
             if (!Directory.Exists(dir)) {
                 context.Error = true;
                 yield break;
             }
-            
-            string path = $"{dir}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png";
+
+            string lowPrefix = low ? "low_" : "";
+            string path = $"{dir}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png";
             if (!File.Exists(path)) {
                 context.Error = true;
                 yield break;
@@ -59,18 +63,20 @@ namespace MRK {
             context.Texture = DownloadHandlerTexture.GetContent(req);
         }
 
-        public async Task SaveToDisk(string tileset, MRKTileID id, byte[] tex) {
+        public async Task SaveToDisk(string tileset, MRKTileID id, byte[] tex, bool low) {
             string dir = GetFolderPath(tileset);
             if (!Directory.Exists(dir)) {
                 Directory.CreateDirectory(dir);
             }
 
-            string path = $"{dir}{Path.DirectorySeparatorChar}{id.GetHashCode()}.png";
+            string lowPrefix = low ? "low_" : "";
+            string path = $"{dir}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png";
 #if MRK_PROFILE
             DateTime t = DateTime.Now;
 #endif
 
             using (FileStream fs = File.OpenWrite(path)) {
+                Debug.Log("Writing " + tex.Length);
                 await fs.WriteAsync(tex, 0, tex.Length);
             }
 
@@ -82,10 +88,15 @@ namespace MRK {
     }
 
     public class MRKRemoteTileFetcher : MRKTileFetcher {
-        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
+        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false) {
         __start:
             MRKTilesetProvider provider = MRKTileRequestor.Instance.GetCurrentTilesetProvider();
             string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
+            if (low) {
+                //lower res
+                path = path.Replace("@2x", "");
+            }
+
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
             req.SendWebRequest();
 
@@ -100,6 +111,7 @@ namespace MRK {
 
             context.Texture = DownloadHandlerTexture.GetContent(req);
             context.Data = req.downloadHandler.data;
+
             if (context.Texture == null) goto __start;
         }
 

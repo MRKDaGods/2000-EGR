@@ -80,6 +80,10 @@ namespace MRK {
             return i == 1;
         }
 
+        public static int ToInt(this bool b) {
+            return b ? 1 : 0;
+        }
+
 		public static Vector3 ToVector3xz(this Vector2 v) {
 			return new Vector3(v.x, 0, v.y);
 		}

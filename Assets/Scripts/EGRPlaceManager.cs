@@ -173,7 +173,7 @@ namespace MRK {
             tileInfo.Places = response.Places;
             //EGRMain.Log($"Tile[{response.Hash}] Hash -> " + response.TileHash);
 
-            EGRMain.Log($"Processed {response.Places.Count} places");
+            //EGRMain.Log($"Processed {response.Places.Count} places");
         }
 
         public HashSet<EGRPlace> GetPlacesInTile(int tileHash) {

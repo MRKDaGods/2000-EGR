@@ -15,10 +15,11 @@ namespace MRK {
         MeshRenderer m_MeshRenderer;
         MRKMap m_Map;
         static Mesh ms_TileMesh;
-        readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>> ms_CachedTiles;
+        readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>[] ms_CachedTiles;
         readonly static MRKFileTileFetcher ms_FileFetcher;
         readonly static MRKRemoteTileFetcher ms_RemoteFetcher;
-        readonly static TextureFetcherLock ms_FetcherLock;
+        readonly static TextureFetcherLock ms_LowFetcherLock;
+        readonly static TextureFetcherLock ms_HighFetcherLock;
         readonly static ObjectPool<Material> ms_MaterialPool;
         readonly static ObjectPool<GameObject> ms_ObjectPool;
         float m_MaterialBlend;
@@ -28,19 +29,24 @@ namespace MRK {
         float m_MaterialEmission;
         CoroutineRunner m_Runnable;
         int m_SiblingIndex;
+        TextureFetcherLock m_LastLock;
 
         public MRKTileID ID { get; private set; }
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
         public int SiblingIndex => m_SiblingIndex;
 
-        public static TextureFetcherLock FetcherLock => ms_FetcherLock;
-
         static MRKTile() {
-            ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>();
+            //low - high
+            ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>[2] {
+                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>(),
+                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>()
+            };
+
             ms_FileFetcher = new MRKFileTileFetcher();
             ms_RemoteFetcher = new MRKRemoteTileFetcher();
-            ms_FetcherLock = new TextureFetcherLock();
+            ms_LowFetcherLock = new TextureFetcherLock();
+            ms_HighFetcherLock = new TextureFetcherLock();
             ms_MaterialPool = new ObjectPool<Material>(() => {
                 return UnityEngine.Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
             });
@@ -90,8 +96,8 @@ namespace MRK {
                 if (ID.Stationary) {
                     SetTexture(m_Map.StationaryTexture);
                 }
-                else if (m_SiblingIndex < 5 && ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
-                    SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
+                else if (m_SiblingIndex < 5 && ms_CachedTiles[0].ContainsKey(m_Map.Tileset) && ms_CachedTiles[0][m_Map.Tileset].ContainsKey(ID)) {
+                    SetTexture(ms_CachedTiles[0][m_Map.Tileset][ID]);
                 }
                 else {
                     m_Runnable = Obj.GetComponent<CoroutineRunner>();
@@ -99,16 +105,30 @@ namespace MRK {
                         m_Runnable = Obj.AddComponent<CoroutineRunner>();
 
                     m_Runnable.enabled = true;
-                    if (Obj.activeInHierarchy)
+                    if (Obj.activeInHierarchy) {
+                        Obj.name += "LOW";
+                        m_Runnable.Run(FetchTexture(true));
+                        //m_Runnable.Run(LateFetchHighTex());
+                    }
+                }
+            }
+            else {
+                if (!m_FetchingTile) {
+                    if (m_LastLock == ms_LowFetcherLock && m_Runnable.Count == 0) {
                         m_Runnable.Run(FetchTexture());
+                    }
                 }
             }
         }
 
-        IEnumerator FetchTexture() {
-            SetLoadingTexture();
+        IEnumerator FetchTexture(bool low = false) {
+            if (low) {
+                SetLoadingTexture();
+            }
 
-            while (ms_FetcherLock.Recursion > 2) {
+            TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
+            int recursionMax = low ? 6 : 2;
+            while (texLock.Recursion > recursionMax) {
                 yield return new WaitForSeconds(0.8f);
             }
 
@@ -127,12 +147,13 @@ namespace MRK {
                 yield break;
             }
 
-            lock (ms_FetcherLock) {
-                ms_FetcherLock.Recursion++;
+            lock (texLock) {
+                texLock.Recursion++;
             }
 
             //incase we get destroyed while loading, we MUST decrement our lock somewhere
             m_FetchingTile = true;
+            m_LastLock = texLock;
 
             float sqrMag;
             do {
@@ -141,39 +162,54 @@ namespace MRK {
             }
             while (sqrMag > 5f * 5f);
 
-            if (ms_CachedTiles.ContainsKey(m_Map.Tileset) && ms_CachedTiles[m_Map.Tileset].ContainsKey(ID)) {
-                SetTexture(ms_CachedTiles[m_Map.Tileset][ID]);
+            int lowIdx = low.ToInt();
+            if (ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID)) {
+                SetTexture(ms_CachedTiles[lowIdx][m_Map.Tileset][ID]);
             }
             else {
                 string tileset = m_Map.Tileset;
-                MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
+                MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
                 MRKTileFetcherContext context = new MRKTileFetcherContext();
-                yield return fetcher.Fetch(context, tileset, ID);
+                yield return fetcher.Fetch(context, tileset, ID, low);
 
                 if (context.Error) {
-                    Debug.Log($"{fetcher.GetType().Name}: Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
+                    Debug.Log($"{fetcher.GetType().Name}: low={low} Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
                 }
                 else {
                     SetTexture(context.Texture);
                     if (context.Texture != null) {
-                        if (!ms_CachedTiles.ContainsKey(tileset)) {
-                            ms_CachedTiles[tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
+                        if (!ms_CachedTiles[lowIdx].ContainsKey(tileset)) {
+                            ms_CachedTiles[lowIdx][tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
                         }
 
-                        ms_CachedTiles[tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
+                        ms_CachedTiles[lowIdx][tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
 
                         if (context.Texture.isReadable)
-                            MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID);
+                            MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID, low);
                     }
                 }
             }
 
-            lock (ms_FetcherLock) {
-                ms_FetcherLock.Recursion--;
+            lock (texLock) {
+                texLock.Recursion--;
             }
 
             m_FetchingTile = false;
+
+            if (low && m_SiblingIndex < 9)
+                m_Runnable.Run(LateFetchHighTex());
+        }
+
+        IEnumerator LateFetchHighTex() {
+            yield return new WaitForSeconds((m_SiblingIndex + 1) * 0.1f);
+
+            while (m_FetchingTile)
+                yield return new WaitForSeconds(0.1f);
+
+            yield return FetchTexture();
+
+            Obj.name += "HIGH";
         }
 
         public void SetLoadingTexture() {
@@ -212,13 +248,14 @@ namespace MRK {
             ms_ObjectPool.Free(Obj);
 
             if (m_Runnable != null) {
+                m_Runnable.StopAll();
                 m_Runnable.enabled = false;
                 //Object.DestroyImmediate(m_Runnable);
             }
 
             if (m_FetchingTile) {
-                lock (ms_FetcherLock) {
-                    ms_FetcherLock.Recursion--;
+                lock (m_LastLock) {
+                    m_LastLock.Recursion--;
                     //Debug.Log($"{m_ObjPoolIndex} Decrement");
                 }
             }

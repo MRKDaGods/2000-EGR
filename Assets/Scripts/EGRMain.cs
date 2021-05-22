@@ -379,7 +379,7 @@ namespace MRK {
                 string dir = MRKTileRequestor.Instance.FileTileFetcher.GetFolderPath(provider.Name);
                 if (Directory.Exists(dir)) {
                     foreach (string filename in Directory.EnumerateFiles(dir, "*.png")) {
-                        if (new FileInfo(filename).Length < 5000) {
+                        if (new FileInfo(filename).Length < 100) {
                             File.Delete(filename);
                         }
                     }

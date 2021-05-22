@@ -74,7 +74,7 @@ namespace MRK {
 			//wait for velocity to go down
 			if (m_AwaitingMapFullUpdateEvent) {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
-				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1) {
+				if (sqrMagnitude <= 0.1f) {
 					m_AwaitingMapFullUpdateEvent = false;
 					m_AbsoluteZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
 
