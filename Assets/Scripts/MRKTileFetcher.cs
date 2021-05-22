@@ -46,7 +46,7 @@ namespace MRK {
                 yield break;
             }
 
-            UnityWebRequest req = UnityWebRequestTexture.GetTexture($"file:///{path}", false);
+            UnityWebRequest req = UnityWebRequestTexture.GetTexture($"file:///{path}", true);
             req.SendWebRequest();
 
             while (!req.isDone) {
@@ -71,19 +71,10 @@ namespace MRK {
 
             string lowPrefix = low ? "low_" : "";
             string path = $"{dir}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png";
-#if MRK_PROFILE
-            DateTime t = DateTime.Now;
-#endif
 
             using (FileStream fs = File.OpenWrite(path)) {
-                Debug.Log("Writing " + tex.Length);
                 await fs.WriteAsync(tex, 0, tex.Length);
             }
-
-#if MRK_PROFILE
-            TimeSpan t0 = DateTime.Now - t;
-            Debug.Log($"Saved {id} {t0.TotalMilliseconds}ms");
-#endif
         }
     }
 
@@ -94,7 +85,8 @@ namespace MRK {
             string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
             if (low) {
                 //lower res
-                path = path.Replace("@2x", "");
+                path = path.Replace("@2x", "")
+                    .Replace(".png", ".png32");
             }
 
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);

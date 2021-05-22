@@ -114,8 +114,17 @@ namespace MRK {
             }
             else {
                 if (!m_FetchingTile) {
-                    if (m_LastLock == ms_LowFetcherLock && m_Runnable.Count == 0) {
-                        m_Runnable.Run(FetchTexture());
+                    if (m_LastLock == ms_LowFetcherLock && m_Runnable.Count == 0 && m_SiblingIndex < 6) {
+                        m_Runnable.Run(LateFetchHighTex());
+                    }
+                }
+                else {
+                    if (m_SiblingIndex >= 6 && m_LastLock == ms_HighFetcherLock) {
+                        m_Runnable.StopAll();
+
+                        lock (ms_HighFetcherLock) {
+                            ms_HighFetcherLock.Recursion--;
+                        }
                     }
                 }
             }
@@ -197,7 +206,7 @@ namespace MRK {
 
             m_FetchingTile = false;
 
-            if (low && m_SiblingIndex < 9)
+            if (low && m_SiblingIndex < 6)
                 m_Runnable.Run(LateFetchHighTex());
         }
 
