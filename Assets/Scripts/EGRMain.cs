@@ -73,6 +73,8 @@ namespace MRK {
         Texture2D m_StatusBarTexture;
         [SerializeField]
         ParticleSystem m_EnvironmentEmitter;
+        readonly Dictionary<Transform, float> m_PlanetRotationCache;
+        float m_LastPhysicsSimulationTime; //we need to manually simulate physics for the sun flare to stop appearing through planets
 
         public static EGRMain Instance { get; private set; }
 
@@ -89,11 +91,13 @@ namespace MRK {
         public EGRPlaceManager PlaceManager { get; private set; }
         public bool InitialModeTransition => m_InitialModeTransition;
         public EGRMapMode PreviousMapMode => m_PreviousMapMode;
+        public Transform[] Planets => m_Planets;
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
             m_ActiveScreens = new List<EGRScreen>();
             m_Controllers = new List<EGRController>();
+            m_PlanetRotationCache = new Dictionary<Transform, float>();
         }
 
         void Awake() {
@@ -262,8 +266,25 @@ namespace MRK {
             }
 
             if (m_MapMode == EGRMapMode.Globe && !m_GlobeCamera.IsLocked) {
+                bool storeRotations = m_PlanetRotationCache.Count == 0;
+
                 foreach (Transform trans in m_Planets) {
-                    trans.RotateAround(m_Sun.position, Vector3.up, 5f * Time.deltaTime * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 73557f)));
+                    if (storeRotations) {
+                        int sibIdx = trans.GetSiblingIndex();
+                        m_PlanetRotationCache[trans] = sibIdx == 1 || sibIdx == 5 ? -1f : 1f;
+                    }
+
+                    trans.RotateAround(m_Sun.position, Vector3.up, m_PlanetRotationCache[trans] * 2f * Time.deltaTime * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 80000f)));
+                }
+            }
+
+            //simulate physics if we're only in space
+            if (ActiveEGRCamera.InterfaceActive) {
+                if (m_MapMode == EGRMapMode.Globe) {
+                    if (Time.time - m_LastPhysicsSimulationTime > 0.5f) {
+                        m_LastPhysicsSimulationTime = Time.time;
+                        Physics.Simulate(0.5f);
+                    }
                 }
             }
 

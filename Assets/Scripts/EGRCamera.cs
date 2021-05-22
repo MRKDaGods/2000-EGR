@@ -10,6 +10,7 @@ namespace MRK {
         float m_LastControllerTime;
 
         protected Camera m_Camera => Client.ActiveCamera;
+        public bool InterfaceActive => m_InterfaceActive;
 
         public EGRCamera() {
             m_Down = new bool[2];

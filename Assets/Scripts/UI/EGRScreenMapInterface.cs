@@ -345,6 +345,7 @@ namespace MRK.UI {
         readonly Dictionary<int, bool> m_TilePlaceFetchStates;
         bool m_ZoomHasChanged;
         float m_LastOverlapSearchTime;
+        Dictionary<Transform, TextMeshPro> m_PlanetNames;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -424,6 +425,16 @@ namespace MRK.UI {
             //map mode might've changed when visible=false
             OnMapModeChanged(Client.MapMode);
 
+            if (m_PlanetNames == null) {
+                m_PlanetNames = new Dictionary<Transform, TextMeshPro>();
+
+                foreach (Transform planet in Client.Planets) {
+                    TextMeshPro txt = planet.Find("Name").GetComponent<TextMeshPro>();
+                    txt.gameObject.SetActive(false);
+                    m_PlanetNames[planet] = txt;
+                }
+            }
+
             Client.DisableAllScreensExcept<EGRScreenMapInterface>();
 
             SetMapButtons(m_ButtonInfos);
@@ -496,11 +507,22 @@ namespace MRK.UI {
                             m_MouseDown = false;
 
                             Vector3 pos = (Vector3)msg.Payload[1];
-                            if ((pos - m_MouseDownPos).sqrMagnitude < 4f)
+                            if ((pos - m_MouseDownPos).sqrMagnitude < 9f)
                                 ChangeObservedTransform((Vector3)msg.Payload[1]);
                         }
                         break;
 
+                }
+            }
+        }
+
+        void SetObservedTransformNameState(bool active) {
+            if (ObservedTransform != Client.GlobalMap.transform) {
+                TextMeshPro txt = m_PlanetNames[ObservedTransform];
+                txt.gameObject.SetActive(active);
+
+                if (active) {
+                    StartCoroutine(SetTextEnumerator(x => txt.text = x, txt.text, 0.3f, ""));
                 }
             }
         }
@@ -514,8 +536,12 @@ namespace MRK.UI {
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, Client.ActiveCamera.farClipPlane, 1 << 6, QueryTriggerInteraction.Collide)) {
                 if (hit.transform != ObservedTransform) {
+                    SetObservedTransformNameState(false);
+
                     ObservedTransform = hit.transform;
                     ObservedTransformDirty = true;
+
+                    SetObservedTransformNameState(true);
                 }
             }
         }
@@ -609,6 +635,7 @@ namespace MRK.UI {
             m_EGRCamera.SetInterfaceState(false);
 
             if (ObservedTransform != Client.GlobalMap.transform) {
+                SetObservedTransformNameState(false);
                 ObservedTransform = Client.GlobalMap.transform;
                 ObservedTransformDirty = true;
             }

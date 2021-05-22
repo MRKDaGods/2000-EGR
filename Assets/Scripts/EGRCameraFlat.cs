@@ -10,6 +10,11 @@ namespace MRK {
             public Vector3Int Position;
         }
 
+        struct TouchContext {
+            public float LastDownTime;
+            public float LastValidDownTime;
+        }
+
         Vector2d m_CurrentLatLong;
         Vector2d m_TargetLatLong;
         float m_CurrentZoom;
@@ -19,6 +24,7 @@ namespace MRK {
         object m_PanTweenLng;
         object m_ZoomTween;
         EGRScreenMapInterface m_MapInterface;
+        TouchContext m_TouchCtx0;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
 
@@ -57,6 +63,10 @@ namespace MRK {
                     case EGRControllerMouseEventKind.Down:
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
+
+                        if (data.Index == 0) {
+                            m_TouchCtx0.LastDownTime = Time.time;
+                        }
                         break;
 
                     case EGRControllerMouseEventKind.Drag:
@@ -94,11 +104,50 @@ namespace MRK {
                         break;
 
                     case EGRControllerMouseEventKind.Up:
+                        if (m_Down[0]) {
+                            if (Time.time - m_LastZoomTime > 0.5f && Time.time - m_TouchCtx0.LastValidDownTime < 0.2f) {
+                                ProcessDoubleClick((Vector3)msg.Payload[1]);
+                            }
+                            else if (Time.time - m_TouchCtx0.LastDownTime < 0.1f) {
+                                m_TouchCtx0.LastValidDownTime = Time.time;
+                            }
+                        }
+
                         m_Down[data.Index] = false;
                         break;
 
                 }
             }
+        }
+
+        void ProcessDoubleClick(Vector3 pos) {
+            m_TargetZoom += 2f;
+            m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
+
+            pos.z = m_Camera.transform.localPosition.y;
+            Vector3 wPos = m_Camera.ScreenToWorldPoint(pos);
+            m_TargetLatLong = m_Map.WorldToGeoPosition(wPos);
+
+            if (m_PanTweenLat != null) {
+                DOTween.Kill(m_PanTweenLat);
+            }
+
+            if (m_PanTweenLng != null) {
+                DOTween.Kill(m_PanTweenLng);
+            }
+
+            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.5f)
+                .SetEase(Ease.OutSine);
+
+            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.5f)
+                .SetEase(Ease.OutSine);
+
+            if (m_ZoomTween != null) {
+                DOTween.Kill(m_ZoomTween);
+            }
+
+            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.4f)
+                .SetEase(Ease.OutSine);
         }
 
         public void KillAllTweens() {
@@ -124,7 +173,7 @@ namespace MRK {
 
             m_Delta[0] = 0f;
 
-            Vector2d offset2D = new Vector2d(-delta.x * 3f, -delta.y * 3f) * EGRSettings.GetMapSensitivity();
+            Vector2d offset2D = new Vector2d(-delta.x, -delta.y) * 3f * EGRSettings.GetMapSensitivity();
             float gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
             Vector2d newLatLong = MRKMapUtils.MetersToLatLon(
                 MRKMapUtils.LatLonToMeters(m_Map.CenterLatLng) + (offset2D / m_Map.WorldRelativeScale) / gameobjectScalingMultiplier);

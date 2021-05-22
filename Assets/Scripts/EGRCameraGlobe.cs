@@ -323,7 +323,7 @@ namespace MRK {
             m_Camera.transform.position = position;
 
             if (m_MapInterface.Visible) {
-                //m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m");
+                m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m");
             }
 
             float transparency = Mathf.Clamp01((Mathf.Min(4200f, m_CurrentDistance) - 3300f) / 3300f);
@@ -370,7 +370,7 @@ namespace MRK {
 #endif
 
             if (!m_InterfaceActive)
-                ProcessRotationIdle(new Vector3(30f, 0f), false);
+                ProcessRotationIdle(new Vector3(10f, 0f), false);
         }
 
         float ClampAngle(float angle, float min = 0f, float max = 0f) {
