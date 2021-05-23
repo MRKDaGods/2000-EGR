@@ -1,10 +1,7 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System.Collections;
 using System.Collections.Concurrent;
-using System.Linq;
 using UnityEngine;
-using DG.Tweening;
-using System.Collections.Generic;
-using System;
 
 namespace MRK {
     public class MRKTile {
@@ -22,6 +19,7 @@ namespace MRK {
         readonly static TextureFetcherLock ms_HighFetcherLock;
         readonly static ObjectPool<Material> ms_MaterialPool;
         readonly static ObjectPool<GameObject> ms_ObjectPool;
+        readonly static ObjectPool<MRKTilePlane> ms_PlanePool;
         float m_MaterialBlend;
         object m_Tween;
         Material m_Material;
@@ -35,6 +33,9 @@ namespace MRK {
         public RectD Rect { get; private set; }
         public GameObject Obj { get; private set; }
         public int SiblingIndex => m_SiblingIndex;
+        public Material Material => m_Material;
+        public bool HasAnyTexture { get; private set; }
+        public static ObjectPool<MRKTilePlane> PlanePool => ms_PlanePool;
 
         static MRKTile() {
             //low - high
@@ -48,7 +49,7 @@ namespace MRK {
             ms_LowFetcherLock = new TextureFetcherLock();
             ms_HighFetcherLock = new TextureFetcherLock();
             ms_MaterialPool = new ObjectPool<Material>(() => {
-                return UnityEngine.Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
+                return Object.Instantiate(EGRMain.Instance.FlatMap.TileMaterial);
             });
             ms_ObjectPool = new ObjectPool<GameObject>(() => {
                 GameObject obj = new GameObject();
@@ -58,12 +59,19 @@ namespace MRK {
 
                 return obj;
             }, true);
+
+            ms_PlanePool = new ObjectPool<MRKTilePlane>(() => {
+                GameObject obj = new GameObject("Tile Plane");
+                obj.layer = 6; //PostProcessing
+
+                return obj.AddComponent<MRKTilePlane>();
+            });
         }
 
         static void CreateTileMesh(float size) {
             float halfSize = size / 2;
             ms_TileMesh = new Mesh {
-                vertices = new Vector3[4] { new Vector3(-halfSize, 0f, -halfSize), new Vector3(halfSize, 0f, -halfSize), 
+                vertices = new Vector3[4] { new Vector3(-halfSize, 0f, -halfSize), new Vector3(halfSize, 0f, -halfSize),
                     new Vector3(halfSize, 0, halfSize), new Vector3(-halfSize, 0, halfSize) },
                 normals = new Vector3[4] { Vector3.up, Vector3.up, Vector3.up, Vector3.up },
                 triangles = new int[6] { 0, 2, 1, 0, 3, 2 },
@@ -119,7 +127,7 @@ namespace MRK {
                     }
                 }
                 else {
-                    if (m_SiblingIndex >= 6 && m_LastLock == ms_HighFetcherLock) {
+                    if (m_SiblingIndex >= 5 && m_LastLock == ms_HighFetcherLock) {
                         m_Runnable.StopAll();
 
                         lock (ms_HighFetcherLock) {
@@ -136,7 +144,7 @@ namespace MRK {
             }
 
             TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
-            int recursionMax = low ? 6 : 2;
+            int recursionMax = low ? 9 : 2;
             while (texLock.Recursion > recursionMax) {
                 yield return new WaitForSeconds(0.8f);
             }
@@ -165,11 +173,9 @@ namespace MRK {
             m_LastLock = texLock;
 
             float sqrMag;
-            do {
-                sqrMag = cam.GetMapVelocity().sqrMagnitude;
+            while ((sqrMag = cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
                 yield return new WaitForSeconds(0.1f);
             }
-            while (sqrMag > 5f * 5f);
 
             int lowIdx = low.ToInt();
             if (ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID)) {
@@ -206,12 +212,12 @@ namespace MRK {
 
             m_FetchingTile = false;
 
-            if (low && m_SiblingIndex < 6)
+            if (low && m_SiblingIndex < 5)
                 m_Runnable.Run(LateFetchHighTex());
         }
 
         IEnumerator LateFetchHighTex() {
-            yield return new WaitForSeconds((m_SiblingIndex + 1) * 0.1f);
+            yield return new WaitForSeconds((m_SiblingIndex + 1) * 0.5f);
 
             while (m_FetchingTile)
                 yield return new WaitForSeconds(0.1f);
@@ -235,9 +241,11 @@ namespace MRK {
                 m_MeshRenderer.material.mainTexture = tex;
                 Obj.name += "texed";
 
-                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.4f)
+                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.2f)
                     .SetEase(Ease.OutSine)
                     .OnUpdate(UpdateMaterialBlend);
+
+                HasAnyTexture = true;
             }
         }
 
@@ -247,6 +255,17 @@ namespace MRK {
 
             //elbt3 da 3amel 2l2, destroy!!
             if (m_MeshRenderer != null) {
+                if (m_SiblingIndex < 9) {
+                    MRKTilePlane tilePlane = ms_PlanePool.Rent();
+                    tilePlane.InitPlane(Obj.transform.position + new Vector3(0f, 0.2f), Obj.transform.lossyScale, (Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, () => {
+                        MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
+                        if (tile != null)
+                            return tile.HasAnyTexture;
+
+                        return false;
+                    });
+                }
+
                 m_MeshRenderer.material = null;
                 UnityEngine.Object.DestroyImmediate(m_MeshRenderer);
             }
@@ -275,6 +294,12 @@ namespace MRK {
                 m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
                 m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
             }
+        }
+
+        public void Test() {
+            float scaleX = Mathf.Cos(Time.time) * 0.5f + 1;
+            float scaleY = Mathf.Sin(Time.time) * 0.5f + 1;
+            m_MeshRenderer.material.SetTextureScale("_MainTex", new Vector2(scaleX, scaleY));
         }
     }
 }

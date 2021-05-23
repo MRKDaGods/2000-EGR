@@ -19,6 +19,7 @@ namespace MRK {
 		readonly List<MRKTileID> m_SortedTileIDs;
 		readonly Dictionary<MRKTileID, MRKTileID> m_SortedToActiveIDs;
 		readonly List<MRKTile> m_Tiles;
+		readonly Dictionary<MRKTileID, MRKTile> m_IDsToTiles;
 		int m_InitialZoom;
 		int m_AbsoluteZoom;
 		[SerializeField]
@@ -37,6 +38,10 @@ namespace MRK {
 		float[] m_DesiredTilesetEmission;
 		IMRKMapController m_MapController;
 		bool m_AwaitingMapFullUpdateEvent;
+		readonly List<MRKTileID> m_PreviousTiles;
+		bool m_TileDestroyZoomUpdatedDirty;
+		[SerializeField]
+		Material m_TilePlaneMaterial;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -54,12 +59,15 @@ namespace MRK {
 		public float TileSize => m_TileSize;
 		public Vector2d CenterMercator => m_CenterMercator;
 		public List<MRKTile> Tiles => m_Tiles;
+		public Material TilePlaneMaterial => m_TilePlaneMaterial;
 
 		public MRKMap() {
 			m_ActiveTileIDs = new List<MRKTileID>();
 			m_SortedTileIDs = new List<MRKTileID>();
 			m_SortedToActiveIDs = new Dictionary<MRKTileID, MRKTileID>();
 			m_Tiles = new List<MRKTile>();
+			m_IDsToTiles = new Dictionary<MRKTileID, MRKTile>();
+			m_PreviousTiles = new List<MRKTileID>();
 		}
 
 		void Start() {
@@ -81,12 +89,19 @@ namespace MRK {
 					//raise map full update
 					if (OnMapFullyUpdated != null) {
 						OnMapFullyUpdated();
-                    }
+					}
+
+					m_PreviousTiles.Clear();
+					foreach (MRKTileID tile in m_SortedTileIDs) {
+						m_PreviousTiles.Add(m_SortedToActiveIDs[tile]);
+					}
 
 					UpdateScale();
+
+					m_TileDestroyZoomUpdatedDirty = true;
 					UpdatePosition();
 				}
-            }
+			}
 
 #if MRK_DEBUG_FETCHER_LOCK
 			Debug.Log(MRKTile.FetcherLock.Recursion);
@@ -139,10 +154,12 @@ namespace MRK {
 				tile.OnDestroy();
 
 				//tell the map interface to dispose markers owned by such tiles
-				EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile));
-
+				EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile, m_TileDestroyZoomUpdatedDirty));
 				m_Tiles.Remove(tile);
 			}
+
+			m_IDsToTiles.Clear();
+			m_TileDestroyZoomUpdatedDirty = false;
 
 			foreach (MRKTileID id in m_ActiveTileIDs) {
 				MRKTileID sortedID = new MRKTileID(0, id.X - centerTile.X, id.Y - centerTile.Y);
@@ -177,6 +194,8 @@ namespace MRK {
 
 				if (!m_Tiles.Contains(tile))
 					m_Tiles.Add(tile);
+
+				m_IDsToTiles[realID] = tile;
 			}
 
 			transform.position = Vector3.zero;
@@ -282,5 +301,23 @@ namespace MRK {
 		public void SetMapController(IMRKMapController controller) {
 			m_MapController = controller;
 		}
+
+		public MRKTileID GetPreviousTileID(int idx) {
+			if (idx >= m_PreviousTiles.Count)
+				return null;
+
+			return m_PreviousTiles[idx];
+        }
+
+		public MRKTile GetTileFromSiblingIndex(int index) {
+			if (m_SortedToActiveIDs.Count <= index)
+				return null;
+
+			MRKTileID id = m_SortedToActiveIDs[m_SortedTileIDs[index]];
+			if (m_IDsToTiles.ContainsKey(id))
+				return m_IDsToTiles[id];
+
+			return null;
+        }
 	}
 }

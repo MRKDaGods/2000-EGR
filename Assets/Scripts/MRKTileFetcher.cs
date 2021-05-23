@@ -85,8 +85,8 @@ namespace MRK {
             string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
             if (low) {
                 //lower res
-                path = path.Replace("@2x", "")
-                    .Replace(".png", ".png32");
+                path = path.Replace("@2x", "");
+                    //.Replace("/512/", "/256/");
             }
 
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
@@ -98,6 +98,7 @@ namespace MRK {
 
             if (req.result != UnityWebRequest.Result.Success) {
                 context.Error = true;
+                Debug.Log(req.error + req.downloadHandler.error);
                 yield break;
             }
 

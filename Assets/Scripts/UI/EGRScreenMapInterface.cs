@@ -669,10 +669,10 @@ namespace MRK.UI {
         void OnMapFullyUpdated() {
             if (m_ZoomHasChanged) {
                 m_ZoomHasChanged = false;
-                SetTransitionTex(Client.CaptureScreenBuffer());
+                //SetTransitionTex(Client.CaptureScreenBuffer());
             }
 
-            /* if (m_Map.Zoom < 10f) {
+            if (m_Map.Zoom < 10f) {
                 List<EGRPlaceMarker> buffer = new List<EGRPlaceMarker>();
                 foreach (EGRPlaceMarker marker in m_ActiveMarkers.Values)
                     buffer.Add(marker);
@@ -681,7 +681,7 @@ namespace MRK.UI {
                     FreeMarker(marker);
 
                 return;
-            } */
+            }
 
             //if (Time.time - m_LastFetchRequestTime < 0.6f)
             //    return;
