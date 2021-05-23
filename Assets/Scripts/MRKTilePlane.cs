@@ -41,6 +41,7 @@ namespace MRK {
             m_Material = ms_MaterialPool.Rent();
             m_Material.mainTexture = tex;
             m_DissolveValue = 0f;
+            m_Material.SetFloat("_Emission", Client.FlatMap.GetDesiredTilesetEmission());
             m_Material.SetFloat("_Amount", 0f);
 
             if (m_MeshRenderer == null) {
@@ -55,12 +56,13 @@ namespace MRK {
             while (!killPredicate())
                 yield return new WaitForSeconds(0.04f);
 
-            DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.4f)
+            DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.7f)
                 .OnUpdate(() => m_Material.SetFloat("_Amount", m_DissolveValue))
-                .OnComplete(RecyclePlane);
+                .OnComplete(() => RecyclePlane())
+                .SetEase(Ease.OutSine);
         }
 
-        void RecyclePlane() {
+        public void RecyclePlane(bool remove = true) {
             if (m_MeshRenderer != null) {
                 m_MeshRenderer.material = null;
             }
@@ -71,8 +73,13 @@ namespace MRK {
                 m_Material = null;
             }
 
+            StopAllCoroutines();
             gameObject.SetActive(false);
             MRKTile.PlanePool.Free(this);
+
+            if (remove) {
+                //Client.FlatMap.ActivePlanes.Remove(this);
+            }
         }
 
         static void CreateTileMesh(float size) {

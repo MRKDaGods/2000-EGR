@@ -255,7 +255,7 @@ namespace MRK {
 
             //elbt3 da 3amel 2l2, destroy!!
             if (m_MeshRenderer != null) {
-                if (m_SiblingIndex < 9) {
+                if (m_SiblingIndex < 9 && m_Map.TileDestroyZoomUpdatedDirty) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
                     tilePlane.InitPlane(Obj.transform.position + new Vector3(0f, 0.2f), Obj.transform.lossyScale, (Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, () => {
                         MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
@@ -264,6 +264,8 @@ namespace MRK {
 
                         return false;
                     });
+
+                    m_Map.ActivePlanes.Add(tilePlane);
                 }
 
                 m_MeshRenderer.material = null;

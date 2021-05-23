@@ -42,6 +42,7 @@ namespace MRK {
 		bool m_TileDestroyZoomUpdatedDirty;
 		[SerializeField]
 		Material m_TilePlaneMaterial;
+		readonly List<MRKTilePlane> m_ActivePlanes;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -60,6 +61,8 @@ namespace MRK {
 		public Vector2d CenterMercator => m_CenterMercator;
 		public List<MRKTile> Tiles => m_Tiles;
 		public Material TilePlaneMaterial => m_TilePlaneMaterial;
+		public bool TileDestroyZoomUpdatedDirty => m_TileDestroyZoomUpdatedDirty;
+		public List<MRKTilePlane> ActivePlanes => m_ActivePlanes;
 
 		public MRKMap() {
 			m_ActiveTileIDs = new List<MRKTileID>();
@@ -68,6 +71,7 @@ namespace MRK {
 			m_Tiles = new List<MRKTile>();
 			m_IDsToTiles = new Dictionary<MRKTileID, MRKTile>();
 			m_PreviousTiles = new List<MRKTileID>();
+			m_ActivePlanes = new List<MRKTilePlane>();
 		}
 
 		void Start() {
@@ -82,7 +86,7 @@ namespace MRK {
 			//wait for velocity to go down
 			if (m_AwaitingMapFullUpdateEvent) {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
-				if (sqrMagnitude <= 0.1f) {
+				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1) {
 					m_AwaitingMapFullUpdateEvent = false;
 					m_AbsoluteZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
 
@@ -149,6 +153,14 @@ namespace MRK {
 					buf.Add(tile);
 				}
 			}
+
+			if (m_TileDestroyZoomUpdatedDirty) {
+				foreach (MRKTilePlane plane in m_ActivePlanes) {
+					//plane.RecyclePlane(false);
+                }
+
+				m_ActivePlanes.Clear();
+            }
 
 			foreach (MRKTile tile in buf) {
 				tile.OnDestroy();
