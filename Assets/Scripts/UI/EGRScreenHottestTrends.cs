@@ -124,6 +124,8 @@ namespace MRK.UI {
         void OnDataReceived(List<EGRPlaceStatistics> stats) {
             m_LoadingTxt.gameObject.SetActive(false);
 
+            Debug.Log(stats.Count);
+
             //lets see if we need to create or destroy lines?
             int delta = stats.Count - m_Lines.Count;
             if (delta > 0) {

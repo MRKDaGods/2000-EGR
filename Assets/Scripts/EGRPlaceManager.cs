@@ -256,6 +256,18 @@ namespace MRK {
             return desiredZoom >= zMin && desiredZoom <= zMax;
         }
 
+        public Vector2 GetOverlapCenter(EGRPlaceMarker master) {
+            if (!master.IsOverlapMaster || master.Overlappers == null || master.Overlappers.Count == 0)
+                return Vector2.zero;
+
+            Vector2 avgPos = master.ScreenPoint;
+            foreach (EGRPlaceMarker child in master.Overlappers) {
+                avgPos += (Vector2)child.ScreenPoint; //ignore z
+            }
+
+            return avgPos / (master.Overlappers.Count + 1);
+        }
+
         void OnGUI() {
             /*EGRScreenMapInterface mi = ScreenManager.GetScreen<EGRScreenMapInterface>();
             if (mi == null || !mi.Visible)

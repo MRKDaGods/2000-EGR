@@ -2,18 +2,18 @@ Shader "EGR/DissolveShader" {
 	Properties{
 		_Color("Color", Color) = (1,1,1,1)
 		_MainTex("Albedo (RGB)", 2D) = "white" {}
-		_Glossiness("Smoothness", Range(0,1)) = 0.5
-		_Metallic("Metallic", Range(0,1)) = 0.0
 
 			//Dissolve properties
 			_DissolveTexture("Dissolve Texutre", 2D) = "white" {}
 			_Amount("Amount", Range(0,1)) = 0
-		    _Emission("Emission", float) = 0
+			_Emission("Emission", float) = 0
 	}
 
 		SubShader{
 			Tags { "RenderType" = "Opaque" }
 			LOD 200
+			ZTest Off
+			ZWrite Off
 
 			CGPROGRAM
 			#pragma surface surf Standard fullforwardshadows
@@ -26,8 +26,6 @@ Shader "EGR/DissolveShader" {
 				float2 uv_MainTex;
 			};
 
-			half _Glossiness;
-			half _Metallic;
 			fixed4 _Color;
 			float _Emission;
 

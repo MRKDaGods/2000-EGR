@@ -12,6 +12,9 @@ namespace MRK {
         MeshRenderer m_MeshRenderer;
         float m_DissolveValue;
         Material m_Material;
+        float m_WorldRelativeScale;
+        RectD m_Rect;
+        int m_AbsoluteZoom;
 
         static MRKTilePlane() {
             ms_MaterialPool = new ObjectPool<Material>(() => {
@@ -19,7 +22,7 @@ namespace MRK {
             });
         }
 
-        public void InitPlane(Vector3 position, Vector3 scale, Texture2D tex, float size, Func<bool> killPredicate) {
+        public void InitPlane(Texture2D tex, float size, RectD rect, int zoom, Func<bool> killPredicate) {
             if (tex == null) {
                 RecyclePlane();
                 return;
@@ -27,8 +30,11 @@ namespace MRK {
 
             gameObject.SetActive(true);
 
-            transform.position = position;
-            transform.localScale = scale;
+            m_WorldRelativeScale = size / (float)rect.Size.x;
+            m_Rect = rect;
+            m_AbsoluteZoom = zoom;
+
+            UpdatePlane();
 
             if (ms_TileMesh == null || ms_LastAssignedTileMeshSize != size)
                 CreateTileMesh(size);
@@ -60,6 +66,17 @@ namespace MRK {
                 .OnUpdate(() => m_Material.SetFloat("_Amount", m_DissolveValue))
                 .OnComplete(() => RecyclePlane())
                 .SetEase(Ease.OutSine);
+        }
+
+        public void UpdatePlane() {
+            MRKTile.PlaneContainer.transform.localScale = Client.FlatMap.transform.localScale;
+
+            float scaleFactor = Mathf.Pow(2, Client.FlatMap.InitialZoom - m_AbsoluteZoom);
+            transform.localScale = Vector3.one * scaleFactor;
+
+            Vector2d mercator = Client.FlatMap.CenterMercator;
+            transform.localPosition = new Vector3((float)(m_Rect.Center.x - mercator.x) * m_WorldRelativeScale * scaleFactor, 0f,
+                     (float)(m_Rect.Center.y - mercator.y) * m_WorldRelativeScale * scaleFactor);
         }
 
         public void RecyclePlane(bool remove = true) {

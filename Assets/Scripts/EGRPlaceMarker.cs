@@ -15,15 +15,25 @@ namespace MRK {
         static EGRScreenMapInterface ms_MapInterface;
         static Canvas ms_Canvas;
         float m_InitialMarkerWidth;
-
-        public EGRPlaceMarker Owner;
-        public bool GroupMaster;
-        public List<EGRPlaceMarker> Overlappers = new List<EGRPlaceMarker>();
+        EGRPlaceMarker m_OverlapOwner;
+        EGRPlaceMarker m_ImmediateOverlapOwner; //always up to date
 
         public EGRPlace Place { get; private set; }
         public int TileHash { get; set; }
         public RectTransform RectTransform => (RectTransform)transform;
         public Vector3 ScreenPoint { get; private set; }
+        public EGRPlaceMarker OverlapOwner {
+            get => m_ImmediateOverlapOwner;
+            set {
+                m_ImmediateOverlapOwner = value;
+            }
+        }
+        public bool IsOverlapMaster { get; set; }
+        public List<EGRPlaceMarker> Overlappers { get; private set; }
+
+        public EGRPlaceMarker() {
+            Overlappers = new List<EGRPlaceMarker>();
+        }
 
         void Awake() {
             m_Text = GetComponentInChildren<TextMeshProUGUI>();
@@ -39,8 +49,9 @@ namespace MRK {
         }
 
         public void ClearOverlaps() {
-            Owner = null;
-            GroupMaster = false;
+            m_ImmediateOverlapOwner = null;
+            //m_OverlapOwner = null;
+            IsOverlapMaster = false;
             Overlappers.Clear();
         }
 
@@ -61,31 +72,42 @@ namespace MRK {
         }
 
         void LateUpdate() {
-            Vector3 pos = Client.FlatMap.GeoToWorldPosition(new Vector2d(Place.Latitude, Place.Longitude));
+            if (m_OverlapOwner != m_ImmediateOverlapOwner) {
+                m_OverlapOwner = m_ImmediateOverlapOwner;
+                m_Fade.Reset();
 
+                if (OverlapOwner == null) {
+                    m_Fade.SetColors(Color.clear, Color.white);
+                }
+                else {
+                    m_Fade.SetColors(Color.clear, Color.red);
+                }
+            }
+
+            Vector3 pos = Client.FlatMap.GeoToWorldPosition(new Vector2d(Place.Latitude, Place.Longitude));
             Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
             if (spos.z > 0f) {
                 Vector3 tempSpos = spos;
                 tempSpos.y = Screen.height - tempSpos.y;
                 ScreenPoint = tempSpos;
 
-                Vector2 point;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)ms_Canvas.transform, spos, ms_Canvas.worldCamera, out point);
-                transform.position = ms_Canvas.transform.TransformPoint(point);
+                transform.position = ScreenToMarkerSpace(spos);
             }
 
-            transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(Client.FlatMap.Zoom / 21f);
-            m_Sprite.color = Color.white.AlterAlpha(Mathf.Lerp(0f, ms_MapInterface.EvaluateMarkerOpacity(Client.FlatMap.Zoom / 21f), m_Fade.Delta - (Owner != null ? 0.5f : 0f)));
-
-            if (Owner != null) {
-                if (m_Fade.Done)
-                    m_Fade.Reset();
-            }
+            float zoomProg = Client.FlatMap.Zoom / 21f;
+            transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg);
+            m_Sprite.color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
 
             if (!m_Fade.Done) {
                 m_Fade.Update();
                 //m_Text.color = m_Fade.Current;
             }
+        }
+
+        public static Vector3 ScreenToMarkerSpace(Vector2 spos) {
+            Vector2 point;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)ms_Canvas.transform, spos, ms_Canvas.worldCamera, out point);
+            return ms_Canvas.transform.TransformPoint(point);
         }
 
         /*void FindOverlaps(EGRPlaceMarker prev) {

@@ -20,6 +20,7 @@ namespace MRK {
         readonly static ObjectPool<Material> ms_MaterialPool;
         readonly static ObjectPool<GameObject> ms_ObjectPool;
         readonly static ObjectPool<MRKTilePlane> ms_PlanePool;
+        static GameObject ms_PlaneContainer;
         float m_MaterialBlend;
         object m_Tween;
         Material m_Material;
@@ -36,6 +37,7 @@ namespace MRK {
         public Material Material => m_Material;
         public bool HasAnyTexture { get; private set; }
         public static ObjectPool<MRKTilePlane> PlanePool => ms_PlanePool;
+        public static GameObject PlaneContainer => ms_PlaneContainer;
 
         static MRKTile() {
             //low - high
@@ -62,6 +64,7 @@ namespace MRK {
 
             ms_PlanePool = new ObjectPool<MRKTilePlane>(() => {
                 GameObject obj = new GameObject("Tile Plane");
+                obj.transform.parent = ms_PlaneContainer.transform;
                 obj.layer = 6; //PostProcessing
 
                 return obj.AddComponent<MRKTilePlane>();
@@ -87,6 +90,10 @@ namespace MRK {
 
             if (ms_TileMesh == null) {
                 CreateTileMesh(m_Map.TileSize);
+            }
+
+            if (ms_PlaneContainer == null) {
+                ms_PlaneContainer = new GameObject("Plane Container");
             }
 
             if (Obj == null) {
@@ -257,7 +264,7 @@ namespace MRK {
             if (m_MeshRenderer != null) {
                 if (m_SiblingIndex < 9 && m_Map.TileDestroyZoomUpdatedDirty) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
-                    tilePlane.InitPlane(Obj.transform.position + new Vector3(0f, 0.2f), Obj.transform.lossyScale, (Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, () => {
+                    tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect, ID.Z, () => {
                         MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
                         if (tile != null)
                             return tile.HasAnyTexture;

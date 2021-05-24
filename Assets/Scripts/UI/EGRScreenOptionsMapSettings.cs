@@ -36,6 +36,10 @@ namespace MRK.UI {
             EGRSettings.Save();
 
             Client.FlatMap.UpdateTileset();
+
+            if (Client.ActiveEGRCamera.InterfaceActive) {
+                Client.ActiveEGRCamera.ResetStates();
+            }
         }
 
         void OnPreviewClick() {

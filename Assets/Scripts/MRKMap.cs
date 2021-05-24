@@ -88,7 +88,9 @@ namespace MRK {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
 				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1) {
 					m_AwaitingMapFullUpdateEvent = false;
-					m_AbsoluteZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
+					int newAbsZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
+					m_TileDestroyZoomUpdatedDirty = m_AbsoluteZoom != newAbsZoom;
+					m_AbsoluteZoom = newAbsZoom;
 
 					//raise map full update
 					if (OnMapFullyUpdated != null) {
@@ -101,8 +103,6 @@ namespace MRK {
 					}
 
 					UpdateScale();
-
-					m_TileDestroyZoomUpdatedDirty = true;
 					UpdatePosition();
 				}
 			}
@@ -289,6 +289,10 @@ namespace MRK {
 				if (OnMapUpdated != null)
 					OnMapUpdated();
 			}
+
+			foreach (MRKTilePlane plane in m_ActivePlanes) {
+				plane.UpdatePlane();
+            }
 		}
 
 		public Vector2d WorldToGeoPosition(Vector3 realworldPoint) {

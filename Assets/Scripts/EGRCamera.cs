@@ -37,7 +37,7 @@ namespace MRK {
             }
         }
 
-        protected bool ShouldProcessControllerMessage(EGRControllerMessage msg) {
+        public bool ShouldProcessControllerMessage(EGRControllerMessage msg) {
             if (Client.ActiveScreens.Count > 1)
                 return false;
             

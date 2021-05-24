@@ -27,5 +27,10 @@ namespace MRK {
         public void Reset() {
             m_Delta = 0f;
         }
+
+        public void SetColors(Color i, Color f) {
+            m_Initial = i;
+            m_Final = f;
+        }
     }
 }

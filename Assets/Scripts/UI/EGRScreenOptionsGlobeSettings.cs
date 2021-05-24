@@ -37,6 +37,10 @@ namespace MRK.UI {
             EGRSettings.ShowDistance = m_DistanceSelector.SelectedIndex == 0;
             EGRSettings.ShowTime = m_TimeSelector.SelectedIndex == 0;
             EGRSettings.Save();
+
+            if (Client.ActiveEGRCamera.InterfaceActive) {
+                Client.ActiveEGRCamera.ResetStates();
+            }
         }
     }
 }

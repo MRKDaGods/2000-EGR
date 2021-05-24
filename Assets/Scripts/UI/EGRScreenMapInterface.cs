@@ -390,7 +390,7 @@ namespace MRK.UI {
             m_ButtonInfoDelegates = new Action[3] {
                 () => Debug.Log("tryna get curloc"),
                 OnHottestTrendsClick,
-                () => Debug.Log("tryna get ma settings doe")
+                OnSettingsClick //settings
             };
 
             for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++)
@@ -490,6 +490,9 @@ namespace MRK.UI {
 
         void OnControllerMessageReceived(EGRControllerMessage msg) {
             if (Client.MapMode != EGRMapMode.Globe)
+                return;
+
+            if (!m_EGRCamera.ShouldProcessControllerMessage(msg))
                 return;
 
             if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
@@ -790,12 +793,12 @@ namespace MRK.UI {
 
                     if (marker.RectTransform.RectOverlaps(other.RectTransform)) {
                         marker.Overlappers.Add(other);
-                        if (marker.Owner == null) {
+                        if (marker.OverlapOwner == null) {
                             //Debug.Log($"{marker.Place.Name} is gm");
-                            marker.GroupMaster = true;
+                            marker.IsOverlapMaster = true;
                         }
 
-                        other.Owner = marker.GroupMaster ? marker : marker.Owner;
+                        other.OverlapOwner = marker.IsOverlapMaster ? marker : marker.OverlapOwner;
                     }
                 }
             }
@@ -804,7 +807,7 @@ namespace MRK.UI {
         void OnGUI() {
             if (ActiveMarkers != null && ActiveMarkers.Count > 0) {
                 foreach (EGRPlaceMarker marker in ActiveMarkers) {
-                    if (!marker.GroupMaster)
+                    if (!marker.IsOverlapMaster)
                         continue;
 
                     if (marker.Overlappers == null) {
@@ -815,6 +818,9 @@ namespace MRK.UI {
                     foreach (EGRPlaceMarker overlapper in marker.Overlappers) {
                         EGRGL.DrawLine(marker.ScreenPoint, overlapper.ScreenPoint, Color.blue, 1.4f);
                     }
+
+                    Vector2 center = Client.PlaceManager.GetOverlapCenter(marker);
+                    EGRGL.DrawCircle(center, 20f, Color.blue);
                 }
             }
         }
@@ -902,6 +908,11 @@ namespace MRK.UI {
 
         void OnHottestTrendsClick() {
             Manager.GetScreen<EGRScreenHottestTrends>().ShowScreen(this);
+        }
+
+        void OnSettingsClick() {
+            EGRScreen screen = Client.MapMode == EGRMapMode.Globe ? Manager.GetScreen<EGRScreenOptionsGlobeSettings>() : (EGRScreen)Manager.GetScreen<EGRScreenOptionsMapSettings>();
+            screen.ShowScreen();
         }
 
         public Sprite GetSpriteForPlaceType(EGRPlaceType type) {
