@@ -269,40 +269,6 @@ namespace MRK.UI {
             public Action OnDown;
         }
 
-        class ScaleBar {
-            Transform m_Parent;
-            TextMeshProUGUI m_Text;
-            Image m_Fill;
-
-            public bool IsActive => m_Parent.gameObject.activeInHierarchy;
-
-            public ScaleBar(Transform parent) {
-                m_Parent = parent;
-                m_Text = parent.Find("Text").GetComponent<TextMeshProUGUI>();
-                m_Fill = parent.Find("fill").GetComponent<Image>();
-            }
-
-            public void SetActive(bool active) {
-                m_Parent.gameObject.SetActive(active);
-            }
-
-            public void UpdateScale(float curZoom, float ratio) {
-                m_Fill.fillAmount = curZoom - Mathf.Floor(curZoom);
-
-                string unit = "M";
-                if (ratio < 1000f) {
-                    ratio *= 100f;
-                    unit = "CM";
-                }
-                else if (ratio > 100000f) {
-                    ratio /= 1000f;
-                    unit = "KM";
-                }
-
-                m_Text.text = $"1:{Mathf.RoundToInt(ratio)} {unit}";
-            }
-        }
-
         [Serializable]
         struct MarkerSprite {
             public EGRPlaceType Type;
@@ -318,18 +284,12 @@ namespace MRK.UI {
         TextMeshPro m_TimeLabel;
         [SerializeField]
         TextMeshPro m_DistLabel;
-        [SerializeField]
-        GameObject m_MarkerPrefab;
         float m_LastTimeUpdate;
-        float m_LastFetchRequestTime;
-        readonly Dictionary<string, EGRPlaceMarker> m_ActiveMarkers;
-        readonly ObjectPool<EGRPlaceMarker> m_MarkerPool;
         [SerializeField]
         AnimationCurve m_MarkerScaleCurve;
         [SerializeField]
         AnimationCurve m_MarkerOpacityCurve;
         RawImage m_TransitionImg;
-        ScaleBar m_ScaleBar;
         [SerializeField]
         MapButtonInfo[] m_ButtonInfos;
         readonly List<Tuple<GameObject, TextMeshProUGUI>> m_MapButtonsPool;
@@ -341,30 +301,28 @@ namespace MRK.UI {
         MarkerSprite[] m_MarkerSprites;
         bool m_MouseDown;
         Vector3 m_MouseDownPos;
-        readonly HashSet<int> m_PendingDestroyedTiles;
-        readonly Dictionary<int, bool> m_TilePlaceFetchStates;
         bool m_ZoomHasChanged;
-        float m_LastOverlapSearchTime;
         Dictionary<Transform, TextMeshPro> m_PlanetNames;
+        readonly Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> m_InterfaceComponents;
+        [SerializeField]
+        EGRMapInterfacePlaceMarkersResources m_PlaceMarkersResources;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
         EGRCamera m_EGRCamera => EGRMain.Instance.ActiveEGRCamera;
         public string ContextText => m_ContextLabel.text;
         public bool IsInTransition => m_TransitionImg.gameObject.activeInHierarchy;
-        public Dictionary<string, EGRPlaceMarker>.ValueCollection ActiveMarkers => m_ActiveMarkers.Values;
         public Transform ObservedTransform { get; private set; }
         public bool ObservedTransformDirty { get; set; }
+        public Transform ScalebarParent { get; private set; }
+        public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers => (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
+        public EGRMapInterfaceComponentScaleBar ScaleBar => (EGRMapInterfaceComponentScaleBar)m_InterfaceComponents[EGRMapInterfaceComponentType.ScaleBar];
+        public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
 
         public EGRScreenMapInterface() {
-            m_ActiveMarkers = new Dictionary<string, EGRPlaceMarker>();
-            m_MarkerPool = new ObjectPool<EGRPlaceMarker>(() => {
-                return Instantiate(m_MarkerPrefab, m_MarkerPrefab.transform.parent).AddComponent<EGRPlaceMarker>();
-            });
+            m_InterfaceComponents = new Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent>();
 
             m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
-            m_PendingDestroyedTiles = new HashSet<int>();
-            m_TilePlaceFetchStates = new Dictionary<int, bool>();
         }
 
         protected override void OnScreenInit() {
@@ -378,10 +336,7 @@ namespace MRK.UI {
             m_TransitionImg = GetElement<RawImage>(Images.Transition);
             m_TransitionImg.gameObject.SetActive(false);
 
-            m_MarkerPrefab.SetActive(false);
-
-            m_ScaleBar = new ScaleBar(GetTransform(Others.DistProg));
-            m_ScaleBar.SetActive(false);
+            ScalebarParent = GetTransform(Others.DistProg);
 
             m_IdleButtonPositioner = new Positioner(GetTransform(Others.BotHorPos));
             m_ActiveButtonPositioner = new Positioner(GetTransform(Others.MapActiveTemplate));
@@ -397,6 +352,9 @@ namespace MRK.UI {
                 m_ButtonInfos[i].OnDown = m_ButtonInfoDelegates[i];
 
             ObservedTransform = Client.GlobalMap.transform;
+
+            RegisterInterfaceComponent(EGRMapInterfaceComponentType.PlaceMarkers, new EGRMapInterfaceComponentPlaceMarkers());
+            RegisterInterfaceComponent(EGRMapInterfaceComponentType.ScaleBar, new EGRMapInterfaceComponentScaleBar());
         }
 
         public void OnInterfaceEarlyShow() {
@@ -420,8 +378,6 @@ namespace MRK.UI {
             Client.RegisterMapModeDelegate(OnMapModeChanged);
             Client.RegisterControllerReceiver(OnControllerMessageReceived);
 
-            EventManager.Register<EGREventTileDestroyed>(OnTileDestroyed);
-
             //map mode might've changed when visible=false
             OnMapModeChanged(Client.MapMode);
 
@@ -438,6 +394,10 @@ namespace MRK.UI {
             Client.DisableAllScreensExcept<EGRScreenMapInterface>();
 
             SetMapButtons(m_ButtonInfos);
+
+            foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
+                pair.Value.OnComponentShow();
+            }
         }
 
         protected override void OnScreenHide() {
@@ -448,14 +408,16 @@ namespace MRK.UI {
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
 
-            EventManager.Unregister<EGREventTileDestroyed>(OnTileDestroyed);
-
             Manager.MainScreen.ShowScreen();
 
             Client.SetPostProcessState(false);
             m_ContextLabel.gameObject.SetActive(false);
             m_TimeLabel.gameObject.SetActive(false);
             m_DistLabel.gameObject.SetActive(false);
+
+            foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
+                pair.Value.OnComponentHide();
+            }
         }
 
         protected override void OnScreenUpdate() {
@@ -470,13 +432,14 @@ namespace MRK.UI {
             }
         }
 
-        public void SetMapState(bool state) {
-            m_Map.gameObject.SetActive(state);
+        void RegisterInterfaceComponent(EGRMapInterfaceComponentType type, EGRMapInterfaceComponent component) {
+            m_InterfaceComponents[type] = component;
+            component.OnComponentInit(this);
         }
 
         void OnMapModeChanged(EGRMapMode mode) {
             m_CamDistLabel.gameObject.SetActive(/*isGlobe*/false);
-            m_ScaleBar.SetActive(mode == EGRMapMode.Flat);
+            ScaleBar.SetActive(mode == EGRMapMode.Flat);
             Client.ActiveEGRCamera.ResetStates();
 
             //from globe to flat
@@ -650,14 +613,8 @@ namespace MRK.UI {
             if (Client.MapMode != EGRMapMode.Flat)
                 return;
 
-            GetOverlappingMarkers();
-
-            if (m_ScaleBar.IsActive) {
-                Vector2d minPos = m_Map.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(0f, 0f, Client.ActiveCamera.transform.localPosition.y)));
-                Vector2d maxPos = m_Map.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(Screen.width, 0f, Client.ActiveCamera.transform.localPosition.y)));
-                Vector2d delta = maxPos - minPos;
-                float scale = (float)MRKMapUtils.LatLonToMeters(delta).x / (Screen.width * 0.0264583333f);
-                m_ScaleBar.UpdateScale(m_Map.Zoom, scale);
+            foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
+                pair.Value.OnMapUpdated();
             }
         }
 
@@ -675,138 +632,20 @@ namespace MRK.UI {
                 //SetTransitionTex(Client.CaptureScreenBuffer());
             }
 
-            if (m_Map.Zoom < 10f) {
-                List<EGRPlaceMarker> buffer = new List<EGRPlaceMarker>();
-                foreach (EGRPlaceMarker marker in m_ActiveMarkers.Values)
-                    buffer.Add(marker);
-
-                foreach (EGRPlaceMarker marker in buffer)
-                    FreeMarker(marker);
-
-                return;
-            }
-
-            //if (Time.time - m_LastFetchRequestTime < 0.6f)
-            //    return;
-
-            m_LastFetchRequestTime = Time.time;
-
-            m_TilePlaceFetchStates.Clear();
-
-            foreach (MRKTile tile in m_Map.Tiles) {
-                if (tile.SiblingIndex > 4)
-                    continue;
-
-                m_TilePlaceFetchStates[tile.ID.GetHashCode()] = false;
-                Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched);
+            foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
+                pair.Value.OnMapFullyUpdated();
             }
         }
 
-        void OnPlacesFetched(HashSet<EGRPlace> places, int tileHash) {
-            foreach (EGRPlace place in places) {
-                AddMarker(place, tileHash);
-            }
-
-            m_TilePlaceFetchStates[tileHash] = true;
-            foreach (KeyValuePair<int, bool> pair in m_TilePlaceFetchStates) {
-                if (!pair.Value) {
-                    return;
-                }
-            }
-
-            //All places have been fetched
-            //process pending destroy stuff
-            lock (m_PendingDestroyedTiles) {
-                foreach (int hash in m_PendingDestroyedTiles) {
-                    HashSet<EGRPlace> _places = Client.PlaceManager.GetPlacesInTile(hash);
-                    //no places?
-                    if (_places == null || _places.Count == 0)
-                        continue;
-
-                    foreach (EGRPlace place in _places) {
-                        //check if place is actually owned by tile and not superceeded by another
-                        EGRPlaceMarker marker;
-                        if (!m_ActiveMarkers.TryGetValue(place.CID, out marker))
-                            continue;
-
-                        //if (marker.TileHash == hash) {
-                        //   FreeMarker(marker);
-                        //}
-
-                        if (!Client.PlaceManager.ShouldIncludeMarker(marker) 
-                            || m_Map.Tiles.Find(x => x.ID == MRKMapUtils.CoordinateToTileId(new Vector2d(place.Latitude, place.Longitude), m_Map.AbsoluteZoom)) == null) {
-                            FreeMarker(marker);
-                        }
-                    }
-                }
-
-                List<EGRPlaceMarker> markers = ActiveMarkers.ToList();
-                for (int i = markers.Count - 1; i > -1; i--) {
-                    if (!Client.PlaceManager.ShouldIncludeMarker(markers[i])) {
-                        //FreeMarker(markers[i]);
-                    }
-                }
-
-                m_PendingDestroyedTiles.Clear();
-            }
-        }
-
-        void AddMarker(EGRPlace place, int tileHash) {
-            EGRPlaceMarker _marker;
-            if (m_ActiveMarkers.TryGetValue(place.CID, out _marker)) {
-                //we must associate each marker to a tile hash
-                _marker.TileHash = tileHash;
-                return;
-            }
-
-            EGRPlaceMarker marker = m_MarkerPool.Rent();
-            marker.TileHash = tileHash;
-            marker.SetPlace(place);
-            m_ActiveMarkers[place.CID] = marker;
-        }
-
-        void FreeMarker(EGRPlaceMarker marker) {
-            EGRPlaceMarker mrk = m_ActiveMarkers[marker.Place.CID];
-            m_ActiveMarkers.Remove(marker.Place.CID);
-            mrk.TileHash = -1;
-            mrk.SetPlace(null);
-            m_MarkerPool.Free(mrk);
-        }
-
-        public void WarmUpMarkers() {
-            m_MarkerPool.Reserve(100);
-        }
-
-        void GetOverlappingMarkers() {
-            if (Time.time - m_LastOverlapSearchTime < 0.1f)
-                return;
-
-            m_LastOverlapSearchTime = Time.time;
-
-            foreach (EGRPlaceMarker marker in ActiveMarkers)
-                marker.ClearOverlaps();
-
-            foreach (EGRPlaceMarker marker in ActiveMarkers) {
-                foreach (EGRPlaceMarker other in ActiveMarkers) {
-                    if (marker == other)
-                        continue;
-
-                    if (marker.RectTransform.RectOverlaps(other.RectTransform)) {
-                        marker.Overlappers.Add(other);
-                        if (marker.OverlapOwner == null) {
-                            //Debug.Log($"{marker.Place.Name} is gm");
-                            marker.IsOverlapMaster = true;
-                        }
-
-                        other.OverlapOwner = marker.IsOverlapMaster ? marker : marker.OverlapOwner;
-                    }
-                }
+        public void Warmup() {
+            foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
+                pair.Value.OnWarmup();
             }
         }
 
         void OnGUI() {
-            if (ActiveMarkers != null && ActiveMarkers.Count > 0) {
-                foreach (EGRPlaceMarker marker in ActiveMarkers) {
+            if (PlaceMarkers.ActiveMarkers != null && PlaceMarkers.ActiveMarkers.Count > 0) {
+                foreach (EGRPlaceMarker marker in PlaceMarkers.ActiveMarkers) {
                     if (!marker.IsOverlapMaster)
                         continue;
 
@@ -824,39 +663,6 @@ namespace MRK.UI {
                 }
             }
         }
-
-        void OnTileDestroyed(EGREventTileDestroyed evt) {
-            lock (m_PendingDestroyedTiles) {
-                m_PendingDestroyedTiles.Add(evt.Tile.ID.GetHashCode());
-            }
-        }
-
-        /* void OnFetchPlaces(PacketInFetchPlaces response) {
-            //Debug.Log($"Fetched places, found {response.Places.Count} places");
-
-            List<string> remove = new List<string>();
-
-            foreach (KeyValuePair<string, EGRPlaceMarker> pair in m_ActiveMarkers) {
-                bool found = false;
-
-                foreach (EGRPlace place in response.Places) {
-                    if (pair.Value.Place == place) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                    remove.Add(pair.Key);
-            }
-
-            foreach (string rem in remove) {
-                FreeMarker(m_ActiveMarkers[rem]);
-            }
-
-            foreach (EGRPlace place in response.Places)
-                AddMarker(place);
-        } */
 
         public float EvaluateMarkerScale(float time) {
             return m_MarkerScaleCurve.Evaluate(time);
@@ -912,7 +718,7 @@ namespace MRK.UI {
 
         void OnSettingsClick() {
             EGRScreen screen = Client.MapMode == EGRMapMode.Globe ? Manager.GetScreen<EGRScreenOptionsGlobeSettings>() : (EGRScreen)Manager.GetScreen<EGRScreenOptionsMapSettings>();
-            screen.ShowScreen();
+            screen.ShowScreen(this);
         }
 
         public Sprite GetSpriteForPlaceType(EGRPlaceType type) {
@@ -921,7 +727,7 @@ namespace MRK.UI {
                     return ms.Sprite;
             }
 
-            return null;
+            return m_MarkerSprites[0].Sprite; //NONE
         }
     }
 }

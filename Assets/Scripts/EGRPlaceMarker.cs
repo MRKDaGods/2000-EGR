@@ -24,9 +24,7 @@ namespace MRK {
         public Vector3 ScreenPoint { get; private set; }
         public EGRPlaceMarker OverlapOwner {
             get => m_ImmediateOverlapOwner;
-            set {
-                m_ImmediateOverlapOwner = value;
-            }
+            set => m_ImmediateOverlapOwner = value;
         }
         public bool IsOverlapMaster { get; set; }
         public List<EGRPlaceMarker> Overlappers { get; private set; }
@@ -50,7 +48,6 @@ namespace MRK {
 
         public void ClearOverlaps() {
             m_ImmediateOverlapOwner = null;
-            //m_OverlapOwner = null;
             IsOverlapMaster = false;
             Overlappers.Clear();
         }
@@ -67,7 +64,13 @@ namespace MRK {
                 m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.preferredWidth, m_InitialMarkerWidth));
                 m_Sprite.sprite = ms_MapInterface.GetSpriteForPlaceType(Place.Types[Mathf.Min(2, Place.Types.Length) - 1]);
 
-                m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
+                if (m_Fade == null) {
+                    m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
+                }
+                else {
+                    m_Fade.Reset();
+                    m_Fade.SetColors(Color.clear, Color.white);
+                }
             }
         }
 
@@ -80,8 +83,12 @@ namespace MRK {
                     m_Fade.SetColors(Color.clear, Color.white);
                 }
                 else {
-                    m_Fade.SetColors(Color.clear, Color.red);
+                    m_Fade.SetColors(m_Fade.Current, Color.clear);
                 }
+            }
+
+            if (!m_Fade.Done) {
+                m_Fade.Update();
             }
 
             Vector3 pos = Client.FlatMap.GeoToWorldPosition(new Vector2d(Place.Latitude, Place.Longitude));
@@ -96,12 +103,8 @@ namespace MRK {
 
             float zoomProg = Client.FlatMap.Zoom / 21f;
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg);
-            m_Sprite.color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
-
-            if (!m_Fade.Done) {
-                m_Fade.Update();
-                //m_Text.color = m_Fade.Current;
-            }
+            m_Sprite.color = m_Fade.Current; //.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+            m_Text.color = m_Sprite.color;
         }
 
         public static Vector3 ScreenToMarkerSpace(Vector2 spos) {
