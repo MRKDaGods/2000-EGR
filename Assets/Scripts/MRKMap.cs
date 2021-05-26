@@ -25,7 +25,7 @@ namespace MRK {
 		[SerializeField]
 		Material m_TileMaterial;
 		[SerializeField]
-		Texture2D m_LoadingTexture;
+		Texture2D[] m_LoadingTextures;
 		[SerializeField]
 		Texture2D m_StationaryTexture;
 		[SerializeField]
@@ -54,7 +54,7 @@ namespace MRK {
 		public int AbsoluteZoom => m_AbsoluteZoom;
 		public float Zoom => m_Zoom;
 		public Material TileMaterial => m_TileMaterial;
-		public Texture2D LoadingTexture => m_LoadingTexture;
+		public Texture2D LoadingTexture => m_LoadingTextures[(int)EGRSettings.MapStyle];
 		public Texture2D StationaryTexture => m_StationaryTexture;
 		public string Tileset => m_Tileset;
 		public float TileSize => m_TileSize;
@@ -334,6 +334,11 @@ namespace MRK {
 				return m_IDsToTiles[id];
 
 			return null;
+        }
+
+		public void InvokeUpdateEvent() {
+			if (OnMapUpdated != null)
+				OnMapUpdated();
         }
 	}
 }

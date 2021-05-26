@@ -39,6 +39,10 @@ namespace MRK {
             return Mathd.Abs(vec.x - other.x) > Mathd.Epsilon || Mathd.Abs(vec.y - other.y) > Mathd.Epsilon;
         }
 
+        public static bool IsNotEqual(this Vector2 vec, Vector2 other) {
+            return Mathf.Abs(vec.x - other.x) > Mathf.Epsilon || Mathf.Abs(vec.y - other.y) > Mathf.Epsilon;
+        }
+
         public static bool ParentHasGfx(this Graphic gfx, params Type[] excluded) {
             Transform trans = gfx.transform;
             while ((trans = trans.parent) != null) {

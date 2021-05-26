@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace MRK.UI {
         HashSet<int> m_PendingDestroyedTiles;
         float m_LastOverlapSearchTime;
         EGRMapInterfacePlaceMarkersResources m_Resources;
+        Dictionary<ulong, EGRPlaceGroup> m_Groups;
 
         public override EGRMapInterfaceComponentType ComponentType => EGRMapInterfaceComponentType.PlaceMarkers;
         public Dictionary<string, EGRPlaceMarker>.ValueCollection ActiveMarkers => m_ActiveMarkers.Values;
@@ -40,6 +42,8 @@ namespace MRK.UI {
 
             m_Resources.Marker.SetActive(false);
             m_Resources.Group.SetActive(false);
+
+            m_Groups = new Dictionary<ulong, EGRPlaceGroup>();
         }
 
         public override void OnComponentShow() {
@@ -52,6 +56,25 @@ namespace MRK.UI {
 
         public override void OnMapUpdated() {
             GetOverlappingMarkers();
+
+            foreach (EGRPlaceMarker marker in ActiveMarkers) {
+                if (!marker.IsOverlapMaster) {
+                    EGRPlaceGroup group;
+                    if (m_Groups.TryGetValue(marker.Place.CIDNum, out group)) {
+                        FreeGroup(group);
+                    }
+
+                    continue;
+                }
+
+                ulong cid = marker.Place.CIDNum;
+                if (m_Groups.ContainsKey(cid))
+                    continue;
+
+                EGRPlaceGroup _group = m_GroupPool.Rent();
+                _group.SetOwner(marker);
+                m_Groups[cid] = _group;
+            }
         }
 
         public override void OnMapFullyUpdated() {
@@ -129,6 +152,14 @@ namespace MRK.UI {
 
                 m_PendingDestroyedTiles.Clear();
             }
+
+            //send updated event
+            Client.Runnable.Run(UpdateMapLater(0.2f));
+        }
+
+        IEnumerator UpdateMapLater(float time) {
+            yield return new WaitForSeconds(time);
+            Client.FlatMap.InvokeUpdateEvent();
         }
 
         void AddMarker(EGRPlace place, int tileHash) {
@@ -146,11 +177,22 @@ namespace MRK.UI {
         }
 
         void FreeMarker(EGRPlaceMarker marker) {
-            EGRPlaceMarker mrk = m_ActiveMarkers[marker.Place.CID];
             m_ActiveMarkers.Remove(marker.Place.CID);
-            mrk.TileHash = -1;
-            mrk.SetPlace(null);
-            m_MarkerPool.Free(mrk);
+            marker.TileHash = -1;
+
+            EGRPlaceGroup group;
+            if (m_Groups.TryGetValue(marker.Place.CIDNum, out group)) {
+                FreeGroup(group);
+            }
+
+            marker.SetPlace(null);
+            m_MarkerPool.Free(marker);
+        }
+
+        void FreeGroup(EGRPlaceGroup group) {
+            m_Groups.Remove(group.Owner.Place.CIDNum);
+            group.SetOwner(null);
+            m_GroupPool.Free(group);
         }
 
         void OnTileDestroyed(EGREventTileDestroyed evt) {
