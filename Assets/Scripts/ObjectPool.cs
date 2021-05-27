@@ -8,8 +8,17 @@ namespace MRK {
         readonly List<T> m_ActiveObjects;
         readonly Dictionary<T, int> m_PoolIndex;
         int m_PoolCount;
+        static ObjectPool<T> ms_DefaultPool;
 
         public int ActiveCount => m_ActiveObjects.Count;
+        public static ObjectPool<T> Default {
+            get {
+                if (ms_DefaultPool == null)
+                    ms_DefaultPool = new ObjectPool<T>(null);
+
+                return ms_DefaultPool;
+            }
+        }
 
         public ObjectPool(Func<T> instantiator, bool indexPool = false) {
             m_Instantiator = instantiator;

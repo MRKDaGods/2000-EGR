@@ -26,6 +26,8 @@ namespace MRK {
         float m_TimeOfDayRotation;
         bool m_PositionLocked;
         bool m_RotationLocked;
+        Transform m_Light;
+        Vector3 m_OriginalLightRotation;
 
         public bool IsLocked => m_PositionLocked || m_RotationLocked;
 
@@ -52,6 +54,9 @@ namespace MRK {
             m_TimeOfDayRotation = hrs * -15f + 50f - 270f + 50f;
             transform.rotation = Quaternion.Euler(0f, m_TimeOfDayRotation + 270f, 0f);
             m_DummyRaycastObject = new GameObject("Dummy Raycast Object");
+
+            m_Light = Client.Sun.parent.GetChild(0); //Directional Light
+            m_OriginalLightRotation = m_Light.transform.rotation.eulerAngles; //0,180,0
         }
 
         void OnDestroy() {
@@ -314,6 +319,15 @@ namespace MRK {
 
                 m_Camera.transform.DORotate(rotation.eulerAngles, 0.3f).SetEase(Ease.OutSine).OnComplete(() => m_RotationLocked = false);
                 m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m", true);
+
+                //light
+                Vector3 targetRot;
+                if (m_MapInterface.ObservedTransform == this)
+                    targetRot = m_OriginalLightRotation;
+                else
+                    targetRot = Quaternion.LookRotation(m_MapInterface.ObservedTransform.position - m_Light.position).eulerAngles;
+
+                m_Light.DORotate(targetRot, 0.3f).SetEase(Ease.OutSine);
             }
 
             if (m_PositionLocked || m_RotationLocked)

@@ -150,10 +150,12 @@ namespace MRK {
                 SetLoadingTexture();
             }
 
+            //DateTime t0 = DateTime.Now;
+
             TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
             int recursionMax = low ? 9 : 2;
             while (texLock.Recursion > recursionMax) {
-                yield return new WaitForSeconds(0.8f);
+                yield return new WaitForSeconds(0.4f + 0.1f * m_SiblingIndex);
             }
 
             //check for zoom/pan velocity
@@ -161,10 +163,6 @@ namespace MRK {
             if (cam == null) {
                 yield break; //we're not even in the map, but still trying to fetch texture?
             }
-
-            //DateTime t0 = DateTime.Now;
-
-            //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
 
             //cancel fetch if we got disposed, kinda evil eh?
             if (Obj == null || !Obj.activeInHierarchy) {
@@ -179,13 +177,16 @@ namespace MRK {
             m_FetchingTile = true;
             m_LastLock = texLock;
 
+            int lowIdx = low.ToInt();
+            bool isLocalTile = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID);
             float sqrMag;
-            while ((sqrMag = cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
+            while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
                 yield return new WaitForSeconds(0.1f);
             }
 
-            int lowIdx = low.ToInt();
-            if (ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID)) {
+            //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
+
+            if (isLocalTile) {
                 SetTexture(ms_CachedTiles[lowIdx][m_Map.Tileset][ID]);
             }
             else {
@@ -234,9 +235,47 @@ namespace MRK {
             Obj.name += "HIGH";
         }
 
+        bool HasTexture(MRKTileID id, bool low, Reference<Texture2D> tex = null) {
+            int lowIdx = low.ToInt();
+            bool exists = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(id);
+            if (exists && tex != null) {
+                tex.Value = ms_CachedTiles[lowIdx][m_Map.Tileset][id];
+            }
+
+            return exists;
+        }
+
         public void SetLoadingTexture() {
             if (m_MeshRenderer != null) {
-                m_MeshRenderer.material.SetTexture("_SecTex", m_Map.LoadingTexture);
+                //so uh
+                Texture2D tex = m_Map.LoadingTexture;
+                MRKTileID previous = m_Map.GetPreviousTileID(m_SiblingIndex);
+                Reference<Texture2D> reference = ObjectPool<Reference<Texture2D>>.Default.Rent();
+                if (HasTexture(previous, true, reference)) {
+                    tex = reference.Value;
+                }
+                else {
+                    int count = m_Map.PreviousTilesCount;
+                    int index = m_SiblingIndex;
+                    while (count-- > 0) {
+                        previous = m_Map.GetPreviousTileID(index++);
+                        if (previous == null)
+                            break;
+
+                        if (HasTexture(previous, true, reference)) {
+                            tex = reference.Value;
+                            break;
+                        }
+
+                        if (index >= m_Map.PreviousTilesCount)
+                            index = 0;
+                    }
+                }
+
+                ObjectPool<Reference<Texture2D>>.Default.Free(reference);
+
+                m_MeshRenderer.material.SetTexture("_SecTex", tex);
+                m_MeshRenderer.material.SetTextureScale("_SecTex", new Vector2(5f, 5f));
                 m_MaterialBlend = 1f;
                 UpdateMaterialBlend();
             }
@@ -248,7 +287,7 @@ namespace MRK {
                 m_MeshRenderer.material.mainTexture = tex;
                 Obj.name += "texed";
 
-                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.2f)
+                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.15f)
                     .SetEase(Ease.OutSine)
                     .OnUpdate(UpdateMaterialBlend);
 
@@ -301,7 +340,7 @@ namespace MRK {
         void UpdateMaterialBlend() {
             if (m_MeshRenderer != null) {
                 m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
-                m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(2f, m_MaterialEmission, (1f - m_MaterialBlend)));
+                m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(0.5f, m_MaterialEmission, (1f - m_MaterialBlend)));
             }
         }
 

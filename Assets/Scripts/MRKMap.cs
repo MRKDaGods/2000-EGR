@@ -63,6 +63,7 @@ namespace MRK {
 		public Material TilePlaneMaterial => m_TilePlaneMaterial;
 		public bool TileDestroyZoomUpdatedDirty => m_TileDestroyZoomUpdatedDirty;
 		public List<MRKTilePlane> ActivePlanes => m_ActivePlanes;
+		public int PreviousTilesCount => m_PreviousTiles.Count;
 
 		public MRKMap() {
 			m_ActiveTileIDs = new List<MRKTileID>();

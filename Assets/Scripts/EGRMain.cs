@@ -92,6 +92,7 @@ namespace MRK {
         public bool InitialModeTransition => m_InitialModeTransition;
         public EGRMapMode PreviousMapMode => m_PreviousMapMode;
         public Transform[] Planets => m_Planets;
+        public Transform Sun => m_Sun;
         public CoroutineRunner Runnable { get; private set; }
 
         public EGRMain() {

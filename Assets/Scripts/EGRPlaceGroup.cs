@@ -8,12 +8,14 @@ namespace MRK {
         Image m_Sprite;
         bool m_OwnerDirty;
         Vector3 m_OriginalScale;
+        Graphic[] m_Gfx;
         static EGRScreenMapInterface ms_MapInterface;
 
         public EGRPlaceMarker Owner { get; private set; }
 
         void Awake() {
             m_Sprite = transform.Find("Sprite").GetComponent<Image>();
+            m_Gfx = transform.GetComponentsInChildren<Graphic>();
             m_OriginalScale = transform.localScale;
 
             if (ms_MapInterface == null) {
@@ -89,8 +91,11 @@ namespace MRK {
                 }
 
                 float zoomProg = Client.FlatMap.Zoom / 21f;
-                transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.5f;
-                m_Sprite.color = m_Fade.Current;
+                transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
+
+                Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+                foreach (Graphic gfx in m_Gfx)
+                    gfx.color = color;
 
                 /*if (Time.time - m_LastPositionTime > 0.2f) {
                     //m_LastPositionTime = Time.time;
