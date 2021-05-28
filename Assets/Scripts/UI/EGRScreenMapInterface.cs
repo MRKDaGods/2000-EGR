@@ -641,6 +641,8 @@ namespace MRK.UI {
             foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
                 pair.Value.OnWarmup();
             }
+
+            ScreenManager.GetScreen<EGRPopupPlaceGroup>().Warmup();
         }
 
         void OnGUI() {

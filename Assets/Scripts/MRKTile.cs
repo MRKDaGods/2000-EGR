@@ -198,6 +198,7 @@ namespace MRK {
 
                 if (context.Error) {
                     Debug.Log($"{fetcher.GetType().Name}: low={low} Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
+                    HasAnyTexture = true; //free the poor tile plane, so users can still use the map, welp
                 }
                 else {
                     SetTexture(context.Texture);

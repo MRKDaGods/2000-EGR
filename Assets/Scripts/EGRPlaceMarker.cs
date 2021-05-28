@@ -28,6 +28,7 @@ namespace MRK {
         }
         public bool IsOverlapMaster { get; set; }
         public List<EGRPlaceMarker> Overlappers { get; private set; }
+        public Vector2 LastOverlapCenter { get; set; }
 
         public EGRPlaceMarker() {
             Overlappers = new List<EGRPlaceMarker>();
@@ -35,7 +36,7 @@ namespace MRK {
 
         void Awake() {
             m_Text = GetComponentInChildren<TextMeshProUGUI>();
-            m_Sprite = GetComponentInChildren<Image>();
+            m_Sprite = transform.Find("Sprite").GetComponent<Image>();
             m_OriginalScale = transform.localScale;
 
             if (ms_MapInterface == null) {
@@ -44,6 +45,8 @@ namespace MRK {
             }
 
             m_InitialMarkerWidth = m_Text.rectTransform.rect.width;
+
+            GetComponent<Button>().onClick.AddListener(OnMarkerClick);
         }
 
         public void ClearOverlaps() {
@@ -93,6 +96,7 @@ namespace MRK {
 
             Vector3 pos = Client.FlatMap.GeoToWorldPosition(new Vector2d(Place.Latitude, Place.Longitude));
             Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
+
             if (spos.z > 0f) {
                 Vector3 tempSpos = spos;
                 tempSpos.y = Screen.height - tempSpos.y;
@@ -103,8 +107,12 @@ namespace MRK {
 
             float zoomProg = Client.FlatMap.Zoom / 21f;
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg);
-            m_Sprite.color = m_Fade.Current; //.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+            m_Sprite.color = m_Fade.Final.a == 0f ? m_Fade.Current : m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
             m_Text.color = m_Sprite.color;
+        }
+
+        void OnMarkerClick() {
+            Debug.Log(Place?.CID);
         }
 
         public static Vector3 ScreenToMarkerSpace(Vector2 spos) {

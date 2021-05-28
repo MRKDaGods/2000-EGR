@@ -1,4 +1,5 @@
 //#define NO_LOADING_SCREEN
+//#define MRK_LOCAL_SERVER
 
 using DG.Tweening;
 using MRK.Networking;
@@ -185,7 +186,11 @@ namespace MRK {
                 }
             }
 
+#if MRK_LOCAL_SERVER
+            m_Network = new EGRNetwork("127.0.0.1", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
+#else
             m_Network = new EGRNetwork("37.58.62.171", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
+#endif
             m_Network.Connect();
         }
 
@@ -552,7 +557,7 @@ namespace MRK {
                         if (screen.CanChangeBar) {
                             EGRAndroidUtils.StatusBarColor = EGRAndroidUtils.NavigationBarColor = screen.BarColor;
                         }
-            #endif */
+#endif */
 
             if (screen.CanChangeBar) {
                 Instance.m_StatusBarTextureDirty = true;
