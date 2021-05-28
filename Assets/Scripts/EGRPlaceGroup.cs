@@ -1,4 +1,5 @@
 ﻿using MRK.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ namespace MRK {
         Vector3 m_OriginalScale;
         Graphic[] m_Gfx;
         static EGRScreenMapInterface ms_MapInterface;
+        TextMeshProUGUI m_Text;
 
         public EGRPlaceMarker Owner { get; private set; }
 
@@ -17,6 +19,8 @@ namespace MRK {
             m_Sprite = transform.Find("Sprite").GetComponent<Image>();
             m_Gfx = transform.GetComponentsInChildren<Graphic>();
             m_OriginalScale = transform.localScale;
+
+            m_Text = transform.Find("TextContainer/Text").GetComponent<TextMeshProUGUI>();
 
             if (ms_MapInterface == null) {
                 ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
@@ -93,7 +97,7 @@ namespace MRK {
                 float zoomProg = Client.FlatMap.Zoom / 21f;
                 transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
 
-                Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+                Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg) * 1.2f);
                 foreach (Graphic gfx in m_Gfx)
                     gfx.color = color;
 
