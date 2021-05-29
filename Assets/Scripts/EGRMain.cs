@@ -95,6 +95,7 @@ namespace MRK {
         public Transform[] Planets => m_Planets;
         public Transform Sun => m_Sun;
         public CoroutineRunner Runnable { get; private set; }
+        public EGRInputModel InputModel { get; private set; }
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -139,6 +140,7 @@ namespace MRK {
             EGREventManager.Instance.Register<EGREventScreenShown>(OnScreenShown);
             EGREventManager.Instance.Register<EGREventScreenHidden>(OnScreenHidden);
             EGREventManager.Instance.Register<EGREventGraphicsApplied>(OnGraphicsApplied);
+            EGREventManager.Instance.Register<EGREventSettingsSaved>(OnSettingsSaved);
 
             Runnable = gameObject.AddComponent<CoroutineRunner>();
         }
@@ -158,6 +160,8 @@ namespace MRK {
             //load settings
             EGRSettings.Load();
             EGRSettings.Apply();
+
+            UpdateInputModel();
 
             //initial mode should be globe
             SetMapMode(EGRMapMode.Globe);
@@ -198,6 +202,7 @@ namespace MRK {
             EGREventManager.Instance.Unregister<EGREventScreenShown>(OnScreenShown);
             EGREventManager.Instance.Unregister<EGREventScreenHidden>(OnScreenHidden);
             EGREventManager.Instance.Unregister<EGREventGraphicsApplied>(OnGraphicsApplied);
+            EGREventManager.Instance.Unregister<EGREventSettingsSaved>(OnSettingsSaved);
         }
 
         public void RegisterDevSettings<T>() where T : EGRDevSettings, new() {
@@ -295,6 +300,10 @@ namespace MRK {
                         Physics.Simulate(0.5f);
                     }
                 }
+            }
+
+            if (InputModel.NeedsUpdate) {
+                InputModel.UpdateInputModel();
             }
 
             if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen("FU").ShowScreen();
@@ -457,6 +466,14 @@ namespace MRK {
             m_Sun.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Low);
             m_GlobalMap.transform.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
             m_GlobeCamera.GetComponent<PostProcessVolume>().profile.GetSetting<Bloom>().threshold.value = evt.Quality == EGRSettingsQuality.Ultra ? 0.9f : 1f;
+        }
+
+        void UpdateInputModel() {
+            InputModel = EGRInputModel.Get(EGRSettings.InputModel);
+        }
+
+        void OnSettingsSaved(EGREventSettingsSaved evt) {
+            UpdateInputModel();
         }
 
         public void SetGlobalCameraClearFlags(CameraClearFlags flags) {

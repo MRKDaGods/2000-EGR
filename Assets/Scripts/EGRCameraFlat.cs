@@ -184,19 +184,23 @@ namespace MRK {
             m_TargetLatLong.x = Mathd.Clamp(m_TargetLatLong.x, -MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LATITUDE_MAX);
             m_TargetLatLong.y = Mathd.Clamp(m_TargetLatLong.y, -MRKMapUtils.LONGITUDE_MAX, MRKMapUtils.LONGITUDE_MAX);
 
-            if (m_PanTweenLat != null) {
-                DOTween.Kill(m_PanTweenLat);
+            Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
+        }
+
+        void ProcessZoomInternal(float rawDelta) {
+            m_TargetZoom += rawDelta * Time.deltaTime * EGRSettings.GetMapSensitivity();
+
+            if (m_TargetZoom < 0.5f) {
+                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
+                (Client.GlobalMap.GetComponent<EGRCameraGlobe>()).SetDistance(7000f);
+                Client.SetMapMode(EGRMapMode.Globe);
             }
 
-            if (m_PanTweenLng != null) {
-                DOTween.Kill(m_PanTweenLng);
-            }
+            m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
 
-            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.5f)
-                .SetEase(Ease.OutSine);
+            Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
 
-            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.5f)
-                .SetEase(Ease.OutSine);
+            m_LastZoomTime = Time.time;
         }
 
         void ProcessZoom(EGRControllerMouseData[] data) {
@@ -207,68 +211,11 @@ namespace MRK {
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
-            m_TargetZoom += (newdeltaMag - olddeltaMag) * Time.deltaTime * EGRSettings.GetMapSensitivity();
-
-            if (m_TargetZoom < 0.5f) {
-                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-                (Client.GlobalMap.GetComponent<EGRCameraGlobe>()).SetDistance(7000f);
-                Client.SetMapMode(EGRMapMode.Globe);
-            }
-
-            m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
-
-            m_LastZoomTime = Time.time;
-
-            if (m_ZoomTween != null) {
-                DOTween.Kill(m_ZoomTween);
-            }
-
-            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.4f)
-                .SetEase(Ease.OutSine);
-
-            //UpdateCenterFromZoom((data[0].LastPosition + data[1].LastPosition) / 2f);
-        }
-
-        void UpdateCenterFromZoom(Vector3 mousePos) {
-            /*mousePos.z = m_Camera.transform.localPosition.y;
-            m_TargetLatLong = m_CurrentLatLong + (m_Map.WorldToGeoPosition(m_Camera.ScreenToWorldPoint(mousePos)) - m_CurrentLatLong) * 0.5f;
-
-            if (m_PanTweenLat != null) {
-                DOTween.Kill(m_PanTweenLat);
-            }
-
-            if (m_PanTweenLng != null) {
-                DOTween.Kill(m_PanTweenLng);
-            }
-
-            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.7f)
-                .SetEase(Ease.OutBack);
-
-            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.7f)
-                .SetEase(Ease.OutBack);*/
+            ProcessZoomInternal(newdeltaMag - olddeltaMag);
         }
 
         void ProcessZoomScroll(float delta) {
-            m_TargetZoom += delta * Time.deltaTime * 100f * EGRSettings.GetMapSensitivity();
-
-            if (m_TargetZoom < 0.5f) {
-                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-                (Client.GlobalMap.GetComponent<EGRCameraGlobe>()).SetDistance(7000f);
-                Client.SetMapMode(EGRMapMode.Globe);
-            }
-
-            m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
-            m_LastZoomTime = Time.time;
-
-            if (m_ZoomTween != null) {
-                DOTween.Kill(m_ZoomTween);
-            }
-
-            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.4f)
-                .SetEase(Ease.OutSine)
-                .intId = EGRTweenIDs.IntId;
-
-            //UpdateCenterFromZoom(Input.mousePosition);
+            ProcessZoomInternal(delta * 100f);
         }
 
         void UpdateTransform() {

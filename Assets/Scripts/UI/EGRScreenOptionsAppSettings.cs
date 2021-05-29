@@ -31,6 +31,10 @@ namespace MRK.UI {
                 Manager.GetScreen<EGRScreenOptionsMapSettings>().ShowScreen();
             });
 
+            GetElement<Button>("Layout/Advanced").onClick.AddListener(() => {
+                Manager.GetScreen<EGRScreenOptionsAdvancedSettings>().ShowScreen();
+            });
+
             m_Background = GetElement<Image>("imgBg");
         }
 

@@ -11,7 +11,8 @@ namespace MRK {
         ScreenHidden,
         GraphicsApplied,
         NetworkDownloadRequest,
-        TileDestroyed
+        TileDestroyed,
+        SettingsSaved
     }
 
     public abstract class EGREvent {

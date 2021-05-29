@@ -42,6 +42,11 @@ namespace MRK {
         Satellite
     }
 
+    public enum EGRSettingsInputModel {
+        Tween,
+        MRK
+    }
+
     public class EGRSettings {
         static readonly int[] ms_EGRToUnityQualityMap = { 2, 2, 3, 3 };
         static readonly float[] ms_ResolutionMap = { 1f, 0.9f, 0.8f, 0.75f };
@@ -59,6 +64,7 @@ namespace MRK {
         public static EGRSettingsMapStyle MapStyle { get; set; }
         public static bool ShowTime { get; set; }
         public static bool ShowDistance { get; set; }
+        public static EGRSettingsInputModel InputModel { get; set; }
 
         public static void Load() {
             if (ms_InitialWidth == 0 || ms_InitialHeight == 0) {
@@ -74,6 +80,7 @@ namespace MRK {
             MapStyle = (EGRSettingsMapStyle)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_STYLE, 0);
             ShowTime = PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_TIME, 1).ToBool();
             ShowDistance = PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, 1).ToBool();
+            InputModel = (EGRSettingsInputModel)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_INPUT_MODEL, 0);
         }
 
         public static void Save() {
@@ -86,8 +93,11 @@ namespace MRK {
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_STYLE, (int)MapStyle);
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_TIME, ShowTime ? 1 : 0);
             PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, ShowDistance ? 1 : 0);
+            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_INPUT_MODEL, (int)InputModel);
 
             PlayerPrefs.Save();
+
+            EGREventManager.Instance.BroadcastEvent<EGREventSettingsSaved>(new EGREventSettingsSaved());
         }
 
         public static void Apply() {

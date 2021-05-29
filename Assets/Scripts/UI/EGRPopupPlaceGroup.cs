@@ -9,6 +9,9 @@ using UnityEngine.UI;
 namespace MRK.UI {
     public class EGRPopupPlaceGroup : EGRPopup {
         class Item {
+            const float ITEM_SIZE = 600f;
+            const float MID_SIZE = 300f;
+
             RectTransform m_Transform;
             RectTransform m_Mid;
             TextMeshProUGUI m_Title;
@@ -25,7 +28,7 @@ namespace MRK.UI {
             EGRPlace m_Place;
             static EGRScreenMapInterface ms_MapInterface;
 
-            public float Size => m_State ? 400f : 200f;
+            public float Size => m_State ? ITEM_SIZE : ITEM_SIZE - MID_SIZE;
 
             public Item(Transform transform) {
                 m_Transform = (RectTransform)transform;
@@ -74,14 +77,14 @@ namespace MRK.UI {
                     m_SizeTween = DOTween.To(() => m_SizeProgress, x => m_SizeProgress = x, active ? 1f : 0f, 0.5f)
                         .SetEase(Ease.OutBack)
                         .OnUpdate(() => {
-                            m_Transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.LerpUnclamped(200f, 400f, m_SizeProgress));
-                            m_Mid.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.LerpUnclamped(0f, 200f, m_SizeProgress));
+                            m_Transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.LerpUnclamped(ITEM_SIZE - MID_SIZE, ITEM_SIZE, m_SizeProgress));
+                            m_Mid.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.LerpUnclamped(0f, MID_SIZE, m_SizeProgress));
                         }).intId = EGRTweenIDs.IntId;
                 }
                 else {
                     m_SizeProgress = active ? 1f : 0f;
-                    m_Transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(200f, 400f, m_SizeProgress));
-                    m_Mid.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(0f, 200f, m_SizeProgress));
+                    m_Transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(ITEM_SIZE - MID_SIZE, ITEM_SIZE, m_SizeProgress));
+                    m_Mid.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(0f, MID_SIZE, m_SizeProgress));
                 }
 
                 ms_Instance.RecalculateContentSize();
