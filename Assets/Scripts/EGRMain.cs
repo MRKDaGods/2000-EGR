@@ -302,7 +302,7 @@ namespace MRK {
                 }
             }
 
-            if (InputModel.NeedsUpdate) {
+            if (InputModel != null && InputModel.NeedsUpdate) {
                 InputModel.UpdateInputModel();
             }
 

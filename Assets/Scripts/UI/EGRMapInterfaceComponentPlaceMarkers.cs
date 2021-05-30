@@ -55,9 +55,17 @@ namespace MRK.UI {
         }
 
         public override void OnMapUpdated() {
+            //MRKProfile.Push("groups");
+            //UpdateGroups();
+            //MRKProfile.Pop();
+        }
+
+        void UpdateGroups() {
             GetOverlappingMarkers();
 
             foreach (EGRPlaceMarker marker in ActiveMarkers) {
+                marker.OverlapCheckFlag = true;
+
                 if (!marker.IsOverlapMaster) {
                     EGRPlaceGroup group;
                     if (m_Groups.TryGetValue(marker.Place.CIDNum, out group)) {
@@ -160,6 +168,8 @@ namespace MRK.UI {
         IEnumerator UpdateMapLater(float time) {
             yield return new WaitForSeconds(time);
             Client.FlatMap.InvokeUpdateEvent();
+
+            UpdateGroups();
         }
 
         void AddMarker(EGRPlace place, int tileHash) {
@@ -191,8 +201,11 @@ namespace MRK.UI {
 
         void FreeGroup(EGRPlaceGroup group) {
             m_Groups.Remove(group.Owner.Place.CIDNum);
-            group.SetOwner(null);
-            m_GroupPool.Free(group);
+
+            group.Free(() => {
+                group.SetOwner(null);
+                m_GroupPool.Free(group);
+            });
         }
 
         void OnTileDestroyed(EGREventTileDestroyed evt) {
@@ -215,7 +228,8 @@ namespace MRK.UI {
                     if (marker == other)
                         continue;
 
-                    if (marker.RectTransform.RectOverlaps(other.RectTransform)) {
+                    //if (marker.RectTransform.RectOverlaps(other.RectTransform)) {
+                    if (marker.RectTransform.RectOverlaps2(other.RectTransform)) {
                         marker.Overlappers.Add(other);
                         if (marker.OverlapOwner == null) {
                             marker.IsOverlapMaster = true;

@@ -3,6 +3,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using DG.Tweening;
+using System;
 
 namespace MRK {
     public class EGRPlaceGroup : EGRBehaviour {
@@ -16,6 +18,10 @@ namespace MRK {
         float m_InitialTextWidth;
         RectTransform m_TextContainer;
         static EGRPopupPlaceGroup ms_GroupPopup;
+        float m_TransitionEndTime;
+        Tweener m_Tweener;
+        bool m_Freeing;
+        Action m_FreeCallback;
 
         public EGRPlaceMarker Owner { get; private set; }
 
@@ -46,6 +52,8 @@ namespace MRK {
 
                 if (Owner != null) {
                     m_OwnerDirty = true;
+                    m_Freeing = false;
+                    m_FreeCallback = null;
 
                     if (m_Fade == null) {
                         m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
@@ -72,33 +80,66 @@ namespace MRK {
             }
 
             m_Text.text = txt;
-            m_TextContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.preferredWidth, m_InitialTextWidth));
+            m_TextContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.GetPreferredValues().x + 60f, m_InitialTextWidth));
+        }
+
+        public void Free(Action callback) {
+            m_Freeing = true;
+            m_FreeCallback = callback;
+            m_Fade.Reset();
+            m_Fade.SetColors(m_Text.color, Color.white.AlterAlpha(0f));
         }
 
         void LateUpdate() {
             if (Owner != null) {
-                if (m_OwnerDirty) {
-                    m_OwnerDirty = false;
-
-                    //m_Fade.Reset();
-                }
-
-                Vector2 center = Client.PlaceManager.GetOverlapCenter(Owner);
-                center.y = Screen.height - center.y;
-
-                Owner.LastOverlapCenter = center;
-                transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
-
                 if (!m_Fade.Done) {
                     m_Fade.Update();
                 }
+                else if (m_Freeing)
+                    m_FreeCallback?.Invoke();
 
-                float zoomProg = Client.FlatMap.Zoom / 21f;
-                transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
+                if (!m_Freeing) {
+                    Vector2 center = Client.PlaceManager.GetOverlapCenter(Owner);
+                    center.y = Screen.height - center.y;
 
-                Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg) * 1.5f);
-                foreach (Graphic gfx in m_Gfx)
-                    gfx.color = color;
+                    if (Owner.LastOverlapCenter.IsNotEqual(center)) {
+                        Owner.LastOverlapCenter = center;
+                        Vector3 target = EGRPlaceMarker.ScreenToMarkerSpace(center);
+
+                        if ((!m_OwnerDirty && Time.time > m_TransitionEndTime) || !new Rect(0f, 0f, Screen.width, Screen.height).Contains(center)) {
+                            transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
+                        }
+                        else {
+                            if (m_Tweener != null && m_Tweener.position < 1f) {
+                                m_Tweener.Kill();
+
+                                gameObject.transform.DOMove(target, m_TransitionEndTime - Time.time)
+                                    .SetEase(Ease.OutExpo);
+                                //m_Tweener.ChangeValues(transform.position, target, m_TransitionEndTime - Time.time);
+                            }
+                            else {
+                                m_Tweener = gameObject.transform.DOMove(target, 0.5f)
+                                    .SetEase(Ease.OutExpo);
+                            }
+
+                            if (m_OwnerDirty) {
+                                m_OwnerDirty = false;
+                                m_TransitionEndTime = Time.time + 0.5f;
+                            }
+                        }
+                    }
+
+                    float zoomProg = Client.FlatMap.Zoom / 21f;
+                    transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
+
+                    Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg) * 1.5f);
+                    foreach (Graphic gfx in m_Gfx)
+                        gfx.color = color;
+                }
+                else {
+                    foreach (Graphic gfx in m_Gfx)
+                        gfx.color = m_Fade.Current;
+                }
             }
         }
 

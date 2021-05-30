@@ -15,6 +15,8 @@ namespace MRK {
         float m_WorldRelativeScale;
         RectD m_Rect;
         int m_AbsoluteZoom;
+        int m_Tween;
+        int m_SiblingIdx;
 
         static MRKTilePlane() {
             ms_MaterialPool = new ObjectPool<Material>(() => {
@@ -22,11 +24,22 @@ namespace MRK {
             });
         }
 
-        public void InitPlane(Texture2D tex, float size, RectD rect, int zoom, Func<bool> killPredicate) {
+        public void InitPlane(Texture2D tex, float size, RectD rect, int zoom, Func<bool> killPredicate, int siblingIdx) {
             if (tex == null) {
                 RecyclePlane();
                 return;
             }
+
+            m_SiblingIdx = -1;
+
+            Material stolenMaterial = null;
+            MRKTilePlane plane = Client.FlatMap.ActivePlanes.Find(x => x.m_SiblingIdx == siblingIdx);
+            if (plane != null) {
+                stolenMaterial = plane.m_Material; //steal their mat
+                plane.RecyclePlane(false);
+            }
+
+            m_SiblingIdx = siblingIdx;
 
             gameObject.SetActive(true);
 
@@ -44,8 +57,10 @@ namespace MRK {
                 m_MeshFilter.mesh = ms_TileMesh;
             }
 
-            m_Material = ms_MaterialPool.Rent();
-            m_Material.mainTexture = tex;
+            m_Material = stolenMaterial ?? ms_MaterialPool.Rent();
+            if (stolenMaterial == null)
+                m_Material.mainTexture = tex;
+
             m_DissolveValue = 0f;
             m_Material.SetFloat("_Emission", Client.FlatMap.GetDesiredTilesetEmission());
             m_Material.SetFloat("_Amount", 0f);
@@ -56,16 +71,21 @@ namespace MRK {
             m_MeshRenderer.material = m_Material;
 
             StartCoroutine(KillPlane(killPredicate));
+
+            m_Tween = -999;
         }
 
         IEnumerator KillPlane(Func<bool> killPredicate) {
             while (!killPredicate())
                 yield return new WaitForSeconds(0.04f);
 
-            DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.7f)
-                .OnUpdate(() => m_Material.SetFloat("_Amount", m_DissolveValue))
+            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.7f)
+                .OnUpdate(() => {
+                    if (m_Material != null) m_Material.SetFloat("_Amount", m_DissolveValue);
+                })
                 .OnComplete(() => RecyclePlane())
-                .SetEase(Ease.OutSine);
+                .SetEase(Ease.OutSine)
+                .intId = EGRTweenIDs.IntId;
         }
 
         public void UpdatePlane() {
@@ -79,12 +99,15 @@ namespace MRK {
                      (float)(m_Rect.Center.y - mercator.y) * m_WorldRelativeScale * scaleFactor);
         }
 
-        public void RecyclePlane(bool remove = true) {
+        public void RecyclePlane(bool destroyMat = true) {
+            if (m_Tween.IsValidTween())
+                DOTween.Kill(m_Tween);
+
             if (m_MeshRenderer != null) {
                 m_MeshRenderer.material = null;
             }
 
-            if (m_Material != null) {
+            if (m_Material != null && destroyMat) {
                 m_Material.mainTexture = null;
                 ms_MaterialPool.Free(m_Material);
                 m_Material = null;
@@ -94,9 +117,6 @@ namespace MRK {
             gameObject.SetActive(false);
             MRKTile.PlanePool.Free(this);
 
-            if (remove) {
-                //Client.FlatMap.ActivePlanes.Remove(this);
-            }
         }
 
         static void CreateTileMesh(float size) {

@@ -73,7 +73,7 @@ namespace MRK {
     }
 
     public class EGRInputModelMRK : EGRInputModel {
-        struct Context<T> where T : struct {
+        public struct Context<T> where T : struct {
             public Func<T> Get;
             public Action<T> Set;
             public T? Target;
@@ -84,6 +84,8 @@ namespace MRK {
 
         Context<float> m_Zoom;
         Context<Vector2d> m_Pan;
+
+        public Context<float> ZoomContext => m_Zoom;
 
         public override bool NeedsUpdate => m_Zoom.CanUpdate || m_Pan.CanUpdate;
 
@@ -105,14 +107,14 @@ namespace MRK {
             if (m_Zoom.CanUpdate) {
                 float current = m_Zoom.Get();
 
-                current += (m_Zoom.Target.Value - current) * Time.deltaTime * 10f;
+                current += (m_Zoom.Target.Value - current) * Time.deltaTime * 7f;
                 m_Zoom.Set(current);
             }
 
             if (m_Pan.CanUpdate) {
                 Vector2d current = m_Pan.Get();
 
-                current += (m_Pan.Target.Value - current) * Time.deltaTime * 10f;
+                current += (m_Pan.Target.Value - current) * Time.deltaTime * 7f;
                 m_Pan.Set(current);
             }
         }

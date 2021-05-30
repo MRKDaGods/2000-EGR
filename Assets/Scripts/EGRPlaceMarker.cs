@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MRK {
     public class EGRPlaceMarker : EGRBehaviour {
@@ -17,6 +18,9 @@ namespace MRK {
         float m_InitialMarkerWidth;
         EGRPlaceMarker m_OverlapOwner;
         EGRPlaceMarker m_ImmediateOverlapOwner; //always up to date
+        readonly static Color ms_ClearWhite;
+        RectTransform m_TextContainer;
+        Graphic[] m_Gfx;
 
         public EGRPlace Place { get; private set; }
         public int TileHash { get; set; }
@@ -29,71 +33,74 @@ namespace MRK {
         public bool IsOverlapMaster { get; set; }
         public List<EGRPlaceMarker> Overlappers { get; private set; }
         public Vector2 LastOverlapCenter { get; set; }
+        public bool OverlapCheckFlag { get; set; }
+
+        static EGRPlaceMarker() {
+            ms_ClearWhite = Color.white.AlterAlpha(0f);
+        }
 
         public EGRPlaceMarker() {
             Overlappers = new List<EGRPlaceMarker>();
         }
 
         void Awake() {
-            m_Text = GetComponentInChildren<TextMeshProUGUI>();
+            m_Text = transform.Find("TextContainer/Text").GetComponent<TextMeshProUGUI>();
             m_Sprite = transform.Find("Sprite").GetComponent<Image>();
             m_OriginalScale = transform.localScale;
 
             if (ms_MapInterface == null) {
                 ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
-                ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
+                //ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
+                ms_Canvas = ScreenManager.GetScreenSpaceLayer();
             }
 
-            m_InitialMarkerWidth = m_Text.rectTransform.rect.width;
+            m_TextContainer = (RectTransform)m_Text.transform.parent;
+            m_InitialMarkerWidth = m_TextContainer.rect.width;
 
             GetComponent<Button>().onClick.AddListener(OnMarkerClick);
+
+            m_Gfx = transform.GetComponentsInChildren<Graphic>().Where(x => x.transform != transform).ToArray();
         }
 
         public void ClearOverlaps() {
             m_ImmediateOverlapOwner = null;
             IsOverlapMaster = false;
             Overlappers.Clear();
+
+            if (m_OverlapOwner != m_ImmediateOverlapOwner)
+                OverlapCheckFlag = false;
         }
 
         public void SetPlace(EGRPlace place) {
+            if (Place == place)
+                return;
+
             Place = place;
             gameObject.SetActive(place != null);
+            OverlapCheckFlag = false;
 
             ClearOverlaps();
 
             if (Place != null) {
                 name = place.Name;
                 m_Text.text = Place.Name;
-                m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.preferredWidth, m_InitialMarkerWidth));
+                RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.GetPreferredValues().x + 60f, m_InitialMarkerWidth)); //38f is our label padding
                 m_Sprite.sprite = ms_MapInterface.GetSpriteForPlaceType(Place.Types[Mathf.Min(2, Place.Types.Length) - 1]);
 
+                foreach (Graphic gfx in m_Gfx)
+                    gfx.color = ms_ClearWhite;
+
                 if (m_Fade == null) {
-                    m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
+                    m_Fade = new EGRColorFade(ms_ClearWhite, Color.white, 1.5f);
                 }
                 else {
                     m_Fade.Reset();
-                    m_Fade.SetColors(Color.clear, Color.white);
+                    m_Fade.SetColors(ms_ClearWhite, Color.white);
                 }
             }
         }
 
         void LateUpdate() {
-            if (m_OverlapOwner != m_ImmediateOverlapOwner) {
-                m_OverlapOwner = m_ImmediateOverlapOwner;
-                m_Fade.Reset();
-
-                if (OverlapOwner == null) {
-                    m_Fade.SetColors(Color.clear, Color.white);
-                }
-                else {
-                    m_Fade.SetColors(m_Fade.Current, Color.clear);
-                }
-            }
-
-            if (!m_Fade.Done) {
-                m_Fade.Update();
-            }
-
             Vector3 pos = Client.FlatMap.GeoToWorldPosition(new Vector2d(Place.Latitude, Place.Longitude));
             Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
 
@@ -107,8 +114,35 @@ namespace MRK {
 
             float zoomProg = Client.FlatMap.Zoom / 21f;
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg);
-            m_Sprite.color = m_Fade.Final.a == 0f ? m_Fade.Current : m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
-            m_Text.color = m_Sprite.color;
+
+            if (!OverlapCheckFlag) {
+                //m_Text.color = ms_ClearWhite;
+                //m_Sprite.color = ms_ClearWhite;
+
+                m_Fade.Reset();
+                m_Fade.SetColors(m_Text.color, m_Fade.Final);
+                return;
+            }
+
+            if (m_OverlapOwner != m_ImmediateOverlapOwner) {
+                m_OverlapOwner = m_ImmediateOverlapOwner;
+                m_Fade.Reset();
+
+                if (OverlapOwner == null) {
+                    m_Fade.SetColors(ms_ClearWhite, Color.white);
+                }
+                else {
+                    m_Fade.SetColors(m_Fade.Current, ms_ClearWhite);
+                }
+            }
+
+            if (!m_Fade.Done) {
+                m_Fade.Update();
+            }
+
+            Color c = m_Fade.Final.a <= Mathf.Epsilon ? m_Fade.Current : m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+            foreach (Graphic gfx in m_Gfx)
+                gfx.color = c;
         }
 
         void OnMarkerClick() {

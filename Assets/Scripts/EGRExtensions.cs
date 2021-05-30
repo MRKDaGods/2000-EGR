@@ -157,6 +157,18 @@ namespace MRK {
             return new Rect(position.x - rectTransformWidth / 2f, position.y - rectTransformHeight / 2f, rectTransformWidth, rectTransformHeight);
         }
 
+        public static bool RectOverlaps2(this RectTransform image1rt, RectTransform image2rt) {
+            Rect image1rect = image1rt.rect;
+            image1rect.size *= image1rt.localScale;
+            Rect image2rect = image2rt.rect;
+            image2rect.size *= image2rt.localScale;
+
+            return image1rt.localPosition.x < image2rt.localPosition.x + image2rect.width &&
+                image1rt.localPosition.x + image1rect.width > image2rt.localPosition.x &&
+                image1rt.localPosition.y < image2rt.localPosition.y + image2rect.height &&
+                image1rt.localPosition.y + image1rect.height > image2rt.localPosition.y;
+        }
+
         public static bool IsValidTween(this int i) {
             return i != -999;
         }

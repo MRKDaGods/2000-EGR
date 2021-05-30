@@ -153,7 +153,7 @@ namespace MRK {
             //DateTime t0 = DateTime.Now;
 
             TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
-            int recursionMax = low ? 9 : 2;
+            int recursionMax = low ? (ID.Z >= 19 ? 5 : 9) : 2;
             while (texLock.Recursion > recursionMax) {
                 yield return new WaitForSeconds(0.4f + 0.1f * m_SiblingIndex);
             }
@@ -310,7 +310,7 @@ namespace MRK {
                             return tile.HasAnyTexture;
 
                         return false;
-                    });
+                    }, m_SiblingIndex);
 
                     m_Map.ActivePlanes.Add(tilePlane);
                 }

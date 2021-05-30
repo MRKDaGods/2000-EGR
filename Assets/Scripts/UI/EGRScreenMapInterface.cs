@@ -646,7 +646,7 @@ namespace MRK.UI {
         }
 
         void OnGUI() {
-            /*if (PlaceMarkers.ActiveMarkers != null && PlaceMarkers.ActiveMarkers.Count > 0) {
+            /* if (PlaceMarkers.ActiveMarkers != null && PlaceMarkers.ActiveMarkers.Count > 0) {
                 foreach (EGRPlaceMarker marker in PlaceMarkers.ActiveMarkers) {
                     if (!marker.IsOverlapMaster)
                         continue;

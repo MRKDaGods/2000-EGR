@@ -25,6 +25,7 @@ namespace MRK {
         object m_ZoomTween;
         EGRScreenMapInterface m_MapInterface;
         TouchContext m_TouchCtx0;
+        Vector3 m_LastZoomPosition;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
 
@@ -51,8 +52,10 @@ namespace MRK {
             if (!m_InterfaceActive || !gameObject.activeSelf)
                 return;
 
-            if (!ShouldProcessControllerMessage(msg))
+            if (!ShouldProcessControllerMessage(msg)) {
+                ResetStates();
                 return;
+            }
 
             if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
                 EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
@@ -211,14 +214,33 @@ namespace MRK {
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
             float newdeltaMag = (data[0].LastPosition - data[1].LastPosition).magnitude;
 
+            m_LastZoomPosition = (data[0].LastPosition + data[1].LastPosition) * 0.5f;
             ProcessZoomInternal(newdeltaMag - olddeltaMag);
         }
 
         void ProcessZoomScroll(float delta) {
+            m_LastZoomPosition = Input.mousePosition;
             ProcessZoomInternal(delta * 100f);
         }
 
         void UpdateTransform() {
+            /* if (Client.InputModel is EGRInputModelMRK) {
+                if (((EGRInputModelMRK)Client.InputModel).ZoomContext.CanUpdate) {
+                    Vector3 mousePosScreen = m_LastZoomPosition;
+                    mousePosScreen.z = m_Camera.transform.localPosition.y;
+                    Vector3 _mousePosition = m_Camera.ScreenToWorldPoint(mousePosScreen);
+                    Vector2d geo = m_Map.WorldToGeoPosition(_mousePosition);
+                    Vector2d pos1 = MRKMapUtils.LatLonToMeters(geo);
+
+                    m_Map.UpdateMap(m_Map.CenterLatLng, m_CurrentZoom);
+                    geo = m_Map.WorldToGeoPosition(_mousePosition);
+
+                    Vector2d pos2 = MRKMapUtils.LatLonToMeters(geo);
+                    Vector2d delta = pos2 - pos1;
+                    m_CurrentLatLong = m_TargetLatLong = MRKMapUtils.MetersToLatLon(m_Map.CenterMercator - delta);
+                }
+            } */
+
             m_Map.UpdateMap(m_CurrentLatLong, m_CurrentZoom);
         }
 
@@ -233,7 +255,7 @@ namespace MRK {
         }
 
         public Vector3 GetMapVelocity() {
-            return new Vector3((float)(m_TargetLatLong.x - m_CurrentLatLong.x), (float)(m_TargetLatLong.y - m_CurrentLatLong.y), m_TargetZoom - m_CurrentZoom) * 10f;
+            return new Vector3((float)(m_TargetLatLong.x - m_CurrentLatLong.x), (float)(m_TargetLatLong.y - m_CurrentLatLong.y), m_TargetZoom - m_CurrentZoom) * 5f;
         }
     }
 }

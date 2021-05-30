@@ -37,9 +37,13 @@ namespace MRK {
             }
         }
 
-        public bool ShouldProcessControllerMessage(EGRControllerMessage msg) {
+        public bool ShouldProcessControllerMessage(EGRControllerMessage msg, bool ignoreUI = false) {
             if (Client.ActiveScreens.Count > 1)
                 return false;
+
+            //if (!ignoreUI && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+            //    return false;
+            //}
             
             bool res = true;
 

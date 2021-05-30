@@ -43,6 +43,7 @@ namespace MRK {
 		[SerializeField]
 		Material m_TilePlaneMaterial;
 		readonly List<MRKTilePlane> m_ActivePlanes;
+		readonly HashSet<int> m_VisibleTiles;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -73,6 +74,7 @@ namespace MRK {
 			m_IDsToTiles = new Dictionary<MRKTileID, MRKTile>();
 			m_PreviousTiles = new List<MRKTileID>();
 			m_ActivePlanes = new List<MRKTilePlane>();
+			m_VisibleTiles = new HashSet<int>();
 		}
 
 		void Start() {
@@ -87,7 +89,7 @@ namespace MRK {
 			//wait for velocity to go down
 			if (m_AwaitingMapFullUpdateEvent) {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
-				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1) {
+				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1 || m_Zoom > m_AbsoluteZoom + 4) {
 					m_AwaitingMapFullUpdateEvent = false;
 					int newAbsZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
 					m_TileDestroyZoomUpdatedDirty = m_AbsoluteZoom != newAbsZoom;
@@ -138,6 +140,7 @@ namespace MRK {
 			m_ActiveTileIDs.Clear();
 			m_SortedTileIDs.Clear();
 			m_SortedToActiveIDs.Clear();
+			m_VisibleTiles.Clear();
 			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
 
 			int maxValidTile = (1 << m_AbsoluteZoom) - 1;
@@ -207,6 +210,9 @@ namespace MRK {
 
 				if (!m_Tiles.Contains(tile))
 					m_Tiles.Add(tile);
+
+				if (siblingIdx < 6)
+					m_VisibleTiles.Add(realID.GetHashCode());
 
 				m_IDsToTiles[realID] = tile;
 			}
@@ -340,6 +346,10 @@ namespace MRK {
 		public void InvokeUpdateEvent() {
 			if (OnMapUpdated != null)
 				OnMapUpdated();
+        }
+
+		public bool IsTileVisible(int hash) {
+			return m_VisibleTiles.Contains(hash);
         }
 	}
 }
