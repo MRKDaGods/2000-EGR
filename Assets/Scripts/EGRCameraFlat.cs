@@ -263,7 +263,7 @@ namespace MRK {
             if (!m_IsInNavigation) {
                 m_IsInNavigation = true;
 
-                m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine);
+                m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine).OnUpdate(() => ProcessPan(new Vector3(0f, 100f) * Time.deltaTime));
 
                 LensDistortion lens = Client.GetActivePostProcessEffect<LensDistortion>();
                 DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 40f, 1f)

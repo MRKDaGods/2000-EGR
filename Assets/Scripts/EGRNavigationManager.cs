@@ -8,20 +8,25 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MRK.Navigation;
 using MRK.UI;
+using Vectrosity;
 
 namespace MRK {
     public class EGRNavigationManager : EGRBehaviour {
         EGRNavigationDirections m_Directions;
-        readonly ObjectPool<LineRenderer> m_LinePool;
+        readonly ObjectPool<VectorLine> m_LinePool;
         [SerializeField]
         Material m_LineMaterial;
-        readonly List<LineRenderer> m_ActiveLines;
+        readonly List<VectorLine> m_ActiveLines;
         int m_SelectedRoute;
         bool m_IsNavigating;
         [SerializeField]
-        Gradient m_IdleGradient;
+        Texture2D m_IdleLineTexture;
         [SerializeField]
-        Gradient m_ActiveGradient;
+        Texture2D m_ActiveLineTexture;
+        [SerializeField]
+        float m_IdleLineWidth;
+        [SerializeField]
+        float m_ActiveLineWidth;
 
         //temp styles
         GUIStyle m_VerticalStyle;
@@ -29,20 +34,14 @@ namespace MRK {
         GUIStyle m_ButtonStyle;
 
         public EGRNavigationManager() {
-            m_LinePool = new ObjectPool<LineRenderer>(() => {
-                LineRenderer lr = new GameObject("LR").AddComponent<LineRenderer>();
-                lr.alignment = LineAlignment.TransformZ;
-                lr.useWorldSpace = true;
-                lr.material = m_LineMaterial;
-                lr.startWidth = lr.endWidth = 1.5f;
-                lr.numCornerVertices = 45;
-                lr.numCapVertices = 45;
-                lr.transform.Rotate(90f, 0f, 0f);
+            m_LinePool = new ObjectPool<VectorLine>(() => {
+                VectorLine vL = new VectorLine("LR", new List<Vector3>(), m_IdleLineTexture, 14f, LineType.Continuous, Joins.Weld);
+                vL.material = m_LineMaterial;
 
-                return lr;
+                return vL;
             });
 
-            m_ActiveLines = new List<LineRenderer>();
+            m_ActiveLines = new List<VectorLine>();
             m_SelectedRoute = -1;
         }
 
@@ -54,6 +53,7 @@ namespace MRK {
             });
 
             Client.FlatMap.OnMapUpdated += OnMapUpdated;
+            //VectorLine.SetCanvasCamera(Client.ActiveCamera);
         }
 
         void OnDestroy() {
@@ -62,8 +62,8 @@ namespace MRK {
 
         public void PrepareDirections() {
             if (m_ActiveLines.Count > 0) {
-                foreach (LineRenderer lr in m_ActiveLines) {
-                    lr.gameObject.SetActive(false);
+                foreach (VectorLine lr in m_ActiveLines) {
+                    lr.active = false;
                     m_LinePool.Free(lr);
                 }
 
@@ -72,52 +72,71 @@ namespace MRK {
 
             int routeIdx = 0;
             foreach (EGRNavigationRoute route in m_Directions.Routes) {
-                LineRenderer lr = m_LinePool.Rent();
-                lr.positionCount = route.Geometry.Coordinates.Count;
+                VectorLine lr = m_LinePool.Rent();
+                lr.points3.Clear();
 
-                for (int i = 0; i < lr.positionCount; i++) {
+                for (int i = 0; i < route.Geometry.Coordinates.Count; i++) {
                     Vector2d geoLoc = route.Geometry.Coordinates[i];
                     Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
                     worldPos.y = 0.1f;
-                    lr.SetPosition(i, worldPos);
+                    lr.points3.Add(worldPos);
                 }
 
-                lr.gameObject.SetActive(true);
+                lr.active = true;
                 m_ActiveLines.Add(lr);
-
+                lr.Draw();
                 routeIdx++;
             }
 
             m_IsNavigating = true;
             m_SelectedRoute = m_Directions.Routes.Count > 0 ? 0 : -1;
 
-            UpdateLinesColor();
+            UpdateSelectedLine();
+
+            Client.FlatMap.SetNavigationTileset();
         }
 
         void OnMapUpdated() {
             if (m_ActiveLines.Count > 0 && m_IsNavigating) {
                 int lrIdx = 0;
-                foreach (LineRenderer lr in m_ActiveLines) {
-                    for (int i = 0; i < lr.positionCount; i++) {
-                        Vector2d geoLoc = m_Directions.Routes[lrIdx].Geometry.Coordinates[i];
+                foreach (VectorLine lr in m_ActiveLines) {
+                    lr.points3.Clear();
+
+                    EGRNavigationRoute route = m_Directions.Routes[lrIdx];
+
+                    for (int i = 0; i < route.Geometry.Coordinates.Count; i++) {
+                        Vector2d geoLoc = route.Geometry.Coordinates[i];
                         Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
                         worldPos.y = 0.1f;
-                        lr.SetPosition(i, worldPos);
+                        lr.points3.Add(worldPos);
                     }
 
+                    lr.Draw();
                     lrIdx++;
                 }
             }
         }
 
-        void UpdateLinesColor() {
+        void Update() {
+            //foreach (VectorLine vl in m_ActiveLines)
+            //   vl.Draw3D();
+        }
+
+        void UpdateSelectedLine() {
             for (int i = 0; i < m_ActiveLines.Count; i++) {
-                m_ActiveLines[i].colorGradient = m_SelectedRoute == i ? m_ActiveGradient : m_IdleGradient;
+                VectorLine vL = m_ActiveLines[i];
+                bool active = m_SelectedRoute == i;
+                vL.SetColor(active ? Color.green : Color.white);
+                vL.lineWidth = active ? m_ActiveLineWidth : m_IdleLineWidth;
+                vL.texture = active ? m_ActiveLineTexture : m_IdleLineTexture;
             }
+
+            VectorLine.canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            VectorLine.canvas.worldCamera = Client.ActiveCamera;
         }
 
         void OnRouteUpdated() {
-            UpdateLinesColor();
+            UpdateSelectedLine();
         }
 
         void OnGUI() {

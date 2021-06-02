@@ -106,7 +106,7 @@ namespace MRK {
                         Owner.LastOverlapCenter = center;
                         Vector3 target = EGRPlaceMarker.ScreenToMarkerSpace(center);
 
-                        if ((!m_OwnerDirty && Time.time > m_TransitionEndTime) || !new Rect(0f, 0f, Screen.width, Screen.height).Contains(center)) {
+                        if (!m_OwnerDirty && Time.time > m_TransitionEndTime) {
                             transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
                         }
                         else {

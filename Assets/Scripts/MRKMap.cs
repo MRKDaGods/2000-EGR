@@ -48,6 +48,7 @@ namespace MRK {
 		int m_ExS;
 		int m_ExW;
 		int m_ExE;
+		string m_BackupTileset;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -138,6 +139,13 @@ namespace MRK {
 		public void UpdateTileset() {
 			m_Tileset = EGRSettings.GetCurrentTileset();
 		}
+
+		public void SetNavigationTileset() {
+			m_BackupTileset = m_Tileset;
+			m_Tileset = "nav";
+
+			UpdatePosition();
+        }
 
 		void UpdateScale() {
 			RectD referenceTileRect = MRKMapUtils.TileBounds(MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom));

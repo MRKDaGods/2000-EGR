@@ -111,6 +111,8 @@ namespace MRK {
 
                 transform.position = ScreenToMarkerSpace(spos);
             }
+            else
+                transform.position = ScreenToMarkerSpace(new Vector2(-1000f, -1000f));
 
             float zoomProg = Client.FlatMap.Zoom / 21f;
             transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg);
