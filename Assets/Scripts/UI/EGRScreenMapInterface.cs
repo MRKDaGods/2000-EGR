@@ -342,10 +342,11 @@ namespace MRK.UI {
             m_ActiveButtonPositioner = new Positioner(GetTransform(Others.MapActiveTemplate));
 
             //assign mapinfo delegates
-            m_ButtonInfoDelegates = new Action[3] {
+            m_ButtonInfoDelegates = new Action[4] {
                 () => Debug.Log("tryna get curloc"),
                 OnHottestTrendsClick,
-                OnSettingsClick //settings
+                OnSettingsClick, //settings
+                OnNavigationClick
             };
 
             for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++)
@@ -730,6 +731,20 @@ namespace MRK.UI {
             }
 
             return m_MarkerSprites[0].Sprite; //NONE
+        }
+
+        void OnNavigationClick() {
+            if (m_EGRCamera is EGRCameraGlobe) {
+                Client.GlobeCamera.SwitchToFlatMapExternal(() => {
+                    Client.Runnable.RunLater(EnterNavigation, 0.2f);
+                });
+            }
+            else
+                EnterNavigation();
+        }
+
+        void EnterNavigation() {
+            Client.FlatCamera.EnterNavigation();
         }
     }
 }

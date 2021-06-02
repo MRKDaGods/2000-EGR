@@ -148,7 +148,7 @@ namespace MRK {
 
         void SwitchToFlatMap() {
             Client.SetMapMode(EGRMapMode.Flat);
-            (Client.ActiveEGRCamera as EGRCameraFlat).SetInitialSetup(GetCurrentGeoPos(), 3f);
+            Client.FlatCamera.SetInitialSetup(GetCurrentGeoPos(), 3f);
 
             if (!PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 0).ToBool()) {
                 PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 1);
@@ -158,6 +158,67 @@ namespace MRK {
             }
         }
 
+        void StartTransitionToFlat(Action callback = null) {
+            if (!m_IsSwitching) {
+                m_IsSwitching = true;
+
+                if (m_DistTween != null) {
+                    DOTween.Kill(m_DistTween.id);
+                }
+
+                //enable my post processing?
+                //vignette
+                Vignette vig = Client.GetActivePostProcessEffect<Vignette>();
+                vig.active = true;
+
+                ChromaticAberration aberration = Client.GetActivePostProcessEffect<ChromaticAberration>();
+
+                Quaternion initialRot = transform.rotation;
+                transform.DORotate(new Vector3(0f, initialRot.eulerAngles.y + 720f), 1.8f, RotateMode.FastBeyond360);
+
+                m_TargetDistance = 10000f;
+                m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.5f)
+                    .SetEase(Ease.OutSine)
+                    .OnUpdate(() => {
+                        vig.intensity.value = m_DistTween.ElapsedPercentage() * 0.65f;
+                    })
+                    .OnComplete(() => {
+                        aberration.active = true;
+                        aberration.intensity.value = 0f;
+
+                        m_TargetDistance = 3000f;
+
+                        m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 1.2f)
+                        .SetEase(Ease.InOutExpo)
+                        .OnComplete(() => {
+                            m_IsSwitching = false;
+                            aberration.active = false;
+                            vig.active = false;
+
+                            transform.rotation = initialRot;
+
+                            m_TargetDistance = 5000f;
+
+                            m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
+
+                            SwitchToFlatMap();
+
+                            if (callback != null)
+                                callback();
+                        })
+                        .OnUpdate(() => {
+                            float perc = m_DistTween.ElapsedPercentage();
+                            aberration.intensity.value = Mathf.Min(perc * 2f, 1f);
+                        })
+                        .SetDelay(0.3f);
+                    });
+            }
+        }
+
+        public void SwitchToFlatMapExternal(Action callback) {
+            StartTransitionToFlat(callback);
+        }
+
         void ProcessZoomInternal(float rawDelta) {
             if (m_IsSwitching)
                 return;
@@ -165,59 +226,8 @@ namespace MRK {
             m_TargetDistance -= rawDelta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
             if (m_TargetDistance < 3500f && m_MapInterface.ObservedTransform == transform) {
-                if (!m_IsSwitching) {
-                    m_IsSwitching = true;
-
-                    if (m_DistTween != null) {
-                        DOTween.Kill(m_DistTween.id);
-                    }
-
-                    //enable my post processing?
-                    //vignette
-                    Vignette vig = Client.GetActivePostProcessEffect<Vignette>();
-                    vig.active = true;
-
-                    ChromaticAberration aberration = Client.GetActivePostProcessEffect<ChromaticAberration>();
-
-                    Quaternion initialRot = transform.rotation;
-                    transform.DORotate(new Vector3(0f, initialRot.eulerAngles.y + 720f), 1.8f, RotateMode.FastBeyond360);
-
-                    m_TargetDistance = 10000f;
-                    m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.5f)
-                        .SetEase(Ease.OutSine)
-                        .OnUpdate(() => {
-                            vig.intensity.value = m_DistTween.ElapsedPercentage() * 0.65f;
-                        })
-                        .OnComplete(() => {
-                            aberration.active = true;
-                            aberration.intensity.value = 0f;
-
-                            m_TargetDistance = 3000f;
-
-                            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 1.2f)
-                            .SetEase(Ease.InOutExpo)
-                            .OnComplete(() => {
-                                m_IsSwitching = false;
-                                aberration.active = false;
-                                vig.active = false;
-
-                                transform.rotation = initialRot;
-
-                                m_TargetDistance = 5000f;
-
-                                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-
-                                SwitchToFlatMap();
-                            })
-                            .OnUpdate(() => {
-                                float perc = m_DistTween.ElapsedPercentage();
-                                aberration.intensity.value = Mathf.Min(perc * 2f, 1f);
-                            })
-                            .SetDelay(0.3f);
-                        });
-
-                    return;
-                }
+                StartTransitionToFlat();
+                return;
             }
 
             m_TargetDistance = Mathf.Clamp(m_TargetDistance, 3100f, 20000f);

@@ -85,6 +85,8 @@ namespace MRK {
         public GameObject GlobalMap => m_GlobalMap;
         public MRKMap FlatMap => m_FlatMap;
         public EGRCamera ActiveEGRCamera => m_MapMode == EGRMapMode.Flat ? (EGRCamera)m_FlatCamera : m_MapMode == EGRMapMode.Globe ? (EGRCamera)m_GlobeCamera : m_GeneralCamera;
+        public EGRCameraFlat FlatCamera => m_FlatCamera;
+        public EGRCameraGlobe GlobeCamera => m_GlobeCamera;
         public EGRNetwork Network => m_Network;
         public EGRLanguageManager LanguageManager { get; private set; }
         public bool CamDirty => m_CamDirty;
@@ -96,6 +98,7 @@ namespace MRK {
         public Transform Sun => m_Sun;
         public CoroutineRunner Runnable { get; private set; }
         public EGRInputModel InputModel { get; private set; }
+        public EGRNavigationManager NavigationManager { get; private set; }
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -124,6 +127,7 @@ namespace MRK {
             m_GeneralCamera = GameObject.Find("EGRGeneralCamera").GetComponent<EGRCameraGeneral>();
 
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();
+            NavigationManager = GameObject.Find("EGRNavigationManager").GetComponent<EGRNavigationManager>();
 
             if (Input.touchSupported)
                 m_Controllers.Add(new EGRVirtualController());

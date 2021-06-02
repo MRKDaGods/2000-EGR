@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace MRK {
@@ -29,6 +30,15 @@ namespace MRK {
 
         public void Run(IEnumerator coroutine) {
             StartCoroutine(_Run(coroutine));
+        }
+
+        IEnumerator _RunLater(Action act, float time) {
+            yield return new WaitForSeconds(time);
+            act?.Invoke();
+        }
+
+        public void RunLater(Action act, float time) {
+            StartCoroutine(_RunLater(act, time));
         }
 
         public void StopAll() {

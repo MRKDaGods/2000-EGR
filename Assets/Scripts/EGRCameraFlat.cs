@@ -2,6 +2,7 @@
 using MRK.UI;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace MRK {
     public class EGRCameraFlat : EGRCamera, IMRKMapController {
@@ -26,6 +27,7 @@ namespace MRK {
         EGRScreenMapInterface m_MapInterface;
         TouchContext m_TouchCtx0;
         Vector3 m_LastZoomPosition;
+        bool m_IsInNavigation;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
 
@@ -34,9 +36,8 @@ namespace MRK {
         }
 
         void Start() {
-            Client.RegisterControllerReceiver(OnReceiveControllerMessage);
-
             m_MapInterface = EGRScreenManager.Instance.GetScreen<EGRScreenMapInterface>();
+            Client.RegisterControllerReceiver(OnReceiveControllerMessage);
         }
 
         void OnDestroy() {
@@ -256,6 +257,20 @@ namespace MRK {
 
         public Vector3 GetMapVelocity() {
             return new Vector3((float)(m_TargetLatLong.x - m_CurrentLatLong.x), (float)(m_TargetLatLong.y - m_CurrentLatLong.y), m_TargetZoom - m_CurrentZoom) * 5f;
+        }
+        
+        public void EnterNavigation() {
+            if (!m_IsInNavigation) {
+                m_IsInNavigation = true;
+
+                m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine);
+
+                LensDistortion lens = Client.GetActivePostProcessEffect<LensDistortion>();
+                DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 40f, 1f)
+                    .SetEase(Ease.OutBack);
+            }
+
+            Client.NavigationManager.PrepareDirections();
         }
     }
 }

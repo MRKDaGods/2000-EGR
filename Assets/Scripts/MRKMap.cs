@@ -44,6 +44,10 @@ namespace MRK {
 		Material m_TilePlaneMaterial;
 		readonly List<MRKTilePlane> m_ActivePlanes;
 		readonly HashSet<int> m_VisibleTiles;
+		int m_ExN;
+		int m_ExS;
+		int m_ExW;
+		int m_ExE;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -75,6 +79,12 @@ namespace MRK {
 			m_PreviousTiles = new List<MRKTileID>();
 			m_ActivePlanes = new List<MRKTilePlane>();
 			m_VisibleTiles = new HashSet<int>();
+
+			//default extents
+			m_ExN = EX_N;
+			m_ExS = EX_S;
+			m_ExW = EX_W;
+			m_ExE = EX_E;
 		}
 
 		void Start() {
@@ -144,8 +154,8 @@ namespace MRK {
 			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
 
 			int maxValidTile = (1 << m_AbsoluteZoom) - 1;
-			for (int x = (centerTile.X - EX_W); x <= (centerTile.X + EX_E); x++) {
-				for (int y = (centerTile.Y - EX_N); y <= (centerTile.Y + EX_S); y++) {
+			for (int x = (centerTile.X - m_ExW); x <= (centerTile.X + m_ExE); x++) {
+				for (int y = (centerTile.Y - m_ExN); y <= (centerTile.Y + m_ExS); y++) {
 					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y, x < 0 || x > maxValidTile || y < 0 || y > maxValidTile));
 				}
 			}
