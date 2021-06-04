@@ -76,12 +76,15 @@ namespace MRK {
                 return;
 
             Place = place;
-            gameObject.SetActive(place != null);
             OverlapCheckFlag = false;
 
             ClearOverlaps();
 
             if (Place != null) {
+                if (!gameObject.activeSelf) {
+                    gameObject.SetActive(true);
+                }
+
                 name = place.Name;
                 m_Text.text = Place.Name;
                 RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.GetPreferredValues().x + 60f, m_InitialMarkerWidth)); //38f is our label padding
@@ -96,6 +99,11 @@ namespace MRK {
                 else {
                     m_Fade.Reset();
                     m_Fade.SetColors(ms_ClearWhite, Color.white);
+                }
+            }
+            else {
+                if (gameObject.activeSelf) {
+                    gameObject.SetActive(false);
                 }
             }
         }

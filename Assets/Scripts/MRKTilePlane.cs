@@ -79,7 +79,7 @@ namespace MRK {
             while (!killPredicate())
                 yield return new WaitForSeconds(0.04f);
 
-            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.7f)
+            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.5f)
                 .OnUpdate(() => {
                     if (m_Material != null) m_Material.SetFloat("_Amount", m_DissolveValue);
                 })

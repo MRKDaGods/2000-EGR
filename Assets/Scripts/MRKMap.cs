@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MRK {
 	public class MRKMap : EGRBehaviour {
-		const int EX_N = 2, EX_S = 2, EX_W = 2, EX_E = 2;
+		const int EX_N = 4, EX_S = 2, EX_W = 2, EX_E = 2;
 
 		[SerializeField]
 		float m_Zoom;
@@ -28,6 +28,7 @@ namespace MRK {
 		Texture2D[] m_LoadingTextures;
 		[SerializeField]
 		Texture2D m_StationaryTexture;
+		MRKMonitoredTexture m_MonitoredStationaryTexture;
 		[SerializeField]
 		bool m_AutoInit;
 		[SerializeField]
@@ -61,7 +62,7 @@ namespace MRK {
 		public float Zoom => m_Zoom;
 		public Material TileMaterial => m_TileMaterial;
 		public Texture2D LoadingTexture => m_LoadingTextures[(int)EGRSettings.MapStyle];
-		public Texture2D StationaryTexture => m_StationaryTexture;
+		public MRKMonitoredTexture StationaryTexture => m_MonitoredStationaryTexture;
 		public string Tileset => m_Tileset;
 		public float TileSize => m_TileSize;
 		public Vector2d CenterMercator => m_CenterMercator;
@@ -96,11 +97,23 @@ namespace MRK {
 			}
 		}
 
+		public void AdjustTileSizeForScreen() {
+			//auto calc tile size
+			// 1080 -> 100
+			// x -> ?
+
+			bool useHeight = Screen.height < Screen.width;
+			float cur = useHeight ? Screen.height : Screen.width;
+			float dimBase = useHeight ? 2316f : 1080f;
+
+			m_TileSize = 120f + (120f - cur * 120f / dimBase);
+		}
+
 		void Update() {
 			//wait for velocity to go down
 			if (m_AwaitingMapFullUpdateEvent) {
 				float sqrMagnitude = m_MapController.GetMapVelocity().sqrMagnitude;
-				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1 || m_Zoom > m_AbsoluteZoom + 4) {
+				if (sqrMagnitude <= 0.1f || m_Zoom < m_AbsoluteZoom - 1 || m_Zoom > m_AbsoluteZoom + 2) {
 					m_AwaitingMapFullUpdateEvent = false;
 					int newAbsZoom = Mathf.Clamp(Mathf.FloorToInt(m_Zoom), 0, 21);
 					m_TileDestroyZoomUpdatedDirty = m_AbsoluteZoom != newAbsZoom;
@@ -132,6 +145,8 @@ namespace MRK {
 			m_InitialZoom = m_AbsoluteZoom;
 			m_CenterLatLng = center;
 
+			m_MonitoredStationaryTexture = new MRKMonitoredTexture(m_StationaryTexture, true);
+
 			UpdateTileset();
 			UpdateMap(m_CenterLatLng, m_Zoom, true);
 		}
@@ -150,6 +165,28 @@ namespace MRK {
 		void UpdateScale() {
 			RectD referenceTileRect = MRKMapUtils.TileBounds(MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom));
 			m_WorldRelativeScale = m_TileSize / (float)referenceTileRect.Size.x;
+		}
+
+		public void FitToBounds(Vector2d min, Vector2d max) {
+			Vector3 botLeft = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(0.2f, 0.2f, 200f));
+			Vector2d botLeftCoords = WorldToGeoPosition(botLeft);
+			Vector3 topRight = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(0.8f, 0.8f, 200f));
+			Vector2d topRightCoords = WorldToGeoPosition(topRight);
+
+			var targetLonDelta = max.y - min.y;
+			var targetLatDelta = max.x - min.x;
+
+			var screenLonDelta = topRightCoords.y - botLeftCoords.y;
+			var screenLatDelta = topRightCoords.x - botLeftCoords.x;
+
+			var zoomLatMultiplier = screenLatDelta / targetLatDelta;
+			var zoomLonMultiplier = screenLonDelta / targetLonDelta;
+
+			var latZoom = Mathf.Log((float)zoomLatMultiplier, 2);
+			var lonZoom = Mathf.Log((float)zoomLonMultiplier, 2);
+
+			float zoom = m_Zoom + Mathf.Min(latZoom, lonZoom);
+			m_MapController.SetCenterAndZoom((min + max) * 0.5f, zoom);
 		}
 
 		void UpdatePosition() {
@@ -369,5 +406,27 @@ namespace MRK {
 		public bool IsTileVisible(int hash) {
 			return m_VisibleTiles.Contains(hash);
         }
+
+		public bool IsAnyTileFetching() {
+			bool fetching = false;
+			foreach (MRKTile tile in m_Tiles) {
+				if (tile.IsFetching) {
+					fetching = true;
+					break;
+                }
+            }
+
+			return fetching;
+        }
+
+		public void DestroyAllTiles() {
+			lock (m_Tiles) {
+				foreach (MRKTile tile in m_Tiles) {
+					tile.OnDestroy();
+					EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile, false));
+					m_Tiles.Remove(tile);
+				}
+			}
+		}
 	}
 }

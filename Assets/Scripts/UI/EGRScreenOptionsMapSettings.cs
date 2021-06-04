@@ -32,10 +32,18 @@ namespace MRK.UI {
 
         protected override void OnScreenHide() {
             EGRSettings.MapSensitivity = (EGRSettingsSensitivity)m_SensitivitySelector.SelectedIndex;
-            EGRSettings.MapStyle = (EGRSettingsMapStyle)m_StyleSelector.SelectedIndex;
+
+            EGRSettingsMapStyle newStyle = (EGRSettingsMapStyle)m_StyleSelector.SelectedIndex;
+            bool styleChanged = newStyle != EGRSettings.MapStyle;
+            EGRSettings.MapStyle = newStyle;
+
             EGRSettings.Save();
 
             Client.FlatMap.UpdateTileset();
+
+            if (styleChanged) {
+                MRKTileMonitor.Instance.DestroyLeaks();
+            }
 
             if (Client.ActiveEGRCamera.InterfaceActive) {
                 Client.ActiveEGRCamera.ResetStates();

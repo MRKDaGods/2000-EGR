@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace MRK {
     public class MRKTile {
@@ -12,7 +13,7 @@ namespace MRK {
         MeshRenderer m_MeshRenderer;
         MRKMap m_Map;
         static Mesh ms_TileMesh;
-        readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>[] ms_CachedTiles;
+        readonly static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>>[] ms_CachedTiles;
         readonly static MRKFileTileFetcher ms_FileFetcher;
         readonly static MRKRemoteTileFetcher ms_RemoteFetcher;
         readonly static TextureFetcherLock ms_LowFetcherLock;
@@ -29,6 +30,8 @@ namespace MRK {
         CoroutineRunner m_Runnable;
         int m_SiblingIndex;
         TextureFetcherLock m_LastLock;
+        MRKMonitoredTexture m_Texture;
+        Reference<UnityWebRequest> m_WebRequest;
 
         public MRKTileID ID { get; private set; }
         public RectD Rect { get; private set; }
@@ -38,12 +41,15 @@ namespace MRK {
         public bool HasAnyTexture { get; private set; }
         public static ObjectPool<MRKTilePlane> PlanePool => ms_PlanePool;
         public static GameObject PlaneContainer => ms_PlaneContainer;
+        public bool IsFetching => m_FetchingTile;
+        public bool IsFetchingLow => m_LastLock == ms_LowFetcherLock;
+        public static ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>>[] CachedTiles => ms_CachedTiles;
 
         static MRKTile() {
             //low - high
-            ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>[2] {
-                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>(),
-                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, Texture2D>>()
+            ms_CachedTiles = new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>>[2] {
+                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>>(),
+                new ConcurrentDictionary<string, ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>>()
             };
 
             ms_FileFetcher = new MRKFileTileFetcher();
@@ -155,7 +161,7 @@ namespace MRK {
             TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
             int recursionMax = low ? (ID.Z >= 19 ? 5 : 9) : 2;
             while (texLock.Recursion > recursionMax) {
-                yield return new WaitForSeconds(0.4f + 0.1f * m_SiblingIndex);
+                yield return new WaitForEndOfFrame();//new WaitForSeconds(0.4f + 0.1f * m_SiblingIndex);
             }
 
             //check for zoom/pan velocity
@@ -181,7 +187,7 @@ namespace MRK {
             bool isLocalTile = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID);
             float sqrMag;
             while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(Time.deltaTime * m_SiblingIndex);
             }
 
             //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
@@ -193,27 +199,35 @@ namespace MRK {
                 string tileset = m_Map.Tileset;
                 MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
+                m_WebRequest = ObjectPool<Reference<UnityWebRequest>>.Default.Rent();
                 MRKTileFetcherContext context = new MRKTileFetcherContext();
-                yield return fetcher.Fetch(context, tileset, ID, low);
+                yield return fetcher.Fetch(context, tileset, ID, m_WebRequest, low);
 
                 if (context.Error) {
                     Debug.Log($"{fetcher.GetType().Name}: low={low} Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
                     HasAnyTexture = true; //free the poor tile plane, so users can still use the map, welp
                 }
                 else {
-                    SetTexture(context.Texture);
                     if (context.Texture != null) {
                         if (!ms_CachedTiles[lowIdx].ContainsKey(tileset)) {
-                            ms_CachedTiles[lowIdx][tileset] = new ConcurrentDictionary<MRKTileID, Texture2D>();
+                            ms_CachedTiles[lowIdx][tileset] = new ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>();
                         }
 
-                        ms_CachedTiles[lowIdx][tileset].AddOrUpdate(ID, context.Texture, (x, y) => context.Texture);
+                        context.Texture.name = ID.ToString();
+                        MRKMonitoredTexture tex = new MRKMonitoredTexture(context.Texture);
+                        SetTexture(tex);
+
+                        ms_CachedTiles[lowIdx][tileset].AddOrUpdate(ID, tex, (x, y) => tex);
 
                         if (context.Texture.isReadable)
                             MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID, low);
                     }
                 }
+
+                ObjectPool<Reference<UnityWebRequest>>.Default.Free(m_WebRequest);
+                m_WebRequest = null;
             }
+
 
             lock (texLock) {
                 texLock.Recursion--;
@@ -240,7 +254,7 @@ namespace MRK {
             int lowIdx = low.ToInt();
             bool exists = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(id);
             if (exists && tex != null) {
-                tex.Value = ms_CachedTiles[lowIdx][m_Map.Tileset][id];
+                tex.Value = ms_CachedTiles[lowIdx][m_Map.Tileset][id].Texture;
             }
 
             return exists;
@@ -282,10 +296,19 @@ namespace MRK {
             }
         }
 
-        public void SetTexture(Texture2D tex) {
+        public void SetTexture(MRKMonitoredTexture tex) {
+            if (m_Texture != null)
+                m_Texture.IsActive = false;
+
+            m_Texture = tex;
+
             if (m_MeshRenderer != null) {
-                tex.wrapMode = TextureWrapMode.Clamp;
-                m_MeshRenderer.material.mainTexture = tex;
+                if (m_Texture != null) {
+                    m_Texture.IsActive = true;
+                    m_Texture.Texture.wrapMode = TextureWrapMode.Clamp;
+                }
+
+                m_MeshRenderer.material.mainTexture = m_Texture?.Texture;
                 Obj.name += "texed";
 
                 m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.15f)
@@ -297,6 +320,9 @@ namespace MRK {
         }
 
         public void OnDestroy() {
+            if (m_WebRequest != null && !m_WebRequest.Value.isDone)
+                m_WebRequest.Value.Abort();
+
             if (m_Tween != null)
                 DOTween.Kill(m_Tween);
 
@@ -335,6 +361,10 @@ namespace MRK {
                     m_LastLock.Recursion--;
                     //Debug.Log($"{m_ObjPoolIndex} Decrement");
                 }
+            }
+
+            if (m_Texture != null) {
+                m_Texture.IsActive = false;
             }
         }
 

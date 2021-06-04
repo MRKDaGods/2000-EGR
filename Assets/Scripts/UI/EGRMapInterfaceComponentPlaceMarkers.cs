@@ -151,12 +151,12 @@ namespace MRK.UI {
                     }
                 }
 
-                List<EGRPlaceMarker> markers = ActiveMarkers.ToList();
+                /*List<EGRPlaceMarker> markers = ActiveMarkers.ToList();
                 for (int i = markers.Count - 1; i > -1; i--) {
                     if (!Client.PlaceManager.ShouldIncludeMarker(markers[i])) {
                         //FreeMarker(markers[i]);
                     }
-                }
+                }*/
 
                 m_PendingDestroyedTiles.Clear();
             }

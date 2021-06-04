@@ -88,5 +88,21 @@ namespace MRK {
 			posy = posy * ORIGIN_SHIFT / 180;
 			return new Vector2d((posx - refPoint.x) * scale, (posy - refPoint.y) * scale);
 		}
+
+		static Vector2d MetersToPixels(Vector2d m, int zoom) {
+			var res = Resolution(zoom);
+			var pix = new Vector2d(((m.x + ORIGIN_SHIFT) / res), ((-m.y + ORIGIN_SHIFT) / res));
+			return pix;
+		}
+
+		static Vector2 PixelsToTile(Vector2d p) {
+			var t = new Vector2((int)Math.Ceiling(p.x / (double)TILE_SIZE) - 1, (int)Math.Ceiling(p.y / (double)TILE_SIZE) - 1);
+			return t;
+		}
+
+		public static Vector2 MetersToTile(Vector2d m, int zoom) {
+			var p = MetersToPixels(m, zoom);
+			return PixelsToTile(p);
+		}
 	}
 }

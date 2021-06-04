@@ -230,8 +230,8 @@ namespace MRK {
 
             //screen space check
             Vector3 spos = marker.ScreenPoint;
-            if (spos.x < 0f || spos.x > Screen.width || spos.y < 0f || spos.y > Screen.height)
-                return false;
+            //if (spos.x < 0f || spos.x > Screen.width || spos.y < 0f || spos.y > Screen.height)
+            //    return false;
 
             //this should be same as server
             int zMin = 7, zMax = 21;

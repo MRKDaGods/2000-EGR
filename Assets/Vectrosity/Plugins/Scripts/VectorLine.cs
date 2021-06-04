@@ -1962,6 +1962,12 @@ public partial class VectorLine {
 			SetCollider (true);
 		}
 	}
+
+		public void Update() {
+			if (m_vectorObject != null) {
+				m_vectorObject.UpdateVerts();
+            }
+        }
 	
 	private void Line2D (int start, int end, Matrix4x4 thisMatrix, bool useTransformMatrix) {
 		Vector3 p1 = v3zero, p2 = v3zero, v1 = v3zero, px = v3zero;

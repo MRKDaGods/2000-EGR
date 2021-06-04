@@ -13,7 +13,7 @@ using MRK.Networking.Packets;
 
 namespace MRK {
     public abstract class MRKTileFetcher {
-        public abstract IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false);
+        public abstract IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, Reference<UnityWebRequest> request, bool low = false);
     }
 
     public class MRKTileFetcherContext {
@@ -32,7 +32,7 @@ namespace MRK {
             return File.Exists($"{GetFolderPath(tileSet)}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png");
         }
 
-        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false) {
+        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, Reference<UnityWebRequest> request, bool low = false) {
             string dir = GetFolderPath(tileSet);
             if (!Directory.Exists(dir)) {
                 context.Error = true;
@@ -47,6 +47,7 @@ namespace MRK {
             }
 
             UnityWebRequest req = UnityWebRequestTexture.GetTexture($"file:///{path}", true);
+            request.Value = req;
             req.SendWebRequest();
 
             while (!req.isDone) {
@@ -61,6 +62,7 @@ namespace MRK {
             }
 
             context.Texture = DownloadHandlerTexture.GetContent(req);
+            //req.downloadHandler.Dispose();
         }
 
         public async Task SaveToDisk(string tileset, MRKTileID id, byte[] tex, bool low) {
@@ -79,7 +81,7 @@ namespace MRK {
     }
 
     public class MRKRemoteTileFetcher : MRKTileFetcher {
-        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, bool low = false) {
+        public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, Reference<UnityWebRequest> request, bool low = false) {
         __start:
             MRKTilesetProvider provider = MRKTileRequestor.Instance.GetCurrentTilesetProvider();
             string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
@@ -90,6 +92,7 @@ namespace MRK {
             }
 
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
+            request.Value = req;
             req.SendWebRequest();
 
             while (!req.isDone) {

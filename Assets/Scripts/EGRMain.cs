@@ -99,12 +99,15 @@ namespace MRK {
         public CoroutineRunner Runnable { get; private set; }
         public EGRInputModel InputModel { get; private set; }
         public EGRNavigationManager NavigationManager { get; private set; }
+        public bool IsRunning { get; private set; }
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
             m_ActiveScreens = new List<EGRScreen>();
             m_Controllers = new List<EGRController>();
             m_PlanetRotationCache = new Dictionary<Transform, float>();
+
+            IsRunning = true;
         }
 
         void Awake() {
@@ -375,6 +378,7 @@ namespace MRK {
 
         public void InitializeMaps() {
             m_MapsInitialized = true;
+            //m_FlatMap.AdjustTileSizeForScreen();
             m_FlatMap.Initialize(new Vector2d(30.04584d, 30.98313d), 4);
         }
 
@@ -382,6 +386,8 @@ namespace MRK {
             ActiveCamera.clearFlags = CameraClearFlags.Skybox;
             ActiveCamera.cullingMask = LayerMask.NameToLayer("Everything");
             SetPostProcessState(false);
+
+            //Shader.WarmupAllShaders();
             //m_Sun.parent.gameObject.SetActive(true);
         }
 
@@ -555,6 +561,10 @@ namespace MRK {
 
         public bool NetUpdateAccountPassword(string pass, bool logoutAll, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
             return Network.SendPacket(new PacketOutUpdatePassword(EGRLocalUser.Instance.Token, pass, logoutAll), DeliveryMethod.ReliableOrdered, callback);
+        }
+
+        void OnApplicationQuit() {
+            IsRunning = false;
         }
 
         void _Log(DateTime timestamp, LogType type, string msg) {

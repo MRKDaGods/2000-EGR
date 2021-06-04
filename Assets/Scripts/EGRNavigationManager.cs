@@ -27,6 +27,11 @@ namespace MRK {
         float m_IdleLineWidth;
         [SerializeField]
         float m_ActiveLineWidth;
+        bool m_FixedCanvas;
+        [SerializeField]
+        Color m_ActiveLineColor;
+        [SerializeField]
+        Color m_IdleLineColor;
 
         //temp styles
         GUIStyle m_VerticalStyle;
@@ -70,6 +75,11 @@ namespace MRK {
                 m_ActiveLines.Clear();
             }
 
+            double minX = double.PositiveInfinity;
+            double minY = double.PositiveInfinity;
+            double maxX = double.NegativeInfinity;
+            double maxY = double.NegativeInfinity;
+
             int routeIdx = 0;
             foreach (EGRNavigationRoute route in m_Directions.Routes) {
                 VectorLine lr = m_LinePool.Rent();
@@ -77,6 +87,12 @@ namespace MRK {
 
                 for (int i = 0; i < route.Geometry.Coordinates.Count; i++) {
                     Vector2d geoLoc = route.Geometry.Coordinates[i];
+
+                    minX = Mathd.Min(minX, geoLoc.x);
+                    minY = Mathd.Min(minY, geoLoc.y);
+                    maxX = Mathd.Max(maxX, geoLoc.x);
+                    maxY = Mathd.Max(maxY, geoLoc.y);
+
                     Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
                     worldPos.y = 0.1f;
                     lr.points3.Add(worldPos);
@@ -94,6 +110,7 @@ namespace MRK {
             UpdateSelectedLine();
 
             Client.FlatMap.SetNavigationTileset();
+            Client.FlatMap.FitToBounds(new Vector2d(minX, minY), new Vector2d(maxX, maxY));
         }
 
         void OnMapUpdated() {
@@ -123,16 +140,22 @@ namespace MRK {
         }
 
         void UpdateSelectedLine() {
+            if (!m_FixedCanvas) {
+                m_FixedCanvas = true;
+                VectorLine.canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                VectorLine.canvas.worldCamera = Client.ActiveCamera;
+            }
+
             for (int i = 0; i < m_ActiveLines.Count; i++) {
                 VectorLine vL = m_ActiveLines[i];
                 bool active = m_SelectedRoute == i;
-                vL.SetColor(active ? Color.green : Color.white);
-                vL.lineWidth = active ? m_ActiveLineWidth : m_IdleLineWidth;
+                vL.SetColor(active ? m_ActiveLineColor : m_IdleLineColor);
+                vL.SetWidth(active ? m_ActiveLineWidth : m_IdleLineWidth);
                 vL.texture = active ? m_ActiveLineTexture : m_IdleLineTexture;
-            }
 
-            VectorLine.canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            VectorLine.canvas.worldCamera = Client.ActiveCamera;
+                if (active)
+                    vL.rectTransform.SetAsLastSibling();
+            }
         }
 
         void OnRouteUpdated() {

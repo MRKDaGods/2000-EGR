@@ -263,7 +263,7 @@ namespace MRK {
             if (!m_IsInNavigation) {
                 m_IsInNavigation = true;
 
-                m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine).OnUpdate(() => ProcessPan(new Vector3(0f, 100f) * Time.deltaTime));
+                //m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine).OnUpdate(() => ProcessPan(new Vector3(0f, 100f) * Time.deltaTime));
 
                 LensDistortion lens = Client.GetActivePostProcessEffect<LensDistortion>();
                 DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 40f, 1f)
@@ -271,6 +271,13 @@ namespace MRK {
             }
 
             Client.NavigationManager.PrepareDirections();
+        }
+
+        public void SetCenterAndZoom(Vector2d targetCenter, float targetZoom) {
+            m_TargetLatLong = targetCenter;
+            m_TargetZoom = targetZoom;
+            Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
+            Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace MRK {
         Tweener m_Tweener;
         bool m_Freeing;
         Action m_FreeCallback;
+        Vector2 m_LastCenter;
 
         public EGRPlaceMarker Owner { get; private set; }
 
@@ -42,7 +43,7 @@ namespace MRK {
                 ms_GroupPopup = ScreenManager.GetPopup<EGRPopupPlaceGroup>();
             }
 
-            GetComponent<Button>().onClick.AddListener(OnGroupClick);
+            m_Sprite.GetComponent<Button>().onClick.AddListener(OnGroupClick);
         }
 
         public void SetOwner(EGRPlaceMarker marker) {
@@ -104,9 +105,10 @@ namespace MRK {
 
                     if (Owner.LastOverlapCenter.IsNotEqual(center)) {
                         Owner.LastOverlapCenter = center;
-                        Vector3 target = EGRPlaceMarker.ScreenToMarkerSpace(center);
+                        m_LastCenter = center;
+                        transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
 
-                        if (!m_OwnerDirty && Time.time > m_TransitionEndTime) {
+                        /* if (!m_OwnerDirty && Time.time > m_TransitionEndTime) {
                             transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
                         }
                         else {
@@ -119,6 +121,7 @@ namespace MRK {
                             }
                             else {
                                 m_Tweener = gameObject.transform.DOMove(target, 0.5f)
+                                    .ChangeStartValue(new Vector3(0f, 0f, -100f))
                                     .SetEase(Ease.OutExpo);
                             }
 
@@ -126,7 +129,7 @@ namespace MRK {
                                 m_OwnerDirty = false;
                                 m_TransitionEndTime = Time.time + 0.5f;
                             }
-                        }
+                        } */
                     }
 
                     float zoomProg = Client.FlatMap.Zoom / 21f;
@@ -139,6 +142,8 @@ namespace MRK {
                 else {
                     foreach (Graphic gfx in m_Gfx)
                         gfx.color = m_Fade.Current;
+
+                    transform.position = EGRPlaceMarker.ScreenToMarkerSpace(m_LastCenter);
                 }
             }
         }
