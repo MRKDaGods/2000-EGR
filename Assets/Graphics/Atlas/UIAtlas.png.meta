@@ -14,6 +14,18 @@ TextureImporter:
   - first:
       213: 3303909427098033265
     second: UIAtlas_3
+  - first:
+      213: 6522926881772575649
+    second: UIAtlas_4
+  - first:
+      213: 8240114503325441606
+    second: UIAtlas_5
+  - first:
+      213: 1928566696291120068
+    second: UIAtlas_6
+  - first:
+      213: -8882723404404433249
+    second: UIAtlas_7
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -186,7 +198,7 @@ TextureImporter:
         width: 512
         height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -194,6 +206,90 @@ TextureImporter:
       bones: []
       spriteID: 17c1e3c7e18d9dd20800000000000000
       internalID: 3303909427098033265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_4
+      rect:
+        serializedVersion: 2
+        x: 1949
+        y: 1998
+        width: 75
+        height: 34
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 9, y: 14, z: 9, w: 12}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1ab96e36077168a50800000000000000
+      internalID: 6522926881772575649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_5
+      rect:
+        serializedVersion: 2
+        x: 1963
+        y: 1692
+        width: 62
+        height: 273
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64ed1479b74ca5270800000000000000
+      internalID: 8240114503325441606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_6
+      rect:
+        serializedVersion: 2
+        x: 1696
+        y: 1744
+        width: 240
+        height: 268
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4c3b41a3135a3ca10800000000000000
+      internalID: 1928566696291120068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_7
+      rect:
+        serializedVersion: 2
+        x: 1704
+        y: 1176
+        width: 224
+        height: 516
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9edc6a502a3ab480800000000000000
+      internalID: -8882723404404433249
       vertices: []
       indices: 
       edges: []

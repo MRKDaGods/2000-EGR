@@ -97,6 +97,12 @@ namespace MRK.UI {
                 return;
             }
 
+            foreach (KeyValuePair<int, bool> pair in m_TilePlaceFetchStates) {
+                if (!pair.Value) {
+                    return;
+                }
+            }
+
             m_TilePlaceFetchStates.Clear();
 
             foreach (MRKTile tile in Map.Tiles) {
@@ -104,7 +110,7 @@ namespace MRK.UI {
                     continue;
 
                 m_TilePlaceFetchStates[tile.ID.GetHashCode()] = false;
-                Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched);
+                Client.Runnable.RunLater(() => Client.PlaceManager.FetchPlacesInTile(tile.ID, OnPlacesFetched), 0.2f);
             }
         }
 
@@ -120,7 +126,7 @@ namespace MRK.UI {
 
             m_TilePlaceFetchStates[tileHash] = true;
             foreach (KeyValuePair<int, bool> pair in m_TilePlaceFetchStates) {
-                if (!pair.Value) {
+                if (!pair.Value && !m_PendingDestroyedTiles.Contains(pair.Key)) {
                     return;
                 }
             }

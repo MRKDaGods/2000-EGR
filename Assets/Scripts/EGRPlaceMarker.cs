@@ -60,6 +60,8 @@ namespace MRK {
             GetComponent<Button>().onClick.AddListener(OnMarkerClick);
 
             m_Gfx = transform.GetComponentsInChildren<Graphic>().Where(x => x.transform != transform).ToArray();
+
+            name = Random.Range(0, 100000000).ToString();
         }
 
         public void ClearOverlaps() {
@@ -85,7 +87,7 @@ namespace MRK {
                     gameObject.SetActive(true);
                 }
 
-                name = place.Name;
+                //name = place.Name;
                 m_Text.text = Place.Name;
                 RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Min(m_Text.GetPreferredValues().x + 60f, m_InitialMarkerWidth)); //38f is our label padding
                 m_Sprite.sprite = ms_MapInterface.GetSpriteForPlaceType(Place.Types[Mathf.Min(2, Place.Types.Length) - 1]);

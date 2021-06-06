@@ -54,7 +54,7 @@ namespace MRK.UI {
                 unit = "KM";
             }
 
-            m_Text.text = $"1:{Mathf.RoundToInt(ratio)} {unit}";
+            m_Text.text = $"1:{Mathf.RoundToInt(ratio)} {unit}\n{Client.FlatMap.AbsoluteZoom}";
         }
     }
 }

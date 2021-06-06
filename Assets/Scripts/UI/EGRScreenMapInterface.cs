@@ -1,16 +1,14 @@
 ﻿using Coffee.UIEffects;
 using DG.Tweening;
-using MRK.Networking.Packets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
-using System.Linq;
-using UnityEngine.Rendering.PostProcessing;
 
 namespace MRK.UI {
     public class EGRScreenMapInterface : EGRScreen {
@@ -77,9 +75,9 @@ namespace MRK.UI {
                     Button = pooled.Item1.GetComponent<Button>();
                     Button.onClick.RemoveAllListeners();
                 }
-                else
-                    Button = Instantiate(owner.GetElement<Button>((string)typeof(Buttons).GetField($"Map0",
-                        BindingFlags.Public | BindingFlags.Static).GetValue(null)), owner.transform);
+                else {
+                    Button = Instantiate(owner.m_MapButtonPrefab, owner.m_MapButtonPrefab.transform.parent).GetComponent<Button>();
+                }
 
                 Button.onClick.AddListener(() => OnButtonClick(true));
                 Button.gameObject.SetActive(true);
@@ -284,6 +282,8 @@ namespace MRK.UI {
         TextMeshPro m_TimeLabel;
         [SerializeField]
         TextMeshPro m_DistLabel;
+        [SerializeField]
+        GameObject m_MapButtonPrefab;
         float m_LastTimeUpdate;
         [SerializeField]
         AnimationCurve m_MarkerScaleCurve;
@@ -315,13 +315,16 @@ namespace MRK.UI {
         public Transform ObservedTransform { get; private set; }
         public bool ObservedTransformDirty { get; set; }
         public Transform ScalebarParent { get; private set; }
-        public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers => (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
-        public EGRMapInterfaceComponentScaleBar ScaleBar => (EGRMapInterfaceComponentScaleBar)m_InterfaceComponents[EGRMapInterfaceComponentType.ScaleBar];
+        public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers =>
+            (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
+        public EGRMapInterfaceComponentScaleBar ScaleBar =>
+            (EGRMapInterfaceComponentScaleBar)m_InterfaceComponents[EGRMapInterfaceComponentType.ScaleBar];
         public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
+        public EGRMapInterfaceComponentNavigation Navigation =>
+            (EGRMapInterfaceComponentNavigation)m_InterfaceComponents[EGRMapInterfaceComponentType.Navigation];
 
         public EGRScreenMapInterface() {
             m_InterfaceComponents = new Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent>();
-
             m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
         }
 
@@ -330,7 +333,7 @@ namespace MRK.UI {
             m_Map.gameObject.SetActive(false);
 
             GetElement<Button>(Buttons.Back).onClick.AddListener(OnBackClick);
-            GetTransform(Buttons.Map0).gameObject.SetActive(false); //disable our template button
+            m_MapButtonPrefab.SetActive(false); //disable our template button
 
             m_CamDistLabel = GetElement<TextMeshProUGUI>(Labels.CamDist);
             m_TransitionImg = GetElement<RawImage>(Images.Transition);
@@ -356,6 +359,7 @@ namespace MRK.UI {
 
             RegisterInterfaceComponent(EGRMapInterfaceComponentType.PlaceMarkers, new EGRMapInterfaceComponentPlaceMarkers());
             RegisterInterfaceComponent(EGRMapInterfaceComponentType.ScaleBar, new EGRMapInterfaceComponentScaleBar());
+            RegisterInterfaceComponent(EGRMapInterfaceComponentType.Navigation, new EGRMapInterfaceComponentNavigation());
         }
 
         public void OnInterfaceEarlyShow() {
@@ -430,6 +434,10 @@ namespace MRK.UI {
 
             if (Time.time - m_LastTimeUpdate >= 60f) {
                 UpdateTime();
+            }
+
+            foreach (EGRMapInterfaceComponent component in m_InterfaceComponents.Values) {
+                component.OnComponentUpdate();
             }
         }
 
@@ -745,6 +753,7 @@ namespace MRK.UI {
 
         void EnterNavigation() {
             Client.FlatCamera.EnterNavigation();
+            Navigation.Show();
         }
     }
 }

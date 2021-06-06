@@ -38,7 +38,6 @@ namespace MRK {
         readonly List<MRKMonitoredTexture> m_DestroyingTextures;
         readonly Reference<Action> m_QueuedToMainThread;
         readonly CancellationTokenSource m_TokenSource;
-        float m_LastLeakCleanTime;
 
         public static MRKTileMonitor Instance { get; private set; }
 
@@ -128,7 +127,6 @@ namespace MRK {
                                         texDestroyed++;
                                     }
 
-                                    Debug.Log($"Destroyed {texDestroyed}");
                                     for (int i = 0; i < texDestroyed; i++)
                                         m_DestroyingTextures.RemoveAt(0);
                                 }
@@ -137,7 +135,7 @@ namespace MRK {
                     }
                 }
 
-                await Task.Delay(2000); //5s
+                await Task.Delay(2000); //2s
             }
         }
 

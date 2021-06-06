@@ -4,7 +4,8 @@ namespace MRK.UI {
     public enum EGRMapInterfaceComponentType {
         None,
         PlaceMarkers,
-        ScaleBar
+        ScaleBar,
+        Navigation
     }
 
     public abstract class EGRMapInterfaceComponent {
@@ -22,6 +23,9 @@ namespace MRK.UI {
         }
 
         public virtual void OnComponentHide() {
+        }
+
+        public virtual void OnComponentUpdate() {
         }
 
         public virtual void OnMapUpdated() {

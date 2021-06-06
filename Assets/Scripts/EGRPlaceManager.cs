@@ -128,7 +128,8 @@ namespace MRK {
 
                 if (upperInfo.Places != null && upperInfo.Places.Count > 0) {
                     foreach (EGRPlace place in upperInfo.Places) {
-                        response.Places.Add(place);
+                        if (ShouldIncludePlace(place))
+                            response.Places.Add(place);
                     }
                 }
             }
@@ -224,6 +225,163 @@ namespace MRK {
             }
         }
 
+        bool ShouldIncludePlace(EGRPlace place) {
+            int zMin = 7, zMax = 21;
+            //manual matching for now?
+            EGRPlaceType primaryType = place.Types.Length > 1 ? place.Types[1] : EGRPlaceType.None;
+            switch (primaryType) {
+
+                case EGRPlaceType.Restaurant:
+                    zMin = 13;
+                    zMax = 20;
+                    break;
+
+                case EGRPlaceType.Delivery:
+                    zMin = 16;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Gym:
+                    zMin = 14;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Smoking:
+                    zMin = 15;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Religion:
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.Cinema:
+                    zMin = 15;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Park:
+                    zMin = 12;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Mall:
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.Museum:
+                    zMin = 11;
+                    zMax = 13;
+                    break;
+
+                case EGRPlaceType.Library:
+                    zMin = 11;
+                    zMax = 13;
+                    break;
+
+                case EGRPlaceType.Grocery:
+                    zMin = 14;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Apparel:
+                    zMin = 14;
+                    zMax = 20;
+                    break;
+
+                case EGRPlaceType.Electronics:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Sport:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.BeautySupply:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Home:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.CarDealer:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Convenience:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Hotel:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.ATM:
+                    zMin = 13;
+                    zMax = 17;
+                    break;
+
+                case EGRPlaceType.Gas:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.Hospital:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.Pharmacy:
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.CarWash:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Parking:
+                    zMin = 19;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.CarRental:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.BeautySalons:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.EVC:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                default:
+                case EGRPlaceType.None:
+                    zMin = 15;
+                    break;
+
+            }
+
+            int desiredZoom = Client.FlatMap.AbsoluteZoom;
+            return desiredZoom >= zMin && desiredZoom <= zMax;
+        }
+
         public bool ShouldIncludeMarker(EGRPlaceMarker marker) {
             if (marker == null || marker.Place == null)
                 return false;
@@ -240,14 +398,149 @@ namespace MRK {
             EGRPlaceType primaryType = place.Types.Length > 1 ? place.Types[1] : EGRPlaceType.None;
             switch (primaryType) {
 
-                default:
-                case EGRPlaceType.None:
+                case EGRPlaceType.Restaurant:
+                    zMin = 13;
+                    zMax = 20;
+                    break;
+
+                case EGRPlaceType.Delivery:
+                    zMin = 16;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Gym:
+                    zMin = 14;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Smoking:
                     zMin = 15;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Religion:
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.Cinema:
+                    zMin = 15;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Park:
+                    zMin = 12;
+                    zMax = 21;
                     break;
 
                 case EGRPlaceType.Mall:
-                    zMin = 5;
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.Museum:
+                    zMin = 11;
+                    zMax = 13;
+                    break;
+
+                case EGRPlaceType.Library:
+                    zMin = 11;
+                    zMax = 13;
+                    break;
+
+                case EGRPlaceType.Grocery:
+                    zMin = 14;
                     zMax = 21;
+                    break;
+
+                case EGRPlaceType.Apparel:
+                    zMin = 14;
+                    zMax = 20;
+                    break;
+
+                case EGRPlaceType.Electronics:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Sport:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.BeautySupply:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Home:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.CarDealer:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Convenience:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Hotel:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.ATM:
+                    zMin = 13;
+                    zMax = 17;
+                    break;
+
+                case EGRPlaceType.Gas:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.Hospital:
+                    zMin = 11;
+                    zMax = 15;
+                    break;
+
+                case EGRPlaceType.Pharmacy:
+                    zMin = 12;
+                    zMax = 16;
+                    break;
+
+                case EGRPlaceType.CarWash:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.Parking:
+                    zMin = 19;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.CarRental:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.BeautySalons:
+                    zMin = 17;
+                    zMax = 21;
+                    break;
+
+                case EGRPlaceType.EVC:
+                    zMin = 18;
+                    zMax = 21;
+                    break;
+
+                default:
+                case EGRPlaceType.None:
+                    zMin = 15;
                     break;
 
             }

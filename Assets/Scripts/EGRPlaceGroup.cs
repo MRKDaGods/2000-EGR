@@ -20,9 +20,12 @@ namespace MRK {
         static EGRPopupPlaceGroup ms_GroupPopup;
         float m_TransitionEndTime;
         Tweener m_Tweener;
+        [SerializeField]
         bool m_Freeing;
         Action m_FreeCallback;
         Vector2 m_LastCenter;
+        [SerializeField]
+        Vector3 m_InitialPosition;
 
         public EGRPlaceMarker Owner { get; private set; }
 
@@ -44,6 +47,9 @@ namespace MRK {
             }
 
             m_Sprite.GetComponent<Button>().onClick.AddListener(OnGroupClick);
+
+            m_InitialPosition = EGRPlaceMarker.ScreenToMarkerSpace(new Vector2(-500f, -500f));
+            transform.position = m_InitialPosition;
         }
 
         public void SetOwner(EGRPlaceMarker marker) {
@@ -89,6 +95,12 @@ namespace MRK {
             m_FreeCallback = callback;
             m_Fade.Reset();
             m_Fade.SetColors(m_Text.color, Color.white.AlterAlpha(0f));
+
+            //capture the geo location of center when Free was called
+            //m_FreeGeoLocation = Client.FlatMap.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(m_LastCenter.x, 
+            //    m_LastCenter.y, Client.ActiveCamera.transform.position.z)));
+
+            //m_OutsideScreenspace = Client.ActiveCamera.ScreenToViewportPoint(m_LastCenter).sqrMagnitude < 0.3 * 0.3f;
         }
 
         void LateUpdate() {
@@ -143,7 +155,10 @@ namespace MRK {
                     foreach (Graphic gfx in m_Gfx)
                         gfx.color = m_Fade.Current;
 
-                    transform.position = EGRPlaceMarker.ScreenToMarkerSpace(m_LastCenter);
+                    //transform.position = m_OutsideScreenspace ? m_InitialPosition : 
+                    //    EGRPlaceMarker.ScreenToMarkerSpace(Client.ActiveCamera.WorldToScreenPoint(Client.FlatMap.GeoToWorldPosition(m_FreeGeoLocation)));
+                    //transform.position = EGRPlaceMarker.ScreenToMarkerSpace(Client.ActiveCamera.WorldToScreenPoint(
+                    //    Client.FlatMap.GeoToWorldPosition(m_FreeGeoLocation)));
                 }
             }
         }

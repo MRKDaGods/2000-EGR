@@ -28,6 +28,7 @@ namespace MRK {
         TouchContext m_TouchCtx0;
         Vector3 m_LastZoomPosition;
         bool m_IsInNavigation;
+        float m_MinViewportZoomLevel;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
 
@@ -47,6 +48,15 @@ namespace MRK {
         public void SetInitialSetup(Vector2d latlng, float zoom) {
             m_CurrentLatLong = m_TargetLatLong = latlng;
             m_CurrentZoom = m_TargetZoom = zoom;
+
+            var pool = ObjectPool<Reference<float>>.Default;
+
+            Reference<float> zoomRef = pool.Rent();
+            m_Map.FitToBounds(new Vector2d(-MRKMapUtils.LATITUDE_MAX, -MRKMapUtils.LONGITUDE_MAX), 
+                new Vector2d(MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LONGITUDE_MAX), -1f, false, zoomRef);
+
+            m_MinViewportZoomLevel = zoomRef.Value;
+            pool.Free(zoomRef);
         }
 
         void OnReceiveControllerMessage(EGRControllerMessage msg) {
@@ -200,7 +210,7 @@ namespace MRK {
                 Client.SetMapMode(EGRMapMode.Globe);
             }
 
-            m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
+            m_TargetZoom = Mathf.Clamp(m_TargetZoom, m_MinViewportZoomLevel, 21f);
 
             Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
 

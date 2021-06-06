@@ -167,10 +167,11 @@ namespace MRK {
 			m_WorldRelativeScale = m_TileSize / (float)referenceTileRect.Size.x;
 		}
 
-		public void FitToBounds(Vector2d min, Vector2d max) {
-			Vector3 botLeft = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(0.2f, 0.2f, 200f));
+		public void FitToBounds(Vector2d min, Vector2d max, float padding = 0.2f, bool teleport = true, Reference<float> zoomRef = null) {
+			float z = Client.ActiveCamera.transform.position.z - transform.position.z;
+			Vector3 botLeft = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(padding, padding, z));
 			Vector2d botLeftCoords = WorldToGeoPosition(botLeft);
-			Vector3 topRight = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(0.8f, 0.8f, 200f));
+			Vector3 topRight = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(1f - padding, 1f - padding, z));
 			Vector2d topRightCoords = WorldToGeoPosition(topRight);
 
 			var targetLonDelta = max.y - min.y;
@@ -186,7 +187,14 @@ namespace MRK {
 			var lonZoom = Mathf.Log((float)zoomLonMultiplier, 2);
 
 			float zoom = m_Zoom + Mathf.Min(latZoom, lonZoom);
-			m_MapController.SetCenterAndZoom((min + max) * 0.5f, zoom);
+
+			if (zoomRef != null) {
+				zoomRef.Value = zoom;
+            }
+
+			if (teleport) {
+				m_MapController.SetCenterAndZoom((min + max) * 0.5f, zoom);
+			}
 		}
 
 		void UpdatePosition() {
@@ -424,8 +432,9 @@ namespace MRK {
 				foreach (MRKTile tile in m_Tiles) {
 					tile.OnDestroy();
 					EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile, false));
-					m_Tiles.Remove(tile);
 				}
+
+				m_Tiles.Clear();
 			}
 		}
 	}
