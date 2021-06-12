@@ -8,7 +8,6 @@ using System;
 
 namespace MRK {
     public class EGRPlaceGroup : EGRBehaviour {
-        EGRColorFade m_Fade;
         Image m_Sprite;
         bool m_OwnerDirty;
         Vector3 m_OriginalScale;
@@ -26,6 +25,7 @@ namespace MRK {
         Vector2 m_LastCenter;
         [SerializeField]
         Vector3 m_InitialPosition;
+        int m_CreationZoom;
 
         public EGRPlaceMarker Owner { get; private set; }
 
@@ -61,14 +61,7 @@ namespace MRK {
                     m_OwnerDirty = true;
                     m_Freeing = false;
                     m_FreeCallback = null;
-
-                    if (m_Fade == null) {
-                        m_Fade = new EGRColorFade(Color.clear, Color.white, 2f);
-                    }
-                    else {
-                        m_Fade.Reset();
-                        m_Fade.SetColors(Color.clear, Color.white);
-                    }
+                    m_CreationZoom = Client.FlatMap.AbsoluteZoom;
                 }
             }
 
@@ -93,8 +86,6 @@ namespace MRK {
         public void Free(Action callback) {
             m_Freeing = true;
             m_FreeCallback = callback;
-            m_Fade.Reset();
-            m_Fade.SetColors(m_Text.color, Color.white.AlterAlpha(0f));
 
             //capture the geo location of center when Free was called
             //m_FreeGeoLocation = Client.FlatMap.WorldToGeoPosition(Client.ActiveCamera.ScreenToWorldPoint(new Vector3(m_LastCenter.x, 
@@ -105,60 +96,28 @@ namespace MRK {
 
         void LateUpdate() {
             if (Owner != null) {
-                if (!m_Fade.Done) {
-                    m_Fade.Update();
-                }
-                else if (m_Freeing)
-                    m_FreeCallback?.Invoke();
-
                 if (!m_Freeing) {
-                    Vector2 center = Client.PlaceManager.GetOverlapCenter(Owner);
+                    Vector2 center = Owner.ScreenPoint; //Client.PlaceManager.GetOverlapCenter(Owner);
                     center.y = Screen.height - center.y;
 
                     if (Owner.LastOverlapCenter.IsNotEqual(center)) {
                         Owner.LastOverlapCenter = center;
                         m_LastCenter = center;
                         transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
-
-                        /* if (!m_OwnerDirty && Time.time > m_TransitionEndTime) {
-                            transform.position = EGRPlaceMarker.ScreenToMarkerSpace(center);
-                        }
-                        else {
-                            if (m_Tweener != null && m_Tweener.position < 1f) {
-                                m_Tweener.Kill();
-
-                                gameObject.transform.DOMove(target, m_TransitionEndTime - Time.time)
-                                    .SetEase(Ease.OutExpo);
-                                //m_Tweener.ChangeValues(transform.position, target, m_TransitionEndTime - Time.time);
-                            }
-                            else {
-                                m_Tweener = gameObject.transform.DOMove(target, 0.5f)
-                                    .ChangeStartValue(new Vector3(0f, 0f, -100f))
-                                    .SetEase(Ease.OutExpo);
-                            }
-
-                            if (m_OwnerDirty) {
-                                m_OwnerDirty = false;
-                                m_TransitionEndTime = Time.time + 0.5f;
-                            }
-                        } */
                     }
 
                     float zoomProg = Client.FlatMap.Zoom / 21f;
                     transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
-
-                    Color color = m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg) * 1.5f);
+                    float opactiyDelta = 1f - Mathf.Abs(Client.FlatMap.Zoom - m_CreationZoom) / m_CreationZoom;
+                    Color color = Color.white.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(opactiyDelta) * 1.5f);
                     foreach (Graphic gfx in m_Gfx)
                         gfx.color = color;
                 }
                 else {
                     foreach (Graphic gfx in m_Gfx)
-                        gfx.color = m_Fade.Current;
+                        gfx.color = Color.clear;
 
-                    //transform.position = m_OutsideScreenspace ? m_InitialPosition : 
-                    //    EGRPlaceMarker.ScreenToMarkerSpace(Client.ActiveCamera.WorldToScreenPoint(Client.FlatMap.GeoToWorldPosition(m_FreeGeoLocation)));
-                    //transform.position = EGRPlaceMarker.ScreenToMarkerSpace(Client.ActiveCamera.WorldToScreenPoint(
-                    //    Client.FlatMap.GeoToWorldPosition(m_FreeGeoLocation)));
+                    m_FreeCallback?.Invoke();
                 }
             }
         }

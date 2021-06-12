@@ -9,9 +9,12 @@ using Newtonsoft.Json.Linq;
 using MRK.Navigation;
 using MRK.UI;
 using Vectrosity;
+using UnityEngine.UI;
 
 namespace MRK {
     public class EGRNavigationManager : EGRBehaviour {
+        [SerializeField]
+        bool m_DrawEditorUI;
         EGRNavigationDirections m_Directions;
         readonly ObjectPool<VectorLine> m_LinePool;
         [SerializeField]
@@ -32,11 +35,28 @@ namespace MRK {
         Color m_ActiveLineColor;
         [SerializeField]
         Color m_IdleLineColor;
+        [SerializeField]
+        Image m_NavSprite;
+        int m_CurrentPointIdx;
+        float m_SimulatedTripPercentage;
+        bool m_IsRouting;
+        Vector3? m_LastForward;
+        Vector3 m_LastCalculatedForward;
 
         //temp styles
         GUIStyle m_VerticalStyle;
         GUIStyle m_LabelStyle;
         GUIStyle m_ButtonStyle;
+
+        public EGRNavigationDirections? CurrentDirections { get; private set; }
+        EGRNavigationRoute CurrentRoute => CurrentDirections.Value.Routes[m_SelectedRoute];
+        public int SelectedRouteIndex {
+            get => m_SelectedRoute;
+            set { 
+                m_SelectedRoute = value;
+                UpdateSelectedLine();
+            }
+        }
 
         public EGRNavigationManager() {
             m_LinePool = new ObjectPool<VectorLine>(() => {
@@ -51,14 +71,25 @@ namespace MRK {
         }
 
         void Start() {
-            string json = Resources.Load<TextAsset>("Map/sampleDirs").text;
+            /* string json = Resources.Load<TextAsset>("Map/sampleDirs").text;
             Task.Run(async () => {
                 await Task.Delay(5000);
                 m_Directions = JsonConvert.DeserializeObject<EGRNavigationDirections>(json);
-            });
+            }); */
 
             Client.FlatMap.OnMapUpdated += OnMapUpdated;
-            //VectorLine.SetCanvasCamera(Client.ActiveCamera);
+            m_NavSprite.gameObject.SetActive(false);
+        }
+
+        public void SetCurrentDirections(string json, Action callback) {
+            Task.Run(async () => {
+                await Task.Delay(100);
+                CurrentDirections = JsonConvert.DeserializeObject<EGRNavigationDirections>(json);
+
+                if (callback != null) {
+                    Client.Runnable.RunOnMainThread(callback);
+                }
+            });
         }
 
         void OnDestroy() {
@@ -81,21 +112,23 @@ namespace MRK {
             double maxY = double.NegativeInfinity;
 
             int routeIdx = 0;
-            foreach (EGRNavigationRoute route in m_Directions.Routes) {
+            foreach (EGRNavigationRoute route in CurrentDirections.Value.Routes) {
                 VectorLine lr = m_LinePool.Rent();
                 lr.points3.Clear();
 
-                for (int i = 0; i < route.Geometry.Coordinates.Count; i++) {
-                    Vector2d geoLoc = route.Geometry.Coordinates[i];
+                foreach (EGRNavigationStep step in route.Legs[0].Steps) {
+                    for (int i = 0; i < step.Geometry.Coordinates.Count; i++) {
+                        Vector2d geoLoc = step.Geometry.Coordinates[i];
 
-                    minX = Mathd.Min(minX, geoLoc.x);
-                    minY = Mathd.Min(minY, geoLoc.y);
-                    maxX = Mathd.Max(maxX, geoLoc.x);
-                    maxY = Mathd.Max(maxY, geoLoc.y);
+                        minX = Mathd.Min(minX, geoLoc.x);
+                        minY = Mathd.Min(minY, geoLoc.y);
+                        maxX = Mathd.Max(maxX, geoLoc.x);
+                        maxY = Mathd.Max(maxY, geoLoc.y);
 
-                    Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
-                    worldPos.y = 0.1f;
-                    lr.points3.Add(worldPos);
+                        Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
+                        worldPos.y = 0.1f;
+                        lr.points3.Add(worldPos);
+                    }
                 }
 
                 lr.active = true;
@@ -105,11 +138,11 @@ namespace MRK {
             }
 
             m_IsNavigating = true;
-            m_SelectedRoute = m_Directions.Routes.Count > 0 ? 0 : -1;
+            m_SelectedRoute = CurrentDirections.Value.Routes.Count > 0 ? 0 : -1;
 
             UpdateSelectedLine();
 
-            Client.FlatMap.SetNavigationTileset();
+            //Client.FlatMap.SetNavigationTileset();
             Client.FlatMap.FitToBounds(new Vector2d(minX, minY), new Vector2d(maxX, maxY));
         }
 
@@ -119,13 +152,15 @@ namespace MRK {
                 foreach (VectorLine lr in m_ActiveLines) {
                     lr.points3.Clear();
 
-                    EGRNavigationRoute route = m_Directions.Routes[lrIdx];
+                    EGRNavigationRoute route = CurrentDirections.Value.Routes[lrIdx];
 
-                    for (int i = 0; i < route.Geometry.Coordinates.Count; i++) {
-                        Vector2d geoLoc = route.Geometry.Coordinates[i];
-                        Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
-                        worldPos.y = 0.1f;
-                        lr.points3.Add(worldPos);
+                    foreach (EGRNavigationStep step in route.Legs[0].Steps) {
+                        for (int i = 0; i < step.Geometry.Coordinates.Count; i++) {
+                            Vector2d geoLoc = step.Geometry.Coordinates[i];
+                            Vector3 worldPos = Client.FlatMap.GeoToWorldPosition(geoLoc);
+                            worldPos.y = 0.1f;
+                            lr.points3.Add(worldPos);
+                        }
                     }
 
                     lr.Draw();
@@ -135,8 +170,49 @@ namespace MRK {
         }
 
         void Update() {
-            //foreach (VectorLine vl in m_ActiveLines)
-            //   vl.Draw3D();
+            if (!m_IsRouting)
+                return;
+
+            m_SimulatedTripPercentage += Time.deltaTime * 0.005f;
+
+            int pointIdx = Mathf.FloorToInt(m_SimulatedTripPercentage * CurrentRoute.Geometry.Coordinates.Count);
+            if (pointIdx >= CurrentRoute.Geometry.Coordinates.Count - 1) {
+                Debug.Log("Nav ended");
+                return;
+            }
+
+            if (m_CurrentPointIdx != pointIdx) {
+                m_CurrentPointIdx = pointIdx;
+
+                m_LastForward = m_LastCalculatedForward;
+            }
+
+            Vector3 curPointPos = Client.FlatMap.GeoToWorldPosition(CurrentRoute.Geometry.Coordinates[pointIdx]);
+            Vector3 nextPointPos = Client.FlatMap.GeoToWorldPosition(CurrentRoute.Geometry.Coordinates[pointIdx + 1]);
+
+            float percPerPoint = 1f / CurrentRoute.Geometry.Coordinates.Count;
+            float subPer = (m_SimulatedTripPercentage - pointIdx * percPerPoint) / percPerPoint;
+
+            Vector3 forward = nextPointPos - curPointPos;
+            if (m_LastForward.HasValue)
+                forward = Vector3.Lerp(m_LastForward.Value, forward, subPer / 0.2f);
+
+            m_LastCalculatedForward = forward;
+
+            Quaternion lookRotation = Quaternion.LookRotation(forward);
+            m_NavSprite.transform.rotation = Quaternion.Euler(lookRotation.eulerAngles - Quaternion.Euler(-90f, 0f, 0f).eulerAngles);
+
+            Vector2d realGeoPos = Vector2d.Lerp(CurrentRoute.Geometry.Coordinates[pointIdx], CurrentRoute.Geometry.Coordinates[pointIdx + 1], subPer);
+            Vector3 pos = Client.FlatMap.GeoToWorldPosition(realGeoPos);
+            Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
+
+            m_NavSprite.transform.position = EGRPlaceMarker.ScreenToMarkerSpace(spos);
+
+            Client.FlatCamera.SetCenterAndZoom(realGeoPos, 18f);
+            Client.ActiveCamera.transform.rotation = Quaternion.Euler(lookRotation.eulerAngles + Quaternion.Euler(90f, 0f, 0f).eulerAngles);
+            //Client.ActiveCamera.transform.position = (pos - Client.ActiveCamera.transform.position).normalized;
+
+            //Debug.Log(CurrentRoute.Legs[0].Steps[pointIdx].Maneuver.Instruction);
         }
 
         void UpdateSelectedLine() {
@@ -162,7 +238,33 @@ namespace MRK {
             UpdateSelectedLine();
         }
 
+        public void StartNavigation() {
+            m_IsRouting = true;
+            m_SimulatedTripPercentage = 0f;
+            m_CurrentPointIdx = 0;
+
+            m_NavSprite.gameObject.SetActive(true);
+        }
+
+        public void ExitNavigation() {
+            foreach (VectorLine vL in m_ActiveLines) {
+                vL.points3.Clear();
+                vL.active = false;
+                m_LinePool.Free(vL);
+            }
+
+            m_ActiveLines.Clear();
+
+            m_IsNavigating = false;
+
+            m_IsRouting = false;
+            m_NavSprite.gameObject.SetActive(false);
+        }
+
         void OnGUI() {
+            if (!m_DrawEditorUI)
+                return;
+
             if (m_VerticalStyle == null) {
                 m_VerticalStyle = new GUIStyle {
                     normal = {
@@ -179,7 +281,7 @@ namespace MRK {
                     fontSize = 42,
                     fontStyle = FontStyle.Bold,
                     alignment = TextAnchor.MiddleCenter,
-                    richText = true
+                    richText = true,
                 };
             }
 
@@ -188,7 +290,7 @@ namespace MRK {
                 GUILayout.BeginVertical(m_VerticalStyle);
                 {
                     GUILayout.Label("Navigation", m_LabelStyle);
-                    GUILayout.Label($"Routes: {m_Directions.Routes.Count}", m_LabelStyle);
+                    GUILayout.Label($"Routes: {CurrentDirections.Value.Routes.Count}", m_LabelStyle);
 
                     GUILayout.BeginHorizontal();
                     {
@@ -206,6 +308,14 @@ namespace MRK {
                     }
                     GUILayout.EndHorizontal();
                 }
+
+                if (GUILayout.Button("Start", m_ButtonStyle)) {
+                    StartNavigation();
+                }
+
+                GUILayout.Label($"Current point: {m_CurrentPointIdx}", m_LabelStyle);
+                m_SimulatedTripPercentage = GUILayout.HorizontalSlider(m_SimulatedTripPercentage, 0f, 1f, GUILayout.Height(100f));
+
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }

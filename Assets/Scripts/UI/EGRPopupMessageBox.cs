@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DG.Tweening;
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-
-using DG.Tweening;
-
+using static MRK.EGRLanguageManager;
 using static MRK.UI.EGRUI_Main.EGRPopup_MessageBox;
 
 namespace MRK.UI {
@@ -46,6 +41,7 @@ namespace MRK.UI {
         protected override void OnScreenHide() {
             base.OnScreenHide();
             m_Ok.gameObject.SetActive(true);
+            SetOkButtonText(Localize(EGRLanguageData.OK));
         }
 
         protected override void OnScreenShow() {
@@ -82,6 +78,10 @@ namespace MRK.UI {
             }
 
             return true;
+        }
+
+        public void SetOkButtonText(string txt) {
+            m_Ok.GetComponentInChildren<TextMeshProUGUI>().text = txt;
         }
     }
 }

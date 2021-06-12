@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace MRK.UI {
@@ -116,7 +115,7 @@ namespace MRK.UI {
 
         public override void OnWarmup() {
             m_MarkerPool.Reserve(100);
-            m_GroupPool.Reserve(100);
+            m_GroupPool.Reserve(50);
         }
 
         void OnPlacesFetched(HashSet<EGRPlace> places, int tileHash) {
@@ -167,6 +166,7 @@ namespace MRK.UI {
                 m_PendingDestroyedTiles.Clear();
             }
 
+            UpdateGroups();
             //send updated event
             Client.Runnable.Run(UpdateMapLater(0.2f));
         }
@@ -175,7 +175,7 @@ namespace MRK.UI {
             yield return new WaitForSeconds(time);
             Client.FlatMap.InvokeUpdateEvent();
 
-            UpdateGroups();
+            //UpdateGroups();
         }
 
         void AddMarker(EGRPlace place, int tileHash) {

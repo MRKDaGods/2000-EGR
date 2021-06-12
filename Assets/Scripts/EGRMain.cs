@@ -1,5 +1,5 @@
 //#define NO_LOADING_SCREEN
-//#define MRK_LOCAL_SERVER
+#define MRK_LOCAL_SERVER
 
 using DG.Tweening;
 using MRK.Networking;
@@ -96,7 +96,7 @@ namespace MRK {
         public EGRMapMode PreviousMapMode => m_PreviousMapMode;
         public Transform[] Planets => m_Planets;
         public Transform Sun => m_Sun;
-        public CoroutineRunner Runnable { get; private set; }
+        public MRKRunnable Runnable { get; private set; }
         public EGRInputModel InputModel { get; private set; }
         public EGRNavigationManager NavigationManager { get; private set; }
         public bool IsRunning { get; private set; }
@@ -149,7 +149,7 @@ namespace MRK {
             EGREventManager.Instance.Register<EGREventGraphicsApplied>(OnGraphicsApplied);
             EGREventManager.Instance.Register<EGREventSettingsSaved>(OnSettingsSaved);
 
-            Runnable = gameObject.AddComponent<CoroutineRunner>();
+            Runnable = gameObject.AddComponent<MRKRunnable>();
         }
 
         IEnumerator Start() {
@@ -313,7 +313,7 @@ namespace MRK {
                 InputModel.UpdateInputModel();
             }
 
-            if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen("FU").ShowScreen();
+            //if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen("FU").ShowScreen();
         }
 
         void OnGUI() {
@@ -561,6 +561,20 @@ namespace MRK {
 
         public bool NetUpdateAccountPassword(string pass, bool logoutAll, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
             return Network.SendPacket(new PacketOutUpdatePassword(EGRLocalUser.Instance.Token, pass, logoutAll), DeliveryMethod.ReliableOrdered, callback);
+        }
+
+        public bool NetGeoAutoComplete(string query, Vector2d proximity, EGRPacketReceivedCallback<PacketInGeoAutoComplete> callback) {
+            if (query.Length > 256)
+                return false;
+
+            return Network.SendPacket(new PacketOutGeoAutoComplete(query, proximity), DeliveryMethod.ReliableOrdered, callback);
+        }
+
+        public bool NetQueryDirections(Vector2d from, Vector2d to, byte profile, EGRPacketReceivedCallback<PacketInStandardJSONResponse> callback) {
+            if (profile > 2)
+                return false;
+
+            return Network.SendPacket(new PacketOutQueryDirections(from, to, profile), DeliveryMethod.ReliableOrdered, callback);
         }
 
         void OnApplicationQuit() {

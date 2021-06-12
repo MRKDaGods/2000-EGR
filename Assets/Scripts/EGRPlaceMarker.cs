@@ -21,6 +21,9 @@ namespace MRK {
         readonly static Color ms_ClearWhite;
         RectTransform m_TextContainer;
         Graphic[] m_Gfx;
+        (int, int) m_ZoomBounds;
+        Color m_LastColor;
+        float m_CreationZoom;
 
         public EGRPlace Place { get; private set; }
         public int TileHash { get; set; }
@@ -57,11 +60,11 @@ namespace MRK {
             m_TextContainer = (RectTransform)m_Text.transform.parent;
             m_InitialMarkerWidth = m_TextContainer.rect.width;
 
-            GetComponent<Button>().onClick.AddListener(OnMarkerClick);
+            m_Sprite.GetComponent<Button>().onClick.AddListener(OnMarkerClick);
 
             m_Gfx = transform.GetComponentsInChildren<Graphic>().Where(x => x.transform != transform).ToArray();
 
-            name = Random.Range(0, 100000000).ToString();
+            //name = Random.Range(0, 100000000).ToString();
         }
 
         public void ClearOverlaps() {
@@ -102,6 +105,9 @@ namespace MRK {
                     m_Fade.Reset();
                     m_Fade.SetColors(ms_ClearWhite, Color.white);
                 }
+
+                m_ZoomBounds = Client.PlaceManager.GetPlaceZoomBoundaries(Place);
+                m_CreationZoom = Client.FlatMap.Zoom;
             }
             else {
                 if (gameObject.activeSelf) {
@@ -144,7 +150,7 @@ namespace MRK {
                     m_Fade.SetColors(ms_ClearWhite, Color.white);
                 }
                 else {
-                    m_Fade.SetColors(m_Fade.Current, ms_ClearWhite);
+                    m_Fade.SetColors(m_LastColor, ms_ClearWhite);
                 }
             }
 
@@ -152,9 +158,15 @@ namespace MRK {
                 m_Fade.Update();
             }
 
-            Color c = m_Fade.Final.a <= Mathf.Epsilon ? m_Fade.Current : m_Fade.Current.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(zoomProg));
+            m_LastColor = m_Fade.Final.a <= Mathf.Epsilon ? m_Fade.Current : m_Fade.Current.AlterAlpha(GetAlphaFromZoom());
             foreach (Graphic gfx in m_Gfx)
-                gfx.color = c;
+                gfx.color = m_LastColor;
+        }
+
+        float GetAlphaFromZoom() {
+            float curZoom = Client.FlatMap.Zoom;
+            float delta = (curZoom - m_CreationZoom) / (21f - m_CreationZoom);
+            return ms_MapInterface.EvaluateMarkerOpacity(delta);
         }
 
         void OnMarkerClick() {
@@ -162,6 +174,10 @@ namespace MRK {
         }
 
         public static Vector3 ScreenToMarkerSpace(Vector2 spos) {
+            if (ms_Canvas == null) {
+                ms_Canvas = EGRScreenManager.Instance.GetScreenSpaceLayer();
+            }
+
             Vector2 point;
             RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)ms_Canvas.transform, spos, ms_Canvas.worldCamera, out point);
             return ms_Canvas.transform.TransformPoint(point);

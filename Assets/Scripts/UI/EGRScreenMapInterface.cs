@@ -37,6 +37,7 @@ namespace MRK.UI {
             readonly MapButtonInfo m_Info;
             bool m_InvokedLateInit;
             readonly int m_Index;
+            float m_LastChangeTime;
 
             static Transform ms_TemplateTransform;
             static EGRScreenMapInterface ms_Owner;
@@ -105,7 +106,11 @@ namespace MRK.UI {
             }
 
             void OnButtonClick(bool broadcast) {
+                if (ms_Owner.Navigation.IsActive)
+                    return;
+
                 m_State = !m_State;
+                m_LastChangeTime = Time.time;
 
                 //broadcast to other buttons
                 if (broadcast) {
@@ -208,6 +213,10 @@ namespace MRK.UI {
                         m_QueuedUpdates &= ~MapButtonUpdate.Label;
                         m_Delta[3] = 0f;
                     }
+                }
+
+                if (m_State && Time.time - m_LastChangeTime > 3f) {
+                    OnButtonClick(false);
                 }
             }
 

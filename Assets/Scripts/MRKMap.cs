@@ -168,7 +168,7 @@ namespace MRK {
 		}
 
 		public void FitToBounds(Vector2d min, Vector2d max, float padding = 0.2f, bool teleport = true, Reference<float> zoomRef = null) {
-			float z = Client.ActiveCamera.transform.position.z - transform.position.z;
+			float z = Client.ActiveCamera.transform.position.y - transform.position.y;
 			Vector3 botLeft = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(padding, padding, z));
 			Vector2d botLeftCoords = WorldToGeoPosition(botLeft);
 			Vector3 topRight = Client.ActiveCamera.ViewportToWorldPoint(new Vector3(1f - padding, 1f - padding, z));

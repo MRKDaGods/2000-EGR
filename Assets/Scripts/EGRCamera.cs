@@ -41,9 +41,9 @@ namespace MRK {
             if (Client.ActiveScreens.Count > 1)
                 return false;
 
-            //if (!ignoreUI && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-            //    return false;
-            //}
+            if (!ignoreUI && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+                return false;
+            }
             
             bool res = true;
 

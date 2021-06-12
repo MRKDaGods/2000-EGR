@@ -134,36 +134,6 @@ namespace MRK {
                 }
             }
 
-            /*foreach (KeyValuePair<int, TileInfo> pair in m_TileInfos) {
-                //skip ourselves
-                if (pair.Key == tileInfo.Hash)
-                    continue;
-
-                //skip tiles with a greater or equal zoom value
-                if (pair.Value.ID.Z >= tileInfo.ID.Z)
-                    continue;
-
-                //useless shit
-                if (pair.Value.Places == null || pair.Value.Places.Count == 0)
-                    continue;
-
-                Vector2d min = pair.Value.Minimum;
-                Vector2d max = pair.Value.Maximum;
-                //do they contain us?
-                if (tileInfo.Minimum.x >= min.x && tileInfo.Minimum.y >= min.y && tileInfo.Maximum.x <= max.x && tileInfo.Maximum.y <= max.y) {
-                    //yep!
-                    //response.Places.AddRange(pair.Value.Places);
-                    //tada now we have em
-
-                    for (int i = 10; i > -1; i--) {
-                        if (response.Places.Count % (10 * (i + 1)) == 0) {
-                            yield return new WaitForSeconds(0.5f * (i + 1));
-                            break;
-                        }
-                    }
-                }
-            }*/
-
             //TODO file search
 
             if (tileInfo.ActiveCallback != null) {
@@ -172,9 +142,6 @@ namespace MRK {
             }
 
             tileInfo.Places = response.Places;
-            //EGRMain.Log($"Tile[{response.Hash}] Hash -> " + response.TileHash);
-
-            //EGRMain.Log($"Processed {response.Places.Count} places");
         }
 
         public HashSet<EGRPlace> GetPlacesInTile(int tileHash) {
@@ -225,9 +192,9 @@ namespace MRK {
             }
         }
 
-        bool ShouldIncludePlace(EGRPlace place) {
-            int zMin = 7, zMax = 21;
-            //manual matching for now?
+        public (int, int) GetPlaceZoomBoundaries(EGRPlace place) {
+            int zMin, zMax;
+
             EGRPlaceType primaryType = place.Types.Length > 1 ? place.Types[1] : EGRPlaceType.None;
             switch (primaryType) {
 
@@ -372,14 +339,20 @@ namespace MRK {
                     break;
 
                 default:
-                case EGRPlaceType.None:
                     zMin = 15;
+                    zMax = 21;
                     break;
 
             }
 
+            return (zMin, zMax);
+        }
+
+        bool ShouldIncludePlace(EGRPlace place) {
+            (int, int) bounds = GetPlaceZoomBoundaries(place);
+
             int desiredZoom = Client.FlatMap.AbsoluteZoom;
-            return desiredZoom >= zMin && desiredZoom <= zMax;
+            return desiredZoom >= bounds.Item1; // && desiredZoom <= bounds.Item2;
         }
 
         public bool ShouldIncludeMarker(EGRPlaceMarker marker) {
@@ -387,166 +360,11 @@ namespace MRK {
                 return false;
 
             //screen space check
-            Vector3 spos = marker.ScreenPoint;
+            //Vector3 spos = marker.ScreenPoint;
             //if (spos.x < 0f || spos.x > Screen.width || spos.y < 0f || spos.y > Screen.height)
             //    return false;
 
-            //this should be same as server
-            int zMin = 7, zMax = 21;
-            //manual matching for now?
-            EGRPlace place = marker.Place;
-            EGRPlaceType primaryType = place.Types.Length > 1 ? place.Types[1] : EGRPlaceType.None;
-            switch (primaryType) {
-
-                case EGRPlaceType.Restaurant:
-                    zMin = 13;
-                    zMax = 20;
-                    break;
-
-                case EGRPlaceType.Delivery:
-                    zMin = 16;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Gym:
-                    zMin = 14;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Smoking:
-                    zMin = 15;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Religion:
-                    zMin = 12;
-                    zMax = 16;
-                    break;
-
-                case EGRPlaceType.Cinema:
-                    zMin = 15;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Park:
-                    zMin = 12;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Mall:
-                    zMin = 12;
-                    zMax = 16;
-                    break;
-
-                case EGRPlaceType.Museum:
-                    zMin = 11;
-                    zMax = 13;
-                    break;
-
-                case EGRPlaceType.Library:
-                    zMin = 11;
-                    zMax = 13;
-                    break;
-
-                case EGRPlaceType.Grocery:
-                    zMin = 14;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Apparel:
-                    zMin = 14;
-                    zMax = 20;
-                    break;
-
-                case EGRPlaceType.Electronics:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Sport:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.BeautySupply:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Home:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.CarDealer:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Convenience:
-                    zMin = 18;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Hotel:
-                    zMin = 11;
-                    zMax = 15;
-                    break;
-
-                case EGRPlaceType.ATM:
-                    zMin = 13;
-                    zMax = 17;
-                    break;
-
-                case EGRPlaceType.Gas:
-                    zMin = 11;
-                    zMax = 15;
-                    break;
-
-                case EGRPlaceType.Hospital:
-                    zMin = 11;
-                    zMax = 15;
-                    break;
-
-                case EGRPlaceType.Pharmacy:
-                    zMin = 12;
-                    zMax = 16;
-                    break;
-
-                case EGRPlaceType.CarWash:
-                    zMin = 18;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.Parking:
-                    zMin = 19;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.CarRental:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.BeautySalons:
-                    zMin = 17;
-                    zMax = 21;
-                    break;
-
-                case EGRPlaceType.EVC:
-                    zMin = 18;
-                    zMax = 21;
-                    break;
-
-                default:
-                case EGRPlaceType.None:
-                    zMin = 15;
-                    break;
-
-            }
-
-            int desiredZoom = Client.FlatMap.AbsoluteZoom;
-            return desiredZoom >= zMin && desiredZoom <= zMax;
+            return ShouldIncludePlace(marker.Place);
         }
 
         public Vector2 GetOverlapCenter(EGRPlaceMarker master) {
@@ -559,25 +377,6 @@ namespace MRK {
             }
 
             return avgPos / (master.Overlappers.Count + 1);
-        }
-
-        void OnGUI() {
-            /*EGRScreenMapInterface mi = ScreenManager.GetScreen<EGRScreenMapInterface>();
-            if (mi == null || !mi.Visible)
-                return;
-
-            foreach (EGRPlaceMarker marker in mi.ActiveMarkers) {
-                if (marker.Previous == null) {
-                    if (marker.Next == null) //lonely ass child
-                        continue;
-
-                    EGRPlaceMarker next = marker;
-                    while ((next = next.Next) != null) {
-                        EGRPlaceMarker previous = next.Previous;
-                        EGRGL.DrawLine(previous.ScreenPoint, next.ScreenPoint, Color.blue, 1.4f);
-                    }
-                }
-            }*/
         }
     }
 }

@@ -63,7 +63,7 @@ namespace MRK {
             if (!m_InterfaceActive || !gameObject.activeSelf)
                 return;
 
-            if (!ShouldProcessControllerMessage(msg)) {
+            if (!ShouldProcessControllerMessage(msg, m_Down[0])) {
                 ResetStates();
                 return;
             }
@@ -279,8 +279,15 @@ namespace MRK {
                 DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 40f, 1f)
                     .SetEase(Ease.OutBack);
             }
+        }
 
-            Client.NavigationManager.PrepareDirections();
+        public void ExitNavigation() {
+            if (m_IsInNavigation) {
+                m_IsInNavigation = false;
+                LensDistortion lens = Client.GetActivePostProcessEffect<LensDistortion>();
+                DOTween.To(() => lens.intensity.value, x => lens.intensity.value = x, 25f, 1f)
+                    .SetEase(Ease.OutBack);
+            }
         }
 
         public void SetCenterAndZoom(Vector2d targetCenter, float targetZoom) {

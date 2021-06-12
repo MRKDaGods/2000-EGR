@@ -27,7 +27,7 @@ namespace MRK {
         Material m_Material;
         bool m_FetchingTile;
         float m_MaterialEmission;
-        CoroutineRunner m_Runnable;
+        MRKRunnable m_Runnable;
         int m_SiblingIndex;
         TextureFetcherLock m_LastLock;
         MRKMonitoredTexture m_Texture;
@@ -121,9 +121,9 @@ namespace MRK {
                     SetTexture(ms_CachedTiles[0][m_Map.Tileset][ID]);
                 }
                 else {
-                    m_Runnable = Obj.GetComponent<CoroutineRunner>();
+                    m_Runnable = Obj.GetComponent<MRKRunnable>();
                     if (m_Runnable == null)
-                        m_Runnable = Obj.AddComponent<CoroutineRunner>();
+                        m_Runnable = Obj.AddComponent<MRKRunnable>();
 
                     m_Runnable.enabled = true;
                     if (Obj.activeInHierarchy) {
@@ -311,7 +311,7 @@ namespace MRK {
                 m_MeshRenderer.material.mainTexture = m_Texture?.Texture;
                 Obj.name += "texed";
 
-                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.15f)
+                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.1f)
                     .SetEase(Ease.OutSine)
                     .OnUpdate(UpdateMaterialBlend);
 

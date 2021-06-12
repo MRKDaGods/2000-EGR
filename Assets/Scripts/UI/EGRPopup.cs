@@ -96,5 +96,9 @@ namespace MRK.UI {
 
         protected virtual void SetText(string txt) {
         }
+
+        public void SetResult(EGRPopupResult res) {
+            m_Result = res;
+        }
     }
 }

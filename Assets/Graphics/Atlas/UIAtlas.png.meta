@@ -26,6 +26,24 @@ TextureImporter:
   - first:
       213: -8882723404404433249
     second: UIAtlas_7
+  - first:
+      213: 7040899507186427306
+    second: UIAtlas_8
+  - first:
+      213: -4734932565565833062
+    second: UIAtlas_9
+  - first:
+      213: 3079850192802285701
+    second: UIAtlas_10
+  - first:
+      213: -1983652196504064915
+    second: UIAtlas_11
+  - first:
+      213: 7481478073410783102
+    second: UIAtlas_12
+  - first:
+      213: -3233138491841863971
+    second: UIAtlas_13
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -278,11 +296,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1704
-        y: 1176
-        width: 224
-        height: 516
+        y: 1426
+        width: 196
+        height: 266
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -290,6 +308,132 @@ TextureImporter:
       bones: []
       spriteID: f9edc6a502a3ab480800000000000000
       internalID: -8882723404404433249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_8
+      rect:
+        serializedVersion: 2
+        x: 1804
+        y: 888
+        width: 216
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa5e1192ccc46b160800000000000000
+      internalID: 7040899507186427306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_9
+      rect:
+        serializedVersion: 2
+        x: 628
+        y: 940
+        width: 420
+        height: 572
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a90050a1be32a4eb0800000000000000
+      internalID: -4734932565565833062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_10
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 428
+        width: 500
+        height: 504
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 588066fbe63ddba20800000000000000
+      internalID: 3079850192802285701
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_12
+      rect:
+        serializedVersion: 2
+        x: 972
+        y: 416
+        width: 504
+        height: 500
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7706805bac83d760800000000000000
+      internalID: 7481478073410783102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_11
+      rect:
+        serializedVersion: 2
+        x: 1124
+        y: 984
+        width: 504
+        height: 504
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6ca37d46d6a874e0800000000000000
+      internalID: -1983652196504064915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas_13
+      rect:
+        serializedVersion: 2
+        x: 1556
+        y: 396
+        width: 480
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dde9f1ceba59123d0800000000000000
+      internalID: -3233138491841863971
       vertices: []
       indices: 
       edges: []

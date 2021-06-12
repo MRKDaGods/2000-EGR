@@ -39,6 +39,8 @@ namespace MRK.Networking.Packets {
         STDRSP = 0x20,
         //test packet
         TEST = 0x21,
+        //standard json response
+        STDJSONRSP = 0x22,
 
         //fetch places
         PLCFETCH = 0x30,
@@ -48,6 +50,11 @@ namespace MRK.Networking.Packets {
         PLCIDFETCH = 0x32,
         //fetch place v2
         PLCFETCHV2 = 0x33,
+
+        //geo autocomplete
+        GEOAUTOCOMPLETE = 0x40,
+        //query directions
+        QUERYDIRS = 0x41,
 
         MAX
     }
