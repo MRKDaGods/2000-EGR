@@ -53,7 +53,7 @@ namespace MRK {
 
             Reference<float> zoomRef = pool.Rent();
             m_Map.FitToBounds(new Vector2d(-MRKMapUtils.LATITUDE_MAX, -MRKMapUtils.LONGITUDE_MAX), 
-                new Vector2d(MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LONGITUDE_MAX), -1f, false, zoomRef);
+                new Vector2d(MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LONGITUDE_MAX), 0f, false, zoomRef);
 
             m_MinViewportZoomLevel = zoomRef.Value;
             pool.Free(zoomRef);
@@ -65,6 +65,10 @@ namespace MRK {
 
             if (!ShouldProcessControllerMessage(msg, m_Down[0])) {
                 ResetStates();
+
+                if (((EGRControllerMouseEventKind)msg.Payload[0]) == EGRControllerMouseEventKind.Down)
+                    msg.Payload[2] = true;
+
                 return;
             }
 
@@ -81,11 +85,18 @@ namespace MRK {
                         if (data.Index == 0) {
                             m_TouchCtx0.LastDownTime = Time.time;
                         }
+
+                        m_PassedThreshold[data.Index] = false;
                         break;
 
                     case EGRControllerMouseEventKind.Drag:
                         //store delta for zoom
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
+
+                        Vector3 delta = (Vector3)msg.Payload[2];
+                        if (!m_PassedThreshold[data.Index] && delta.sqrMagnitude > 5f) {
+                            m_PassedThreshold[data.Index] = true;
+                        }
 
                         int touchCount = 0;
                         for (int i = 0; i < 2; i++) {
@@ -100,15 +111,15 @@ namespace MRK {
 
                             case 1:
 
-                                if (m_Down[0]) {
-                                    ProcessPan((Vector3)msg.Payload[2]);
+                                if (m_Down[0] && m_PassedThreshold[data.Index]) {
+                                    ProcessPan(delta);
                                 }
 
                                 break;
 
                             case 2:
 
-                                if (data.Index == 1) { //handle 2nd touch
+                                if (data.Index == 1 && m_PassedThreshold[0] && m_PassedThreshold[1]) { //handle 2nd touch
                                     ProcessZoom((EGRControllerMouseData[])msg.Payload[3]);
                                 }
 
@@ -118,7 +129,7 @@ namespace MRK {
                         break;
 
                     case EGRControllerMouseEventKind.Up:
-                        if (m_Down[0]) {
+                        if (m_Down[0] && !m_PassedThreshold[0]) {
                             if (Time.time - m_LastZoomTime > 0.5f && Time.time - m_TouchCtx0.LastValidDownTime < 0.2f) {
                                 ProcessDoubleClick((Vector3)msg.Payload[1]);
                             }

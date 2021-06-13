@@ -139,6 +139,7 @@ namespace MRK {
 
                 m_Fade.Reset();
                 m_Fade.SetColors(m_Text.color, m_Fade.Final);
+                m_Sprite.raycastTarget = false;
                 return;
             }
 
@@ -151,6 +152,7 @@ namespace MRK {
                 }
                 else {
                     m_Fade.SetColors(m_LastColor, ms_ClearWhite);
+                    m_Sprite.raycastTarget = false;
                 }
             }
 
@@ -161,6 +163,9 @@ namespace MRK {
             m_LastColor = m_Fade.Final.a <= Mathf.Epsilon ? m_Fade.Current : m_Fade.Current.AlterAlpha(GetAlphaFromZoom());
             foreach (Graphic gfx in m_Gfx)
                 gfx.color = m_LastColor;
+
+            if (m_OverlapOwner == null)
+                m_Sprite.raycastTarget = m_LastColor.a > 0.2f;
         }
 
         float GetAlphaFromZoom() {

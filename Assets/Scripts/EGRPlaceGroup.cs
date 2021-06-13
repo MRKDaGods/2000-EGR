@@ -112,6 +112,8 @@ namespace MRK {
                     Color color = Color.white.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(opactiyDelta) * 1.5f);
                     foreach (Graphic gfx in m_Gfx)
                         gfx.color = color;
+
+                    m_Sprite.raycastTarget = color.a > 0.2f;
                 }
                 else {
                     foreach (Graphic gfx in m_Gfx)

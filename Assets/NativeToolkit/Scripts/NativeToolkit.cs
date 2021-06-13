@@ -134,7 +134,7 @@ public class NativeToolkit : MonoBehaviour {
 	{
 		yield return new WaitForEndOfFrame();
 
-		Texture2D texture = new Texture2D ((int)screenArea.width, (int)screenArea.height, TextureFormat.RGB24, false);
+		Texture2D texture = new Texture2D ((int)screenArea.width, (int)screenArea.height, TextureFormat.ARGB32, false);
 		texture.ReadPixels (screenArea, 0, 0);
 		texture.Apply ();
 		

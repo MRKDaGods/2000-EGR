@@ -337,10 +337,10 @@ TextureImporter:
       name: UIAtlas_9
       rect:
         serializedVersion: 2
-        x: 628
-        y: 940
-        width: 420
-        height: 572
+        x: 644
+        y: 988
+        width: 376
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

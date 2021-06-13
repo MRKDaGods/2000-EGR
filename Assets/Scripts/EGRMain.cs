@@ -76,10 +76,11 @@ namespace MRK {
         ParticleSystem m_EnvironmentEmitter;
         readonly Dictionary<Transform, float> m_PlanetRotationCache;
         float m_LastPhysicsSimulationTime; //we need to manually simulate physics for the sun flare to stop appearing through planets
+        float m_SkyboxRotation;
 
         public static EGRMain Instance { get; private set; }
 
-        EGRScreenManager ScreenManager => EGRScreenManager.Instance;
+        public EGRScreenManager ScreenManager => EGRScreenManager.Instance;
         public Camera ActiveCamera => Camera.main;
         public EGRMapMode MapMode => m_MapMode;
         public GameObject GlobalMap => m_GlobalMap;
@@ -100,6 +101,7 @@ namespace MRK {
         public EGRInputModel InputModel { get; private set; }
         public EGRNavigationManager NavigationManager { get; private set; }
         public bool IsRunning { get; private set; }
+        public EGRLocationService LocationService { get; private set; }
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -131,6 +133,7 @@ namespace MRK {
 
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();
             NavigationManager = GameObject.Find("EGRNavigationManager").GetComponent<EGRNavigationManager>();
+            LocationService = gameObject.AddComponent<EGRLocationService>();
 
             if (Input.touchSupported)
                 m_Controllers.Add(new EGRVirtualController());
@@ -306,6 +309,13 @@ namespace MRK {
                         m_LastPhysicsSimulationTime = Time.time;
                         Physics.Simulate(0.5f);
                     }
+
+                    //rotate the skybox
+                    m_SkyboxRotation += Time.deltaTime * 0.5f;
+                    if (m_SkyboxRotation > 360f)
+                        m_SkyboxRotation -= 360f;
+
+                    RenderSettings.skybox.SetFloat("_Rotation", m_SkyboxRotation);
                 }
             }
 

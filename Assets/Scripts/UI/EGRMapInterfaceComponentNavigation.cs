@@ -83,8 +83,11 @@ namespace MRK.UI {
             }
 
             void OnSelect(int idx) {
-                ms_Instance.m_AutoComplete.SetAutoCompleteState(true, idx == 0);
-                ms_Instance.m_AutoComplete.SetActiveInput(idx == 0 ? m_From : m_To);
+                ms_Instance.m_AutoComplete.SetAutoCompleteState(true, idx == 0, idx == 1);
+                TMP_InputField active = idx == 0 ? m_From : m_To;
+                ms_Instance.m_AutoComplete.SetActiveInput(active);
+
+                OnTextChanged(idx, active.text);
             }
 
             public void Show() {
@@ -298,6 +301,7 @@ namespace MRK.UI {
             ObjectPool<Item> m_ItemPool;
             Item m_DefaultItem;
             Item m_CurrentLocation;
+            Item m_ManualMap;
             float m_LastAutoCompleteRequestTime;
             int m_ContextIndex;
             readonly Dictionary<string, EGRGeoAutoComplete> m_RequestCache;
@@ -324,6 +328,12 @@ namespace MRK.UI {
                     FontStatic = true
                 };
                 InitItem(m_CurrentLocation, currentTrans);
+
+                Transform manualTrans = m_Transform.Find("Manual");
+                m_ManualMap = new Item {
+                    FontStatic = true
+                };
+                InitItem(m_ManualMap, manualTrans);
 
                 m_ContextIndex = -1;
                 m_RequestCache = new Dictionary<string, EGRGeoAutoComplete>();
@@ -481,7 +491,7 @@ namespace MRK.UI {
                 }
             }
 
-            public void SetAutoCompleteState(bool active, bool showCurLoc = true) {
+            public void SetAutoCompleteState(bool active, bool showCurLoc = true, bool showManual = true) {
                 m_Transform.gameObject.SetActive(active);
 
                 if (active) {
@@ -490,6 +500,13 @@ namespace MRK.UI {
 
                         if (showCurLoc)
                             AnimateItem(m_CurrentLocation);
+                    }
+
+                    if (m_ManualMap.Object.activeInHierarchy != showManual) {
+                        m_ManualMap.Object.SetActive(showManual);
+
+                        if (showManual)
+                            AnimateItem(m_ManualMap);
                     }
                 }
             }

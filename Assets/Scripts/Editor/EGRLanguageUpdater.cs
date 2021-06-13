@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using MRK;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 
 public class EGRLanguageUpdater : MonoBehaviour {
     [MenuItem("EGR/Update Language")]

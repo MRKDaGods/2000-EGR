@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace MRK {
     public class EGRCamera : EGRBehaviour {
         protected readonly bool[] m_Down;
         protected readonly float[] m_Delta;
         protected readonly Vector3[] m_Deltas;
+        protected readonly bool[] m_PassedThreshold;
         protected bool m_InterfaceActive;
         protected EGRController m_LastController;
         float m_LastControllerTime;
@@ -16,6 +18,7 @@ namespace MRK {
             m_Down = new bool[2];
             m_Delta = new float[2];
             m_Deltas = new Vector3[2];
+            m_PassedThreshold = new bool[2];
         }
 
         public virtual void SetInterfaceState(bool active, bool force = false) {
@@ -33,7 +36,8 @@ namespace MRK {
             for (int i = 0; i < 2; i++) {
                 m_Down[i] = false;
                 m_Delta[i] = 0f;
-                m_Deltas[0] = Vector3.zero;
+                m_Deltas[i] = Vector3.zero;
+                m_PassedThreshold[i] = false;
             }
         }
 
@@ -41,8 +45,11 @@ namespace MRK {
             if (Client.ActiveScreens.Count > 1)
                 return false;
 
-            if (!ignoreUI && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-                return false;
+            if (!ignoreUI) {
+                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
+                int id = msg.Kind == EGRControllerMessageKind.Virtual ? data.Index : -1;
+                if (EventSystem.current.IsPointerOverGameObject(id))
+                    return false;
             }
             
             bool res = true;

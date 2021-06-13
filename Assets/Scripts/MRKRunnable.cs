@@ -36,8 +36,16 @@ namespace MRK {
         }
 
         IEnumerator _RunLater(Action act, float time) {
+            lock (m_Lock) {
+                m_Lock.Count++;
+            }
+
             yield return new WaitForSeconds(time);
             act?.Invoke();
+
+            lock (m_Lock) {
+                m_Lock.Count--;
+            }
         }
 
         public void RunLater(Action act, float time) {
