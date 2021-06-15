@@ -20,6 +20,7 @@ namespace MRK.UI {
         static List<EGRProxyScreen> m_ProxyPipe;
         [SerializeField]
         Canvas m_ScreenSpaceLayer;
+        EGRScreenMapInterface m_MapInterface;
 
         public static int SceneChangeIndex { get; private set; }
 
@@ -38,7 +39,8 @@ namespace MRK.UI {
         }
         public int ScreenCount => m_Screens.Keys.Count;
         public bool FullyInitialized => m_TargetScreenCount == ScreenCount;
-        public EGRScreenMain MainScreen => GetScreen<EGRScreenMain>(EGRUI_Main.EGRScreen_Main.SCREEN_NAME);
+        public EGRScreenMain MainScreen => GetScreen<EGRScreenMain>();
+        public EGRScreenMapInterface MapInterface => m_MapInterface ??= GetScreen<EGRScreenMapInterface>();
 
         static EGRScreenManager() {
             SceneManager.activeSceneChanged += OnSceneChanged;

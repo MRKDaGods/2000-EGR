@@ -102,6 +102,7 @@ namespace MRK {
         public EGRNavigationManager NavigationManager { get; private set; }
         public bool IsRunning { get; private set; }
         public EGRLocationService LocationService { get; private set; }
+        public EGRLocationManager LocationManager { get; private set; }
 
         public EGRMain() {
             m_Loggers = new List<EGRLogger>();
@@ -133,7 +134,7 @@ namespace MRK {
 
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();
             NavigationManager = GameObject.Find("EGRNavigationManager").GetComponent<EGRNavigationManager>();
-            LocationService = gameObject.AddComponent<EGRLocationService>();
+            LocationService = new GameObject("EGRLocationService").AddComponent<EGRLocationService>();
 
             if (Input.touchSupported)
                 m_Controllers.Add(new EGRVirtualController());
@@ -170,6 +171,9 @@ namespace MRK {
             //load settings
             EGRSettings.Load();
             EGRSettings.Apply();
+
+            //init location manager
+            LocationManager = gameObject.AddComponent<EGRLocationManager>();
 
             UpdateInputModel();
 

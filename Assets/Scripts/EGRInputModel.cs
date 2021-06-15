@@ -17,6 +17,8 @@ namespace MRK {
 
         public abstract void ProcessZoom(ref float current, ref float target, Func<float> get, Action<float> set);
 
+        public abstract void ProcessRotation(ref Vector2 current, ref Vector2 target, Func<Vector2> get, Action<Vector2> set);
+
         public virtual void UpdateInputModel() {
         }
 
@@ -45,6 +47,8 @@ namespace MRK {
         object m_ZoomTween;
         object m_PanTweenLat;
         object m_PanTweenLng;
+        object m_RotationTweenX;
+        object m_RotationTweenY;
 
         public override void ProcessPan(ref Vector2d current, ref Vector2d target, Func<Vector2d> get, Action<Vector2d> set) {
             if (m_PanTweenLat != null) {
@@ -70,6 +74,22 @@ namespace MRK {
             m_ZoomTween = DOTween.To(() => get(), x => set(x), target, 0.4f)
                 .SetEase(Ease.OutSine);
         }
+
+        public override void ProcessRotation(ref Vector2 current, ref Vector2 target, Func<Vector2> get, Action<Vector2> set) {
+            if (m_RotationTweenX != null) {
+                DOTween.Kill(m_PanTweenLat);
+            }
+
+            if (m_RotationTweenY != null) {
+                DOTween.Kill(m_PanTweenLng);
+            }
+
+            m_RotationTweenX = DOTween.To(() => get().x, x => set(new Vector2(x, get().y)), target.x, 0.5f)
+               .SetEase(Ease.OutSine);
+
+            m_RotationTweenY = DOTween.To(() => get().y, x => set(new Vector2(get().x, x)), target.y, 0.5f)
+                .SetEase(Ease.OutSine);
+        }
     }
 
     public class EGRInputModelMRK : EGRInputModel {
@@ -84,10 +104,11 @@ namespace MRK {
 
         Context<float> m_Zoom;
         Context<Vector2d> m_Pan;
+        Context<Vector2> m_Rotation;
 
         public Context<float> ZoomContext => m_Zoom;
 
-        public override bool NeedsUpdate => m_Zoom.CanUpdate || m_Pan.CanUpdate;
+        public override bool NeedsUpdate => m_Zoom.CanUpdate || m_Pan.CanUpdate || m_Rotation.CanUpdate;
 
         public override void ProcessPan(ref Vector2d current, ref Vector2d target, Func<Vector2d> get, Action<Vector2d> set) {
             m_Pan.Get = get;
@@ -103,6 +124,13 @@ namespace MRK {
             m_Zoom.LastProcessTime = Time.time;
         }
 
+        public override void ProcessRotation(ref Vector2 current, ref Vector2 target, Func<Vector2> get, Action<Vector2> set) {
+            m_Rotation.Get = get;
+            m_Rotation.Set = set;
+            m_Rotation.Target = target;
+            m_Rotation.LastProcessTime = Time.time;
+        }
+
         public override void UpdateInputModel() {
             if (m_Zoom.CanUpdate) {
                 float current = m_Zoom.Get();
@@ -116,6 +144,13 @@ namespace MRK {
 
                 current += (m_Pan.Target.Value - current) * Time.deltaTime * 7f;
                 m_Pan.Set(current);
+            }
+
+            if (m_Rotation.CanUpdate) {
+                Vector2 current = m_Rotation.Get();
+
+                current += (m_Rotation.Target.Value - current) * Time.deltaTime * 7f;
+                m_Rotation.Set(current);
             }
         }
     }

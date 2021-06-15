@@ -29,6 +29,8 @@ namespace MRK {
         Vector3 m_LastZoomPosition;
         bool m_IsInNavigation;
         float m_MinViewportZoomLevel;
+        Vector2 m_CurrentRotation;
+        Vector2 m_TargetRotation;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
 
@@ -149,30 +151,13 @@ namespace MRK {
             m_TargetZoom += 2f;
             m_TargetZoom = Mathf.Clamp(m_TargetZoom, 0f, 21f);
 
+            Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
+
             pos.z = m_Camera.transform.localPosition.y;
             Vector3 wPos = m_Camera.ScreenToWorldPoint(pos);
             m_TargetLatLong = m_Map.WorldToGeoPosition(wPos);
 
-            if (m_PanTweenLat != null) {
-                DOTween.Kill(m_PanTweenLat);
-            }
-
-            if (m_PanTweenLng != null) {
-                DOTween.Kill(m_PanTweenLng);
-            }
-
-            m_PanTweenLat = DOTween.To(() => m_CurrentLatLong.x, x => m_CurrentLatLong.x = x, m_TargetLatLong.x, 0.5f)
-                .SetEase(Ease.OutSine);
-
-            m_PanTweenLng = DOTween.To(() => m_CurrentLatLong.y, x => m_CurrentLatLong.y = x, m_TargetLatLong.y, 0.5f)
-                .SetEase(Ease.OutSine);
-
-            if (m_ZoomTween != null) {
-                DOTween.Kill(m_ZoomTween);
-            }
-
-            m_ZoomTween = DOTween.To(() => m_CurrentZoom, x => m_CurrentZoom = x, m_TargetZoom, 0.4f)
-                .SetEase(Ease.OutSine);
+            Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
         }
 
         public void KillAllTweens() {
@@ -197,6 +182,12 @@ namespace MRK {
                 return;
 
             m_Delta[0] = 0f;
+
+            /*float deltaRot = m_CurrentRotation.y;
+            if (deltaRot > 180f)
+                deltaRot -= 180f;
+
+            delta *= deltaRot / -180f; */
 
             Vector2d offset2D = new Vector2d(-delta.x, -delta.y) * 3f * EGRSettings.GetMapSensitivity();
             float gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
@@ -264,6 +255,7 @@ namespace MRK {
             } */
 
             m_Map.UpdateMap(m_CurrentLatLong, m_CurrentZoom);
+            m_Map.transform.rotation = Quaternion.Euler(m_CurrentRotation.x, m_CurrentRotation.y, 0f);
         }
 
         void Update() {
@@ -306,6 +298,11 @@ namespace MRK {
             m_TargetZoom = targetZoom;
             Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
             Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
+        }
+
+        public void SetRotation(Vector2 rotation) {
+            m_TargetRotation = rotation;
+            Client.InputModel.ProcessRotation(ref m_CurrentRotation, ref m_TargetRotation, () => m_CurrentRotation, x => m_CurrentRotation = x);
         }
     }
 }

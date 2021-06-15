@@ -5,7 +5,8 @@ namespace MRK.UI {
         None,
         PlaceMarkers,
         ScaleBar,
-        Navigation
+        Navigation,
+        LocationOverlay
     }
 
     public abstract class EGRMapInterfaceComponent {

@@ -90,6 +90,7 @@ namespace MRK {
 
         public void UpdatePlane() {
             MRKTile.PlaneContainer.transform.localScale = Client.FlatMap.transform.localScale;
+            MRKTile.PlaneContainer.transform.rotation = Client.FlatMap.transform.rotation;
 
             float scaleFactor = Mathf.Pow(2, Client.FlatMap.InitialZoom - m_AbsoluteZoom);
             transform.localScale = Vector3.one * scaleFactor;

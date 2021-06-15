@@ -29,7 +29,7 @@ namespace MRK {
                 m_PoolIndex = new Dictionary<T, int>();
         }
 
-        public void Free(T obj) {
+        public virtual void Free(T obj) {
             m_ActiveObjects.Remove(obj);
             m_FreeObjects.Add(obj);
         }

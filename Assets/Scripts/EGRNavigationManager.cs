@@ -57,6 +57,7 @@ namespace MRK {
                 UpdateSelectedLine();
             }
         }
+        public bool IsRouting => m_IsRouting;
 
         public EGRNavigationManager() {
             m_LinePool = new ObjectPool<VectorLine>(() => {

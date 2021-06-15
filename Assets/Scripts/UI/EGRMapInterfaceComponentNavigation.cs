@@ -401,7 +401,12 @@ namespace MRK.UI {
                                 ms_Instance.m_Top.SetInputActive(1);
 
                             ms_Instance.m_Top.SetValidationState(0, true);
-                            ms_Instance.FromCoords = item.Feature.Geometry.Coordinates;
+                            bool isCurLoc = item == m_CurrentLocation;
+                            if (isCurLoc)
+                                ms_Instance.FromCoords = item.Feature.Geometry.Coordinates;
+
+                            ms_Instance.IsFromCurrentLocation = isCurLoc;
+
                             break;
 
                         case "To":
@@ -523,6 +528,7 @@ namespace MRK.UI {
         public bool IsActive { get; private set; }
         Vector2d? FromCoords { get; set; }
         Vector2d? ToCoords { get; set; }
+        bool IsFromCurrentLocation { get; set; }
 
         public override void OnComponentInit(EGRScreenMapInterface mapInterface) {
             base.OnComponentInit(mapInterface);
@@ -551,6 +557,7 @@ namespace MRK.UI {
 
             IsActive = true;
             FromCoords = ToCoords = null;
+            IsFromCurrentLocation = false;
         }
 
         public void Hide() {

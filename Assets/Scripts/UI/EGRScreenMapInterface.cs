@@ -11,6 +11,13 @@ using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
 
 namespace MRK.UI {
+    [Serializable]
+    public class EGRMapInterfaceResources {
+        public Image CurrentLocationSprite;
+        public AnimationCurve CurrentLocationScaleCurve;
+        public Image LocationPinSprite;
+    }
+
     public class EGRScreenMapInterface : EGRScreen {
         class MapButton {
             enum MapButtonUpdate {
@@ -315,6 +322,8 @@ namespace MRK.UI {
         readonly Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> m_InterfaceComponents;
         [SerializeField]
         EGRMapInterfacePlaceMarkersResources m_PlaceMarkersResources;
+        [SerializeField]
+        EGRMapInterfaceResources m_MapInterfaceResources;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -324,13 +333,17 @@ namespace MRK.UI {
         public Transform ObservedTransform { get; private set; }
         public bool ObservedTransformDirty { get; set; }
         public Transform ScalebarParent { get; private set; }
+        public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
+        public EGRMapInterfaceResources MapInterfaceResources => m_MapInterfaceResources;
+
         public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers =>
             (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
         public EGRMapInterfaceComponentScaleBar ScaleBar =>
             (EGRMapInterfaceComponentScaleBar)m_InterfaceComponents[EGRMapInterfaceComponentType.ScaleBar];
-        public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
         public EGRMapInterfaceComponentNavigation Navigation =>
             (EGRMapInterfaceComponentNavigation)m_InterfaceComponents[EGRMapInterfaceComponentType.Navigation];
+        public EGRMapInterfaceComponentLocationOverlay LocationOverlay =>
+            (EGRMapInterfaceComponentLocationOverlay)m_InterfaceComponents[EGRMapInterfaceComponentType.LocationOverlay];
 
         public EGRScreenMapInterface() {
             m_InterfaceComponents = new Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent>();
@@ -355,7 +368,7 @@ namespace MRK.UI {
 
             //assign mapinfo delegates
             m_ButtonInfoDelegates = new Action[4] {
-                () => Debug.Log("tryna get curloc"),
+                OnCurrentLocationClick,
                 OnHottestTrendsClick,
                 OnSettingsClick, //settings
                 OnNavigationClick
@@ -369,6 +382,7 @@ namespace MRK.UI {
             RegisterInterfaceComponent(EGRMapInterfaceComponentType.PlaceMarkers, new EGRMapInterfaceComponentPlaceMarkers());
             RegisterInterfaceComponent(EGRMapInterfaceComponentType.ScaleBar, new EGRMapInterfaceComponentScaleBar());
             RegisterInterfaceComponent(EGRMapInterfaceComponentType.Navigation, new EGRMapInterfaceComponentNavigation());
+            RegisterInterfaceComponent(EGRMapInterfaceComponentType.LocationOverlay, new EGRMapInterfaceComponentLocationOverlay());
         }
 
         public void OnInterfaceEarlyShow() {
@@ -763,6 +777,12 @@ namespace MRK.UI {
         void EnterNavigation() {
             Client.FlatCamera.EnterNavigation();
             Navigation.Show();
+        }
+
+        void OnCurrentLocationClick() {
+            if (Client.MapMode == EGRMapMode.Flat) {
+                Client.LocationManager.RequestCurrentLocation(false, true, true);
+            }
         }
     }
 }
