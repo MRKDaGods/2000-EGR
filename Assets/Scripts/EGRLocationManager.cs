@@ -71,7 +71,9 @@ namespace MRK {
 
             m_LastFetchedCoords = coords.Value;
 
-            Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
+            OnMapUpdated(); //position marker
+
+            //Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
         }
 
         void Update() {

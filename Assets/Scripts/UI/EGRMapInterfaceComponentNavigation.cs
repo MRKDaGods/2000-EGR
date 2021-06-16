@@ -23,6 +23,7 @@ namespace MRK.UI {
 
             public string From => m_From.text;
             public string To => m_To.text;
+            public TMP_InputField ToInput => m_To;
             public byte SelectedProfile => (byte)m_SelectedProfileIndex;
 
             static Top() {
@@ -90,8 +91,10 @@ namespace MRK.UI {
                 OnTextChanged(idx, active.text);
             }
 
-            public void Show() {
-                m_From.text = m_To.text = "";
+            public void Show(bool clear = true) {
+                if (clear) {
+                    m_From.text = m_To.text = "";
+                }
 
                 m_Transform.DOMoveY(m_InitialY, 0.3f)
                     .ChangeStartValue(new Vector3(0f, m_InitialY + m_Transform.rect.height))
@@ -116,6 +119,10 @@ namespace MRK.UI {
                     else
                         ms_Instance.ToCoords = null;
                 }
+            }
+
+            public bool IsValid(int idx) {
+                return m_ValidationModifiers[idx].enabled;
             }
         }
 
@@ -197,9 +204,10 @@ namespace MRK.UI {
             }
 
             void OnBackClick() {
-                ms_Instance.Hide();
-
-                DOTween.To(() => m_BackAnim.effectFactor, x => m_BackAnim.effectFactor = x, 0f, 0.3f);
+                if (ms_Instance.Hide()) {
+                    Debug.Log("Complete");
+                    DOTween.To(() => m_BackAnim.effectFactor, x => m_BackAnim.effectFactor = x, 0f, 0.3f);
+                }
             }
 
             public void ShowBackButton() {
@@ -397,19 +405,29 @@ namespace MRK.UI {
                     switch (m_ActiveInput.name) {
 
                         case "From":
-                            if (!ms_Instance.CanQueryDirections())
+                            if (!ms_Instance.m_Top.IsValid(1))
                                 ms_Instance.m_Top.SetInputActive(1);
 
                             ms_Instance.m_Top.SetValidationState(0, true);
                             bool isCurLoc = item == m_CurrentLocation;
-                            if (isCurLoc)
+                            if (!isCurLoc)
                                 ms_Instance.FromCoords = item.Feature.Geometry.Coordinates;
 
                             ms_Instance.IsFromCurrentLocation = isCurLoc;
 
+                            if (ms_Instance.CanQueryDirections()) {
+                                ms_Instance.QueryDirections();
+                                SetAutoCompleteState(false);
+                            }
+
                             break;
 
                         case "To":
+                            if (item == m_ManualMap) {
+                                ms_Instance.ChooseToLocationManually();
+                                break;
+                            }
+
                             ms_Instance.m_Top.SetValidationState(1, true);
                             ms_Instance.ToCoords = item.Feature.Geometry.Coordinates;
 
@@ -523,6 +541,7 @@ namespace MRK.UI {
         AutoComplete m_AutoComplete;
         static EGRMapInterfaceComponentNavigation ms_Instance;
         bool m_QueryCancelled;
+        bool m_IsManualLocating;
 
         public override EGRMapInterfaceComponentType ComponentType => EGRMapInterfaceComponentType.Navigation;
         public bool IsActive { get; private set; }
@@ -560,29 +579,59 @@ namespace MRK.UI {
             IsFromCurrentLocation = false;
         }
 
-        public void Hide() {
+        public bool Hide() {
             m_Top.Hide();
             m_Bottom.Hide();
 
-            Client.Runnable.RunLater(() => {
-                m_NavigationTransform.gameObject.SetActive(false);
-                m_Bottom.ClearDirections();
+            if (!m_IsManualLocating) {
+                Client.Runnable.RunLater(() => {
+                    m_NavigationTransform.gameObject.SetActive(false);
+                    m_Bottom.ClearDirections();
 
-                Client.NavigationManager.ExitNavigation();
-                Client.FlatCamera.ExitNavigation();
+                    Client.NavigationManager.ExitNavigation();
+                    Client.FlatCamera.ExitNavigation();
 
-                IsActive = false;
-            }, 0.3f);
+                    IsActive = false;
+                }, 0.3f);
+
+                return true;
+            }
+            else {
+                MapInterface.LocationOverlay.Finish();
+                return false;
+            }
         }
 
         bool CanQueryDirections() {
             return !string.IsNullOrEmpty(m_Top.From) && !string.IsNullOrWhiteSpace(m_Top.To)
-                && FromCoords.HasValue && ToCoords.HasValue;
+                && (FromCoords.HasValue || IsFromCurrentLocation) && ToCoords.HasValue;
+        }
+
+        void OnReceiveLocation(bool success, Vector2d? coords, float? bearing) {
+            MapInterface.MessageBox.HideScreen(() => {
+                if (!success) {
+                    MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.EGR), Localize(EGRLanguageData.CANNOT_OBTAIN_CURRENT_LOCATION), null, MapInterface);
+                    return;
+                }
+
+                FromCoords = coords.Value;
+                IsFromCurrentLocation = false;
+                QueryDirections();
+            }, 1.1f);
         }
 
         void QueryDirections() {
             if (!CanQueryDirections())
                 return;
+
+            if (IsFromCurrentLocation) {
+                //get cur loc
+                MapInterface.MessageBox.ShowButton(false);
+                MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.EGR), Localize(EGRLanguageData.RETRIEVING_CURRENT_LOCATION___), null, MapInterface);
+
+                Client.LocationService.GetCurrentLocation(OnReceiveLocation, true);
+                return;
+            }
 
             if (!Client.NetQueryDirections(FromCoords.Value, ToCoords.Value, m_Top.SelectedProfile, OnNetQueryDirections)) {
                 MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), 
@@ -614,6 +663,33 @@ namespace MRK.UI {
             Client.NavigationManager.SetCurrentDirections(response.Response, () => {
                 m_Bottom.SetDirections(Client.NavigationManager.CurrentDirections.Value);
                 m_Bottom.Show();
+            });
+        }
+
+        void ChooseToLocationManually() {
+            m_IsManualLocating = true;
+
+            m_Top.Hide();
+            m_AutoComplete.SetAutoCompleteState(false);
+            m_Bottom.ShowBackButton();
+
+            MapInterface.LocationOverlay.ChooseLocationOnMap((geo) => {
+                m_IsManualLocating = false;
+                ToCoords = geo;
+
+                m_Top.ToInput.SetTextWithoutNotify($"[{geo.y:F5}, {geo.x:F5}]");
+                m_Top.SetValidationState(1, true);
+                m_Top.Show(false);
+
+                if (!CanQueryDirections()) {
+                    ms_Instance.m_Top.SetInputActive(0);
+                }
+                else {
+                    ms_Instance.QueryDirections();
+                    m_AutoComplete.SetAutoCompleteState(false);
+                }
+
+                Debug.Log("Set TO to " + geo);
             });
         }
     }

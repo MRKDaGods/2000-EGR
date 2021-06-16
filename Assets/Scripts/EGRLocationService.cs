@@ -298,7 +298,7 @@ namespace MRK {
                 m_Simulator = gameObject.AddComponent<EGRLocationServiceSimulator>();
             }
 
-            callback(true, m_Simulator.Coords, m_Simulator.Bearing);
+            callback(m_Simulator.LocationEnabled, m_Simulator.Coords, m_Simulator.Bearing);
             return;
 #endif
 
