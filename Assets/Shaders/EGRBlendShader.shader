@@ -23,6 +23,7 @@
 
 		struct Input {
 			float2 uv_MainTex;
+			float2 uv_SecTex;
 		};
 
 		half _Glossiness;
@@ -33,7 +34,7 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 			fixed4 t1 = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-			fixed4 t2 = tex2D (_SecTex, IN.uv_MainTex) * _Color;
+			fixed4 t2 = tex2D (_SecTex, IN.uv_SecTex) * _Color;
 
 			fixed4 c = lerp (t1, t2, _Blend);
 

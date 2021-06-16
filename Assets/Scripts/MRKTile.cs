@@ -23,7 +23,7 @@ namespace MRK {
         readonly static ObjectPool<MRKTilePlane> ms_PlanePool;
         static GameObject ms_PlaneContainer;
         float m_MaterialBlend;
-        object m_Tween;
+        int m_Tween;
         Material m_Material;
         bool m_FetchingTile;
         float m_MaterialEmission;
@@ -260,11 +260,21 @@ namespace MRK {
             return exists;
         }
 
+        MRKTileID GetParentID(MRKTileID id = null) {
+            if (id == null)
+                id = ID;
+
+            var center = MRKMapUtils.TileBounds(id).Center;
+            Vector2d geoCenter = MRKMapUtils.MetersToLatLon(center);
+            return MRKMapUtils.CoordinateToTileId(geoCenter, id.Z - 1);
+        }
+
         public void SetLoadingTexture() {
             if (m_MeshRenderer != null) {
                 //so uh
                 Texture2D tex = m_Map.LoadingTexture;
-                MRKTileID previous = m_Map.GetPreviousTileID(m_SiblingIndex);
+
+                MRKTileID previous = GetParentID(); //m_Map.GetPreviousTileID(m_SiblingIndex);
                 Reference<Texture2D> reference = ObjectPool<Reference<Texture2D>>.Default.Rent();
                 if (HasTexture(previous, true, reference)) {
                     tex = reference.Value;
@@ -290,7 +300,53 @@ namespace MRK {
                 ObjectPool<Reference<Texture2D>>.Default.Free(reference);
 
                 m_MeshRenderer.material.SetTexture("_SecTex", tex);
-                m_MeshRenderer.material.SetTextureScale("_SecTex", new Vector2(5f, 5f));
+
+                if (tex != m_Map.LoadingTexture) {
+                    var tileZoom = ID.Z;
+                    var parentZoom = previous.Z;
+
+                    var scale = 1f;
+                    var offsetX = 0f;
+                    var offsetY = 0f;
+
+                    var current = ID;
+                    var currentParent = previous;
+
+                    for (int i = tileZoom - 1; i >= parentZoom; i--) {
+                        scale /= 2;
+
+                        var bottomLeftChildX = currentParent.X * 2;
+                        var bottomLeftChildY = currentParent.Y * 2;
+
+                        //top left
+                        if (current.X == bottomLeftChildX && current.Y == bottomLeftChildY) {
+                            offsetY = 0.5f + (offsetY / 2);
+                            offsetX = offsetX / 2;
+                        }
+                        //top right
+                        else if (current.X == bottomLeftChildX + 1 && current.Y == bottomLeftChildY) {
+                            offsetX = 0.5f + (offsetX / 2);
+                            offsetY = 0.5f + (offsetY / 2);
+                        }
+                        //bottom left
+                        else if (current.X == bottomLeftChildX && current.Y == bottomLeftChildY + 1) {
+                            offsetX = offsetX / 2;
+                            offsetY = offsetY / 2;
+                        }
+                        //bottom right
+                        else if (current.X == bottomLeftChildX + 1 && current.Y == bottomLeftChildY + 1) {
+                            offsetX = 0.5f + (offsetX / 2);
+                            offsetY = offsetY / 2;
+                        }
+
+                        current = previous;
+                        currentParent = GetParentID(previous);
+                    }
+
+                    m_MeshRenderer.material.SetTextureScale("_SecTex", new Vector2(scale, scale));
+                    m_MeshRenderer.material.SetTextureOffset("_SecTex", new Vector2(offsetX, offsetY));
+                }
+
                 m_MaterialBlend = 1f;
                 UpdateMaterialBlend();
             }
@@ -311,9 +367,13 @@ namespace MRK {
                 m_MeshRenderer.material.mainTexture = m_Texture?.Texture;
                 Obj.name += "texed";
 
-                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.1f)
+                if (m_Tween.IsValidTween())
+                    DOTween.Kill(m_Tween);
+
+                m_Tween = DOTween.To(() => m_MaterialBlend, x => m_MaterialBlend = x, 0f, 0.2f)
                     .SetEase(Ease.OutSine)
-                    .OnUpdate(UpdateMaterialBlend);
+                    .OnUpdate(UpdateMaterialBlend)
+                    .intId = EGRTweenIDs.IntId;
 
                 HasAnyTexture = true;
             }
@@ -323,7 +383,7 @@ namespace MRK {
             if (m_WebRequest != null && !m_WebRequest.Value.isDone)
                 m_WebRequest.Value.Abort();
 
-            if (m_Tween != null)
+            if (m_Tween.IsValidTween())
                 DOTween.Kill(m_Tween);
 
             //elbt3 da 3amel 2l2, destroy!!
@@ -372,6 +432,9 @@ namespace MRK {
             if (m_MeshRenderer != null) {
                 m_MeshRenderer.material.SetFloat("_Blend", m_MaterialBlend);
                 m_MeshRenderer.material.SetFloat("_Emission", Mathf.Lerp(0.5f, m_MaterialEmission, (1f - m_MaterialBlend)));
+
+                //m_MeshRenderer.material.mainTextureScale = Vector2.Lerp(m_MeshRenderer.material.mainTextureScale, Vector2.one, 1f - m_MaterialBlend);
+                //m_MeshRenderer.material.mainTextureOffset = Vector2.Lerp(m_MeshRenderer.material.mainTextureOffset, Vector2.zero, 1f - m_MaterialBlend);
             }
         }
 

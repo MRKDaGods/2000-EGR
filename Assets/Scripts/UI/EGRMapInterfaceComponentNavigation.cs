@@ -205,7 +205,6 @@ namespace MRK.UI {
 
             void OnBackClick() {
                 if (ms_Instance.Hide()) {
-                    Debug.Log("Complete");
                     DOTween.To(() => m_BackAnim.effectFactor, x => m_BackAnim.effectFactor = x, 0f, 0.3f);
                 }
             }
@@ -608,16 +607,18 @@ namespace MRK.UI {
         }
 
         void OnReceiveLocation(bool success, Vector2d? coords, float? bearing) {
-            MapInterface.MessageBox.HideScreen(() => {
-                if (!success) {
-                    MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.EGR), Localize(EGRLanguageData.CANNOT_OBTAIN_CURRENT_LOCATION), null, MapInterface);
-                    return;
-                }
+            Client.Runnable.RunLater(() => {
+                MapInterface.MessageBox.HideScreen(() => {
+                    if (!success) {
+                        MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.EGR), Localize(EGRLanguageData.CANNOT_OBTAIN_CURRENT_LOCATION), null, MapInterface);
+                        return;
+                    }
 
-                FromCoords = coords.Value;
-                IsFromCurrentLocation = false;
-                QueryDirections();
-            }, 1.1f);
+                    FromCoords = coords.Value;
+                    IsFromCurrentLocation = false;
+                    QueryDirections();
+                }, 1.1f);
+            }, 0.4f);
         }
 
         void QueryDirections() {
@@ -688,8 +689,6 @@ namespace MRK.UI {
                     ms_Instance.QueryDirections();
                     m_AutoComplete.SetAutoCompleteState(false);
                 }
-
-                Debug.Log("Set TO to " + geo);
             });
         }
     }

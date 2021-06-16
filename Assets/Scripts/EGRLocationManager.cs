@@ -10,6 +10,7 @@ namespace MRK {
         bool m_RequestingLocation;
         float m_LastLocationRequestTime;
         Vector2d? m_LastFetchedCoords;
+        float? m_LastFetchedBearing;
 
         void Start() {
             m_CurrentLocationSprite = ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationSprite;
@@ -31,6 +32,8 @@ namespace MRK {
                 m_CurrentLocationSprite.transform.position = EGRPlaceMarker.ScreenToMarkerSpace(spos);
                 m_CurrentLocationSprite.transform.localScale = Vector3.one *
                     ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationScaleCurve.Evaluate(Client.FlatMap.Zoom / 21f);
+
+                m_CurrentLocationSprite.transform.rotation = Quaternion.Euler(-90f, 0f, m_LastFetchedBearing.Value - 180f);
             }
         }
 
@@ -70,6 +73,7 @@ namespace MRK {
             ActivateIfNeeded();
 
             m_LastFetchedCoords = coords.Value;
+            m_LastFetchedBearing = bearing.Value;
 
             OnMapUpdated(); //position marker
 

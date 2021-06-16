@@ -99,7 +99,7 @@ namespace MRK {
             public T? Target;
             public float LastProcessTime;
 
-            public bool CanUpdate => Get != null && Set != null && Target.HasValue && Time.time - LastProcessTime <= 1f;
+            public bool CanUpdate => Get != null && Set != null && Target.HasValue && Time.time - LastProcessTime <= 1.5f;
         }
 
         Context<float> m_Zoom;
