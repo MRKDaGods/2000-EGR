@@ -264,7 +264,7 @@ namespace MRK {
             if (id == null)
                 id = ID;
 
-            var center = MRKMapUtils.TileBounds(id).Center;
+            Vector2d center = MRKMapUtils.TileBounds(id).Center;
             Vector2d geoCenter = MRKMapUtils.MetersToLatLon(center);
             return MRKMapUtils.CoordinateToTileId(geoCenter, id.Z - 1);
         }
@@ -321,7 +321,7 @@ namespace MRK {
                         //top left
                         if (current.X == bottomLeftChildX && current.Y == bottomLeftChildY) {
                             offsetY = 0.5f + (offsetY / 2);
-                            offsetX = offsetX / 2;
+                            offsetX /= 2;
                         }
                         //top right
                         else if (current.X == bottomLeftChildX + 1 && current.Y == bottomLeftChildY) {
@@ -330,13 +330,13 @@ namespace MRK {
                         }
                         //bottom left
                         else if (current.X == bottomLeftChildX && current.Y == bottomLeftChildY + 1) {
-                            offsetX = offsetX / 2;
-                            offsetY = offsetY / 2;
+                            offsetX /= 2;
+                            offsetY /= 2;
                         }
                         //bottom right
                         else if (current.X == bottomLeftChildX + 1 && current.Y == bottomLeftChildY + 1) {
                             offsetX = 0.5f + (offsetX / 2);
-                            offsetY = offsetY / 2;
+                            offsetY /= 2;
                         }
 
                         current = previous;

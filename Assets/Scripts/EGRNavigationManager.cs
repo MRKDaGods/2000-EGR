@@ -12,6 +12,16 @@ using Vectrosity;
 using UnityEngine.UI;
 
 namespace MRK {
+    public abstract class EGRNavigation {
+        protected EGRNavigationRoute m_Route { get; private set; }
+
+        public void SetRoute(EGRNavigationRoute route) {
+            m_Route = route;
+        }
+
+        public abstract void Update();
+    }
+
     public class EGRNavigationManager : EGRBehaviour {
         [SerializeField]
         bool m_DrawEditorUI;
@@ -21,7 +31,7 @@ namespace MRK {
         Material m_LineMaterial;
         readonly List<VectorLine> m_ActiveLines;
         int m_SelectedRoute;
-        bool m_IsNavigating;
+        bool m_IsActive;
         [SerializeField]
         Texture2D m_IdleLineTexture;
         [SerializeField]
@@ -39,9 +49,13 @@ namespace MRK {
         Image m_NavSprite;
         int m_CurrentPointIdx;
         float m_SimulatedTripPercentage;
-        bool m_IsRouting;
+        bool m_IsNavigating;
         Vector3? m_LastForward;
         Vector3 m_LastCalculatedForward;
+        bool m_IsPreview;
+        EGRNavigation m_CurrentNavigator;
+        readonly EGRNavigationLive m_LiveNavigator;
+        readonly EGRNavigationSimulator m_SimulationNavigator;
 
         //temp styles
         GUIStyle m_VerticalStyle;
@@ -57,7 +71,7 @@ namespace MRK {
                 UpdateSelectedLine();
             }
         }
-        public bool IsRouting => m_IsRouting;
+        public bool IsNavigating => m_IsNavigating;
 
         public EGRNavigationManager() {
             m_LinePool = new ObjectPool<VectorLine>(() => {
@@ -138,7 +152,7 @@ namespace MRK {
                 routeIdx++;
             }
 
-            m_IsNavigating = true;
+            m_IsActive = true;
             m_SelectedRoute = CurrentDirections.Value.Routes.Count > 0 ? 0 : -1;
 
             UpdateSelectedLine();
@@ -148,7 +162,7 @@ namespace MRK {
         }
 
         void OnMapUpdated() {
-            if (m_ActiveLines.Count > 0 && m_IsNavigating) {
+            if (m_ActiveLines.Count > 0 && m_IsActive) {
                 int lrIdx = 0;
                 foreach (VectorLine lr in m_ActiveLines) {
                     lr.points3.Clear();
@@ -170,11 +184,9 @@ namespace MRK {
             }
         }
 
-        void Update() {
-            if (!m_IsRouting)
-                return;
-
+        void SimulateTrip() {
             m_SimulatedTripPercentage += Time.deltaTime * 0.005f;
+            m_SimulatedTripPercentage = Mathf.Clamp01(m_SimulatedTripPercentage);
 
             int pointIdx = Mathf.FloorToInt(m_SimulatedTripPercentage * CurrentRoute.Geometry.Coordinates.Count);
             if (pointIdx >= CurrentRoute.Geometry.Coordinates.Count - 1) {
@@ -212,8 +224,13 @@ namespace MRK {
             Client.FlatCamera.SetCenterAndZoom(realGeoPos, 18f);
             Client.ActiveCamera.transform.rotation = Quaternion.Euler(lookRotation.eulerAngles + Quaternion.Euler(90f, 0f, 0f).eulerAngles);
             //Client.ActiveCamera.transform.position = (pos - Client.ActiveCamera.transform.position).normalized;
+        }
 
-            //Debug.Log(CurrentRoute.Legs[0].Steps[pointIdx].Maneuver.Instruction);
+        void Update() {
+            if (!m_IsNavigating)
+                return;
+
+            m_CurrentNavigator.Update();
         }
 
         void UpdateSelectedLine() {
@@ -239,10 +256,14 @@ namespace MRK {
             UpdateSelectedLine();
         }
 
-        public void StartNavigation() {
-            m_IsRouting = true;
+        public void StartNavigation(bool isPreview = true) {
+            m_IsNavigating = true;
             m_SimulatedTripPercentage = 0f;
             m_CurrentPointIdx = 0;
+            m_IsPreview = isPreview;
+
+            m_CurrentNavigator = isPreview ? m_SimulationNavigator : (EGRNavigation)m_LiveNavigator;
+            m_CurrentNavigator.SetRoute(CurrentRoute);
 
             m_NavSprite.gameObject.SetActive(true);
         }
@@ -256,9 +277,9 @@ namespace MRK {
 
             m_ActiveLines.Clear();
 
-            m_IsNavigating = false;
+            m_IsActive = false;
 
-            m_IsRouting = false;
+            m_IsNavigating = false;
             m_NavSprite.gameObject.SetActive(false);
         }
 
@@ -286,7 +307,7 @@ namespace MRK {
                 };
             }
 
-            if (m_IsNavigating) {
+            if (m_IsActive) {
                 GUILayout.BeginArea(new Rect(Screen.width - 600f, 0f, 600f, 700f));
                 GUILayout.BeginVertical(m_VerticalStyle);
                 {

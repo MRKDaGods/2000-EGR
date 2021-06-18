@@ -84,7 +84,7 @@ namespace MRK {
             if (!m_IsActive)
                 return;
 
-            if (Client.NavigationManager.IsRouting) {
+            if (Client.NavigationManager.IsNavigating) {
                 DeActivate();
                 return;
             }

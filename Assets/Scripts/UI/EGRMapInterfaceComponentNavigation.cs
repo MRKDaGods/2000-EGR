@@ -279,7 +279,11 @@ namespace MRK.UI {
             }
 
             void OnStartClick() {
-                ms_Instance.Client.NavigationManager.StartNavigation();
+                ms_Instance.Start();
+            }
+
+            public void SetStartText(string txt) {
+                m_Start.GetComponentInChildren<TextMeshProUGUI>().text = txt;
             }
         }
 
@@ -547,6 +551,7 @@ namespace MRK.UI {
         Vector2d? FromCoords { get; set; }
         Vector2d? ToCoords { get; set; }
         bool IsFromCurrentLocation { get; set; }
+        bool IsPreviewStartMode { get; set; }
 
         public override void OnComponentInit(EGRScreenMapInterface mapInterface) {
             base.OnComponentInit(mapInterface);
@@ -615,17 +620,16 @@ namespace MRK.UI {
                     }
 
                     FromCoords = coords.Value;
-                    IsFromCurrentLocation = false;
-                    QueryDirections();
+                    QueryDirections(true);
                 }, 1.1f);
             }, 0.4f);
         }
 
-        void QueryDirections() {
+        void QueryDirections(bool ignoreCurrentLocation = false) {
             if (!CanQueryDirections())
                 return;
 
-            if (IsFromCurrentLocation) {
+            if (!ignoreCurrentLocation && IsFromCurrentLocation) {
                 //get cur loc
                 MapInterface.MessageBox.ShowButton(false);
                 MapInterface.MessageBox.ShowPopup(Localize(EGRLanguageData.EGR), Localize(EGRLanguageData.RETRIEVING_CURRENT_LOCATION___), null, MapInterface);
@@ -661,6 +665,10 @@ namespace MRK.UI {
             MapInterface.MessageBox.SetResult(EGRPopupResult.OK);
             MapInterface.MessageBox.HideScreen();
 
+            m_Bottom.SetStartText(IsFromCurrentLocation ? Localize(EGRLanguageData.START) : Localize(EGRLanguageData.PREVIEW));
+            IsPreviewStartMode = !IsFromCurrentLocation;
+            IsFromCurrentLocation = false;
+
             Client.NavigationManager.SetCurrentDirections(response.Response, () => {
                 m_Bottom.SetDirections(Client.NavigationManager.CurrentDirections.Value);
                 m_Bottom.Show();
@@ -690,6 +698,10 @@ namespace MRK.UI {
                     m_AutoComplete.SetAutoCompleteState(false);
                 }
             });
+        }
+
+        void Start() {
+            Client.NavigationManager.StartNavigation(IsPreviewStartMode);
         }
     }
 }
