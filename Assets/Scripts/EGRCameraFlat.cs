@@ -33,7 +33,7 @@ namespace MRK {
         Vector2 m_TargetRotation;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
-        public Vector2 Rotation => m_CurrentRotation;
+        public Vector2 MapRotation => m_CurrentRotation;
 
         public EGRCameraFlat() : base() {
             m_CurrentZoom = m_TargetZoom = 2f; //default zoom
@@ -175,13 +175,6 @@ namespace MRK {
             }
         }
 
-        Vector2d rot(Vector2d v, float delta) {
-            return new Vector2d(
-                v.x * Mathd.Cos(delta) - v.y * Mathd.Sin(delta),
-                v.x * Mathd.Sin(delta) + v.y * Mathd.Cos(delta)
-                );
-        }
-
         void ProcessPan(Vector3 delta) {
             if (m_LastController == null)
                 return;
@@ -191,21 +184,14 @@ namespace MRK {
 
             m_Delta[0] = 0f;
 
-            /*float deltaRot = m_CurrentRotation.y;
-            if (deltaRot > 180f)
-                deltaRot -= 180f;
-
-            delta *= deltaRot / -180f; */
-
             Vector2d offset2D = new Vector2d(-delta.x, -delta.y) * 3f * EGRSettings.GetMapSensitivity();
-            offset2D = rot(offset2D, m_CurrentRotation.y * Mathf.Deg2Rad);
+            offset2D = m_Map.ProjectVector(offset2D); //apply necessary map rotation
+
             float gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
             Vector2d newLatLong = MRKMapUtils.MetersToLatLon(
                 MRKMapUtils.LatLonToMeters(m_Map.CenterLatLng) + (offset2D / m_Map.WorldRelativeScale) / gameobjectScalingMultiplier);
 
-            //float factor = 2f * Conversions.GetTileScaleInMeters((float)m_Map.CenterLatitudeLongitude.x, m_Map.AbsoluteZoom) / m_Map.UnityTileSize;
-            //Vector2d latlongDelta = Conversions.MetersToLatLon(new Vector2d(-delta.x * factor * m_LastController.Sensitivity.x, -delta.y * factor * m_LastController.Sensitivity.y));
-            m_TargetLatLong = newLatLong; //m_Map.CenterLatitudeLongitude + latlongDelta;
+            m_TargetLatLong = newLatLong;
             m_TargetLatLong.x = Mathd.Clamp(m_TargetLatLong.x, -MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LATITUDE_MAX);
             m_TargetLatLong.y = Mathd.Clamp(m_TargetLatLong.y, -MRKMapUtils.LONGITUDE_MAX, MRKMapUtils.LONGITUDE_MAX);
 

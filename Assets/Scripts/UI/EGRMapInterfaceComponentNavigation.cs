@@ -61,8 +61,8 @@ namespace MRK.UI {
                     modifier.enabled = false;
                 }
 
-                m_InitialY = m_Transform.transform.position.y;
-                transform.position = new Vector3(m_Transform.position.x, m_InitialY + m_Transform.rect.height); //initially
+                m_InitialY = m_Transform.anchoredPosition.y;
+                transform.anchoredPosition = new Vector3(m_Transform.anchoredPosition.x, m_InitialY + m_Transform.rect.height); //initially
             }
 
             void OnProfileClicked(int index) {
@@ -96,13 +96,13 @@ namespace MRK.UI {
                     m_From.text = m_To.text = "";
                 }
 
-                m_Transform.DOMoveY(m_InitialY, 0.3f)
+                m_Transform.DOAnchorPosY(m_InitialY, 0.3f)
                     .ChangeStartValue(new Vector3(0f, m_InitialY + m_Transform.rect.height))
                     .SetEase(Ease.OutSine);
             }
 
             public void Hide() {
-                m_Transform.DOMoveY(m_InitialY + m_Transform.rect.height, 0.3f)
+                m_Transform.DOAnchorPosY(m_InitialY + m_Transform.rect.height, 0.3f)
                     .SetEase(Ease.OutSine);
             }
 
@@ -165,8 +165,8 @@ namespace MRK.UI {
                 m_BackAnim = back.GetComponent<UITransitionEffect>();
                 m_BackAnim.effectFactor = 0f;
 
-                m_InitialY = m_Transform.transform.position.y;
-                transform.position = new Vector3(m_Transform.position.x, m_InitialY - m_Transform.rect.height); //initially
+                m_InitialY = m_Transform.anchoredPosition.y;
+                transform.anchoredPosition = new Vector3(m_Transform.anchoredPosition.x, m_InitialY - m_Transform.rect.height); //initially
 
                 m_RoutePool = new ObjectPool<Route>(() => {
                     Route route = new Route();
@@ -193,13 +193,13 @@ namespace MRK.UI {
             }
 
             public void Show() {
-                m_Transform.DOMoveY(m_InitialY, 0.3f)
+                m_Transform.DOAnchorPosY(m_InitialY, 0.3f)
                     .ChangeStartValue(new Vector3(0f, m_InitialY - m_Transform.rect.height))
                     .SetEase(Ease.OutSine);
             }
 
             public void Hide() {
-                m_Transform.DOMoveY(m_InitialY - m_Transform.rect.height, 0.3f)
+                m_Transform.DOAnchorPosY(m_InitialY - m_Transform.rect.height, 0.3f)
                     .SetEase(Ease.OutSine);
             }
 

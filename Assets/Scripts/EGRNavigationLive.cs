@@ -12,7 +12,7 @@ namespace MRK.Navigation {
 
         public override void Update() {
             //get current step
-            //Client.LocationService.GetCurrentLocation();
+            Client.LocationService.GetCurrentLocation(OnRequestLocation);
         }
     }
 }

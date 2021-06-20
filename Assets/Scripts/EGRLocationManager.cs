@@ -34,7 +34,7 @@ namespace MRK {
                     ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationScaleCurve.Evaluate(Client.FlatMap.Zoom / 21f);
 
                 m_CurrentLocationSprite.transform.rotation = Quaternion.Euler(Quaternion.Euler(0f, 0f, m_LastFetchedBearing.Value).eulerAngles 
-                    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.Rotation.y).eulerAngles);
+                    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.MapRotation.y).eulerAngles);
 
                 //float show = 0f;
             }

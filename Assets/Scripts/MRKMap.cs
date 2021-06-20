@@ -437,5 +437,10 @@ namespace MRK {
 				m_Tiles.Clear();
 			}
 		}
+
+		public Vector2d ProjectVector(Vector2d v) {
+			float delta = m_MapController.MapRotation.y * Mathf.Deg2Rad;
+			return new Vector2d(v.x * Mathd.Cos(delta) - v.y * Mathd.Sin(delta), v.x * Mathd.Sin(delta) + v.y * Mathd.Cos(delta));
+		}
 	}
 }
