@@ -14,9 +14,16 @@ using UnityEngine.UI;
 namespace MRK {
     public abstract class EGRNavigation {
         protected EGRNavigationRoute m_Route { get; private set; }
+        protected EGRMain Client => EGRMain.Instance;
+        protected EGRNavigationManager NavigationManager => Client.NavigationManager;
+
+        protected virtual void Prepare() {
+        }
 
         public void SetRoute(EGRNavigationRoute route) {
             m_Route = route;
+
+            Prepare();
         }
 
         public abstract void Update();
@@ -47,12 +54,8 @@ namespace MRK {
         Color m_IdleLineColor;
         [SerializeField]
         Image m_NavSprite;
-        int m_CurrentPointIdx;
-        float m_SimulatedTripPercentage;
-        bool m_IsNavigating;
-        Vector3? m_LastForward;
-        Vector3 m_LastCalculatedForward;
         bool m_IsPreview;
+        bool m_IsNavigating;
         EGRNavigation m_CurrentNavigator;
         readonly EGRNavigationLive m_LiveNavigator;
         readonly EGRNavigationSimulator m_SimulationNavigator;
@@ -72,6 +75,7 @@ namespace MRK {
             }
         }
         public bool IsNavigating => m_IsNavigating;
+        public Image NavigationSprite => m_NavSprite;
 
         public EGRNavigationManager() {
             m_LinePool = new ObjectPool<VectorLine>(() => {
@@ -83,6 +87,9 @@ namespace MRK {
 
             m_ActiveLines = new List<VectorLine>();
             m_SelectedRoute = -1;
+
+            m_LiveNavigator = new EGRNavigationLive();
+            m_SimulationNavigator = new EGRNavigationSimulator();
         }
 
         void Start() {
@@ -184,48 +191,6 @@ namespace MRK {
             }
         }
 
-        void SimulateTrip() {
-            m_SimulatedTripPercentage += Time.deltaTime * 0.005f;
-            m_SimulatedTripPercentage = Mathf.Clamp01(m_SimulatedTripPercentage);
-
-            int pointIdx = Mathf.FloorToInt(m_SimulatedTripPercentage * CurrentRoute.Geometry.Coordinates.Count);
-            if (pointIdx >= CurrentRoute.Geometry.Coordinates.Count - 1) {
-                Debug.Log("Nav ended");
-                return;
-            }
-
-            if (m_CurrentPointIdx != pointIdx) {
-                m_CurrentPointIdx = pointIdx;
-
-                m_LastForward = m_LastCalculatedForward;
-            }
-
-            Vector3 curPointPos = Client.FlatMap.GeoToWorldPosition(CurrentRoute.Geometry.Coordinates[pointIdx]);
-            Vector3 nextPointPos = Client.FlatMap.GeoToWorldPosition(CurrentRoute.Geometry.Coordinates[pointIdx + 1]);
-
-            float percPerPoint = 1f / CurrentRoute.Geometry.Coordinates.Count;
-            float subPer = (m_SimulatedTripPercentage - pointIdx * percPerPoint) / percPerPoint;
-
-            Vector3 forward = nextPointPos - curPointPos;
-            if (m_LastForward.HasValue)
-                forward = Vector3.Lerp(m_LastForward.Value, forward, subPer / 0.2f);
-
-            m_LastCalculatedForward = forward;
-
-            Quaternion lookRotation = Quaternion.LookRotation(forward);
-            m_NavSprite.transform.rotation = Quaternion.Euler(lookRotation.eulerAngles - Quaternion.Euler(-90f, 0f, 0f).eulerAngles);
-
-            Vector2d realGeoPos = Vector2d.Lerp(CurrentRoute.Geometry.Coordinates[pointIdx], CurrentRoute.Geometry.Coordinates[pointIdx + 1], subPer);
-            Vector3 pos = Client.FlatMap.GeoToWorldPosition(realGeoPos);
-            Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
-
-            m_NavSprite.transform.position = EGRPlaceMarker.ScreenToMarkerSpace(spos);
-
-            Client.FlatCamera.SetCenterAndZoom(realGeoPos, 18f);
-            Client.ActiveCamera.transform.rotation = Quaternion.Euler(lookRotation.eulerAngles + Quaternion.Euler(90f, 0f, 0f).eulerAngles);
-            //Client.ActiveCamera.transform.position = (pos - Client.ActiveCamera.transform.position).normalized;
-        }
-
         void Update() {
             if (!m_IsNavigating)
                 return;
@@ -258,8 +223,6 @@ namespace MRK {
 
         public void StartNavigation(bool isPreview = true) {
             m_IsNavigating = true;
-            m_SimulatedTripPercentage = 0f;
-            m_CurrentPointIdx = 0;
             m_IsPreview = isPreview;
 
             m_CurrentNavigator = isPreview ? m_SimulationNavigator : (EGRNavigation)m_LiveNavigator;
@@ -287,7 +250,7 @@ namespace MRK {
             if (!m_DrawEditorUI)
                 return;
 
-            if (m_VerticalStyle == null) {
+            /*if (m_VerticalStyle == null) {
                 m_VerticalStyle = new GUIStyle {
                     normal = {
                         background = EGRUIUtilities.GetPlainTexture(Color.black)
@@ -340,7 +303,7 @@ namespace MRK {
 
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
-            }
+            } */
         }
     }
 }

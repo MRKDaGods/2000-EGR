@@ -1,5 +1,5 @@
 //#define NO_LOADING_SCREEN
-#define MRK_LOCAL_SERVER
+//#define MRK_LOCAL_SERVER
 
 using DG.Tweening;
 using MRK.Networking;

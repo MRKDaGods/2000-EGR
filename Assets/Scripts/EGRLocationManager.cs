@@ -33,7 +33,10 @@ namespace MRK {
                 m_CurrentLocationSprite.transform.localScale = Vector3.one *
                     ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationScaleCurve.Evaluate(Client.FlatMap.Zoom / 21f);
 
-                m_CurrentLocationSprite.transform.rotation = Quaternion.Euler(-90f, 0f, m_LastFetchedBearing.Value - 180f);
+                m_CurrentLocationSprite.transform.rotation = Quaternion.Euler(Quaternion.Euler(0f, 0f, m_LastFetchedBearing.Value).eulerAngles 
+                    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.Rotation.y).eulerAngles);
+
+                //float show = 0f;
             }
         }
 
@@ -77,7 +80,7 @@ namespace MRK {
 
             OnMapUpdated(); //position marker
 
-            //Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
+            Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
         }
 
         void Update() {
@@ -90,6 +93,11 @@ namespace MRK {
             }
 
             RequestCurrentLocation();
+
+            //assuming MRK
+            if (Client.InputModel.NeedsUpdate) {
+                OnMapUpdated();
+            }
         }
 
         public void RequestCurrentLocation(bool silent = false, bool force = false, bool teleport = false) {

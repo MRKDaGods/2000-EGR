@@ -33,6 +33,7 @@ namespace MRK {
         Vector2 m_TargetRotation;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
+        public Vector2 Rotation => m_CurrentRotation;
 
         public EGRCameraFlat() : base() {
             m_CurrentZoom = m_TargetZoom = 2f; //default zoom
@@ -174,6 +175,13 @@ namespace MRK {
             }
         }
 
+        Vector2d rot(Vector2d v, float delta) {
+            return new Vector2d(
+                v.x * Mathd.Cos(delta) - v.y * Mathd.Sin(delta),
+                v.x * Mathd.Sin(delta) + v.y * Mathd.Cos(delta)
+                );
+        }
+
         void ProcessPan(Vector3 delta) {
             if (m_LastController == null)
                 return;
@@ -190,6 +198,7 @@ namespace MRK {
             delta *= deltaRot / -180f; */
 
             Vector2d offset2D = new Vector2d(-delta.x, -delta.y) * 3f * EGRSettings.GetMapSensitivity();
+            offset2D = rot(offset2D, m_CurrentRotation.y * Mathf.Deg2Rad);
             float gameobjectScalingMultiplier = m_Map.transform.localScale.x * (Mathf.Pow(2, (m_Map.InitialZoom - m_Map.AbsoluteZoom)));
             Vector2d newLatLong = MRKMapUtils.MetersToLatLon(
                 MRKMapUtils.LatLonToMeters(m_Map.CenterLatLng) + (offset2D / m_Map.WorldRelativeScale) / gameobjectScalingMultiplier);
@@ -208,7 +217,7 @@ namespace MRK {
 
             if (m_TargetZoom < 0.5f) {
                 m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-                (Client.GlobalMap.GetComponent<EGRCameraGlobe>()).SetDistance(7000f);
+                Client.GlobeCamera.SetDistance(7000f);
                 Client.SetMapMode(EGRMapMode.Globe);
             }
 
