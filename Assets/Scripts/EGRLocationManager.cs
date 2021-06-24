@@ -81,6 +81,10 @@ namespace MRK {
             OnMapUpdated(); //position marker
 
             Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
+
+            /*if (Client.NavigationManager.CurrentDirections.HasValue) {
+                TestLineSegs();
+            } */
         }
 
         void Update() {
@@ -114,5 +118,59 @@ namespace MRK {
                 Client.FlatCamera.SetCenterAndZoom(m_LastFetchedCoords.Value, 17f);
             }
         }
+
+        /*Vector2d? _interLatLng;
+
+        void TestLineSegs() {
+            Vector2d current = MRKMapUtils.LatLonToMeters(m_LastFetchedCoords.Value);
+
+            Vector2d start = MRKMapUtils.LatLonToMeters(Client.NavigationManager.CurrentRoute.Geometry.Coordinates[0]);
+            Vector2d end = MRKMapUtils.LatLonToMeters(Client.NavigationManager.CurrentRoute.Geometry.Coordinates[1]);
+
+            //slope of line segment
+            double m = (end.y - start.y) / (end.x - start.x);
+
+            //y = mx + c
+            //c = y - mx
+            double c = start.y - m * start.x;
+
+            //neg reciprocal (normal slope) of line segment
+            //double normalM = -1d / m;
+
+            //y - y'  -1
+            //      =
+            //x - x'   m
+            //-x + x'= m(y - y')
+            //(x' - x) / m + y' = y
+            //(x' / m) - (x / m) + y' = y
+            //c = (x' / m) + y'
+            double normalC = current.x / m + current.y;
+            //y = (-1 / m)x + normalC
+            //(-1 / m)x + normalC = mx + c
+            //(-1 / m)x - mx = c - normalC
+            //x(-1 / m - m) = c - normalC
+            //x = (c - normalC) / (-1 / m - m)
+            double x = (c - normalC) / (-1d / m - m); //intersection x
+            double y = m * x + c; //intersection y
+
+            _interLatLng = MRKMapUtils.MetersToLatLon(new Vector2d(x, y));
+            Debug.Log($"intersection={_interLatLng}");
+        }
+
+        void OnGUI() {
+           if (_interLatLng.HasValue) {
+                MRKMap map = Client.FlatMap;
+                Vector3 worldPos = map.GeoToWorldPosition(_interLatLng.Value);
+                Vector3 worldPosCur = map.GeoToWorldPosition(m_LastFetchedCoords.Value);
+
+                Vector3 sPos = Client.ActiveCamera.WorldToScreenPoint(worldPos);
+                Vector3 sPosCur = Client.ActiveCamera.WorldToScreenPoint(worldPosCur);
+
+                sPos.y = Screen.height - sPos.y;
+                sPosCur.y = Screen.height - sPosCur.y;
+
+                EGRGL.DrawLine(sPos, sPosCur, Color.blue, 2f);
+            }
+        }*/
     }
 }

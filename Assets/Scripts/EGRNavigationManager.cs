@@ -66,7 +66,7 @@ namespace MRK {
         GUIStyle m_ButtonStyle;
 
         public EGRNavigationDirections? CurrentDirections { get; private set; }
-        EGRNavigationRoute CurrentRoute => CurrentDirections.Value.Routes[m_SelectedRoute];
+        public EGRNavigationRoute CurrentRoute => CurrentDirections.Value.Routes[m_SelectedRoute];
         public int SelectedRouteIndex {
             get => m_SelectedRoute;
             set { 
@@ -218,7 +218,7 @@ namespace MRK {
         }
 
         void OnRouteUpdated() {
-            UpdateSelectedLine();
+            UpdateSelectedLine(); 
         }
 
         public void StartNavigation(bool isPreview = true) {
