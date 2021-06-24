@@ -1178,7 +1178,9 @@ namespace MRK {
 #endif */
 
             if (screen.CanChangeBar) {
+                //regenerate status bar texture
                 Instance.m_StatusBarTextureDirty = true;
+                //sets status bar color
                 Instance.m_StatusBarColor = screen.BarColor;
 
                 //attempt to change navbar

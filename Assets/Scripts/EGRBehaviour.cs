@@ -2,6 +2,9 @@
 using UnityEngine;
 
 namespace MRK {
+    /// <summary>
+    /// Base class of any behaviour that provides ease of access to EGR's main internals
+    /// </summary>
     public class EGRBehaviour : MonoBehaviour {
         public EGRMain Client => EGRMain.Instance;
         public EGRScreenManager ScreenManager => EGRScreenManager.Instance;
