@@ -149,8 +149,8 @@ namespace MRK.Navigation {
                 Vector3 spos = Client.ActiveCamera.WorldToScreenPoint(pos);
                 NavigationManager.NavigationSprite.transform.position = EGRPlaceMarker.ScreenToMarkerSpace(spos);
 
-                //NavigationManager.NavigationSprite.transform.rotation = Quaternion.Euler(Quaternion.Euler(0f, 0f, step.Maneuver.BearingAfter).eulerAngles
-                //    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.MapRotation.y).eulerAngles);
+                NavigationManager.NavigationSprite.transform.rotation = Quaternion.Euler(Quaternion.Euler(0f, 0f, m_LastKnownBearing.Value).eulerAngles
+                    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.MapRotation.y).eulerAngles);
             }
         }
     }

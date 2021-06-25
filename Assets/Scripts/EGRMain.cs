@@ -927,7 +927,7 @@ namespace MRK {
         }
 
         /// <summary>
-        /// Capture the current screen buffer on-demandly using the extra camera and copies it to a new RenderTexture
+        /// Captures the current screen buffer on-demandly using the extra camera and copies it to a new RenderTexture
         /// </summary>
         public RenderTexture CaptureScreenBuffer() {
             //enable the extra camera

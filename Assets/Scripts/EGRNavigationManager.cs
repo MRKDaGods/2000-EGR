@@ -244,6 +244,9 @@ namespace MRK {
 
             m_IsNavigating = false;
             m_NavSprite.gameObject.SetActive(false);
+
+            //try and show the current location sprite again
+            Client.LocationManager.RequestCurrentLocation(true, true, true);
         }
 
         void OnGUI() {

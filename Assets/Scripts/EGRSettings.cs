@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MRK {
     public enum EGRSettingsQuality {
@@ -12,7 +7,7 @@ namespace MRK {
         High,
         Ultra
     }
-    
+
     public enum EGRSettingsFPS {
         FPS30,
         FPS60,
@@ -111,6 +106,8 @@ namespace MRK {
 
             float resFactor = ms_ResolutionMap[(int)Resolution];
             Screen.SetResolution(Mathf.FloorToInt(ms_InitialWidth * resFactor), Mathf.FloorToInt(ms_InitialHeight * resFactor), false);
+
+            Debug.Log($"RES={Screen.currentResolution}, W={Screen.width}, H={Screen.height}");
 
             EGREventManager.Instance.BroadcastEvent<EGREventGraphicsApplied>(new EGREventGraphicsApplied(Quality, FPS, ms_Counter == 0));
             ms_Counter++;

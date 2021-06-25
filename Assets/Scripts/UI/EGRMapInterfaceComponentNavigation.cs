@@ -23,6 +23,7 @@ namespace MRK.UI {
 
             public string From => m_From.text;
             public string To => m_To.text;
+            public TMP_InputField FromInput => m_From;
             public TMP_InputField ToInput => m_To;
             public byte SelectedProfile => (byte)m_SelectedProfileIndex;
 
@@ -84,7 +85,7 @@ namespace MRK.UI {
             }
 
             void OnSelect(int idx) {
-                ms_Instance.m_AutoComplete.SetAutoCompleteState(true, idx == 0, idx == 1);
+                ms_Instance.m_AutoComplete.SetAutoCompleteState(true, idx == 0, /*idx == 1*/ true);
                 TMP_InputField active = idx == 0 ? m_From : m_To;
                 ms_Instance.m_AutoComplete.SetActiveInput(active);
 
@@ -134,6 +135,9 @@ namespace MRK.UI {
                 public int Index;
             }
 
+            static readonly Color SELECTED_ROUTE_COLOR;
+            static readonly Color IDLE_ROUTE_COLOR;
+
             readonly RectTransform m_Transform;
             readonly TextMeshProUGUI m_Distance;
             readonly TextMeshProUGUI m_Time;
@@ -146,6 +150,11 @@ namespace MRK.UI {
             readonly ObjectPool<Route> m_RoutePool;
             readonly List<Route> m_CurrentRoutes;
             EGRNavigationDirections m_CurrentDirs;
+
+            static Bottom() {
+                SELECTED_ROUTE_COLOR = new Color(0.0509803921568627f, 0.0509803921568627f, 0.0509803921568627f);
+                IDLE_ROUTE_COLOR = new Color(0.2117647058823529f, 0.2117647058823529f, 0.2117647058823529f);
+            }
 
             public Bottom(RectTransform transform) {
                 m_Transform = transform;
@@ -249,6 +258,10 @@ namespace MRK.UI {
             void SetCurrentRoute(Route route) {
                 EGRNavigationRoute r = m_CurrentDirs.Routes[route.Index];
 
+                for (int i = 0; i < m_CurrentRoutes.Count; i++) {
+                    m_CurrentRoutes[i].Button.GetComponent<Image>().color = i == route.Index ? SELECTED_ROUTE_COLOR : IDLE_ROUTE_COLOR;
+                }
+
                 string dUnits = "M";
                 double dist = r.Distance;
                 if (r.Distance > 1000d) {
@@ -256,20 +269,28 @@ namespace MRK.UI {
                     dist /= 1000d;
                 }
 
-                m_Distance.text = $"{dist:F} {dUnits}";
+                //upper round
+                dist = Mathd.CeilToInt(dist);
+                m_Distance.text = $"{dist} {dUnits}";
 
                 string units = "S";
                 double dur = r.Duration;
+                string timeStr = string.Empty;
                 if (r.Duration > 3600d) {
                     units = "HR";
                     dur /= 3600d;
+
+                    int noHrs = Mathd.FloorToInt(dur);
+                    int minutes = Mathd.CeilToInt((dur - noHrs) * 60d);
+                    timeStr = $"{noHrs} HR {minutes} MIN";
                 }
                 else if (r.Duration > 60d) {
                     units = "MIN";
                     dur /= 60d;
+                    dur = Mathd.CeilToInt(dur);
                 }
 
-                m_Time.text = $"{dur:F} {units}";
+                m_Time.text = timeStr.Length == 0 ? $"{dur} {units}" : timeStr;
 
                 ms_Instance.Client.NavigationManager.SelectedRouteIndex = route.Index;
             }
@@ -306,7 +327,13 @@ namespace MRK.UI {
                 public EGRGeoAutoCompleteFeature Feature;
             }
 
-            const float AUTOCOMPLETE_REQUEST_DELAY = 1f;
+            struct Context {
+                public string Query;
+                public float Time;
+                public int Index;
+            }
+
+            const float AUTOCOMPLETE_REQUEST_DELAY = 0.15f;
 
             RectTransform m_Transform;
             ObjectPool<Item> m_ItemPool;
@@ -319,6 +346,9 @@ namespace MRK.UI {
             readonly List<Item> m_Items;
             TMP_InputField m_ActiveInput;
             Item m_LastActiveItem;
+            Context? m_LastContext;
+
+            public bool IsActive => m_Transform.gameObject.activeInHierarchy;
 
             public AutoComplete(RectTransform transform) {
                 m_Transform = transform;
@@ -408,6 +438,12 @@ namespace MRK.UI {
                     switch (m_ActiveInput.name) {
 
                         case "From":
+                            if (item == m_ManualMap) {
+                                ms_Instance.IsFromCurrentLocation = false;
+                                ms_Instance.ChooseLocationManually(0);
+                                break;
+                            }
+
                             if (!ms_Instance.m_Top.IsValid(1))
                                 ms_Instance.m_Top.SetInputActive(1);
 
@@ -427,7 +463,7 @@ namespace MRK.UI {
 
                         case "To":
                             if (item == m_ManualMap) {
-                                ms_Instance.ChooseToLocationManually();
+                                ms_Instance.ChooseLocationManually(1);
                                 break;
                             }
 
@@ -459,6 +495,15 @@ namespace MRK.UI {
                 FreeCurrentItems();
             }
 
+            public void Update() {
+                if (m_LastContext.HasValue) {
+                    if (Time.time - m_LastContext.Value.Time > AUTOCOMPLETE_REQUEST_DELAY) {
+                        CreateRequest(m_LastContext.Value.Query);
+                        m_LastContext = null;
+                    }
+                }
+            }
+
             public void SetContext(int idx, string txt) {
                 EGRGeoAutoComplete cachedItems;
                 if (m_RequestCache.TryGetValue(txt, out cachedItems)) {
@@ -466,13 +511,19 @@ namespace MRK.UI {
                     return;
                 }
 
-                if (m_ContextIndex == idx && Time.time - m_LastAutoCompleteRequestTime < AUTOCOMPLETE_REQUEST_DELAY)
+                m_LastContext = new Context {
+                    Query = txt,
+                    Time = Time.time,
+                    Index = idx
+                };
+
+                /*if (m_ContextIndex == idx && Time.time - m_LastAutoCompleteRequestTime < AUTOCOMPLETE_REQUEST_DELAY)
                     return;
 
                 m_ContextIndex = idx;
-                m_LastAutoCompleteRequestTime = Time.time;
+                m_LastAutoCompleteRequestTime = Time.time;*/
 
-                CreateRequest(txt);
+                //CreateRequest(txt);
             }
 
             void CreateRequest(string txt) {
@@ -570,6 +621,10 @@ namespace MRK.UI {
 
         public override void OnComponentUpdate() {
             m_Bottom.Update();
+
+            if (m_AutoComplete.IsActive) {
+                m_AutoComplete.Update();
+            }
         }
 
         public void Show() {
@@ -672,6 +727,35 @@ namespace MRK.UI {
             Client.NavigationManager.SetCurrentDirections(response.Response, () => {
                 m_Bottom.SetDirections(Client.NavigationManager.CurrentDirections.Value);
                 m_Bottom.Show();
+            });
+        }
+
+        void ChooseLocationManually(int idx) {
+            m_IsManualLocating = true;
+
+            m_Top.Hide();
+            m_AutoComplete.SetAutoCompleteState(false);
+            m_Bottom.ShowBackButton();
+
+            MapInterface.LocationOverlay.ChooseLocationOnMap((geo) => {
+                m_IsManualLocating = false;
+
+                if (idx == 0)
+                    FromCoords = geo;
+                else
+                    ToCoords = geo;
+
+                (idx == 0 ? m_Top.FromInput : m_Top.ToInput).SetTextWithoutNotify($"[{geo.y:F5}, {geo.x:F5}]");
+                m_Top.SetValidationState(idx, true);
+                m_Top.Show(false);
+
+                if (!CanQueryDirections()) {
+                    ms_Instance.m_Top.SetInputActive(idx == 0 ? 1 : 0);
+                }
+                else {
+                    ms_Instance.QueryDirections();
+                    m_AutoComplete.SetAutoCompleteState(false);
+                }
             });
         }
 

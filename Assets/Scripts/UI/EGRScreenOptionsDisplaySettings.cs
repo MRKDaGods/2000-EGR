@@ -45,13 +45,16 @@ namespace MRK.UI {
         }
 
         void OnBackClick() {
-            if ((EGRSettingsQuality)m_QualitySelector.SelectedIndex != EGRSettings.Quality || (EGRSettingsFPS)m_FPSSelector.SelectedIndex != EGRSettings.FPS) {
+            if ((EGRSettingsQuality)m_QualitySelector.SelectedIndex != EGRSettings.Quality 
+                || (EGRSettingsFPS)m_FPSSelector.SelectedIndex != EGRSettings.FPS
+                || (EGRSettingsResolution)m_ResolutionSelector.SelectedIndex != EGRSettings.Resolution) {
                 m_GraphicsModified = true;
 
                 EGRPopupConfirmation popup = Manager.GetPopup<EGRPopupConfirmation>();
                 popup.SetYesButtonText(Localize(EGRLanguageData.APPLY));
                 popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
-                popup.ShowPopup(Localize(EGRLanguageData.SETTINGS), Localize(EGRLanguageData.GRAPHIC_SETTINGS_WERE_MODIFIED_nWOULD_YOU_LIKE_TO_APPLY_THEM_), OnUnsavedClose, null);
+                popup.ShowPopup(Localize(EGRLanguageData.SETTINGS), Localize(EGRLanguageData.GRAPHIC_SETTINGS_WERE_MODIFIED_nWOULD_YOU_LIKE_TO_APPLY_THEM_), 
+                    OnUnsavedClose, null);
                 return;
             }
 
@@ -62,6 +65,7 @@ namespace MRK.UI {
             if (result == EGRPopupResult.YES) {
                 EGRSettings.Quality = (EGRSettingsQuality)m_QualitySelector.SelectedIndex;
                 EGRSettings.FPS = (EGRSettingsFPS)m_FPSSelector.SelectedIndex;
+                EGRSettings.Resolution = (EGRSettingsResolution)m_ResolutionSelector.SelectedIndex;
             }
 
             HideScreen();
