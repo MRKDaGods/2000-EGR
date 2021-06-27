@@ -84,7 +84,8 @@ namespace MRK.UI {
                     Client.SetPostProcessState(true);
                     Manager.GetScreen<EGRScreenMapInterface>().Warmup();
 
-                    Client.FixInvalidTiles();
+                    //SO MUCH TIME, USE WISELY
+                    //Client.FixInvalidTiles();
                 })
             });
         }

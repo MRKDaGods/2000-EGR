@@ -29,9 +29,12 @@ namespace MRK {
             m_Delta = 0f;
         }
 
-        public void SetColors(Color i, Color f) {
+        public void SetColors(Color i, Color f, float? speed = null) {
             m_Initial = i;
             m_Final = f;
+
+            if (speed.HasValue)
+                m_Speed = speed.Value;
         }
     }
 }

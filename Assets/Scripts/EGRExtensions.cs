@@ -16,6 +16,10 @@ namespace MRK {
             return new Color(1f - color.r, 1f - color.g, 1f - color.b, color.a);
         }
 
+        public static Color InverseWithAlpha(this Color color) {
+            return new Color(1f - color.r, 1f - color.g, 1f - color.b, 1f - color.a);
+        }
+
         public static bool Approx(this Vector2 vec, Vector2 other) {
             return Mathf.Abs(vec.x - other.x) <= 20f
                 && Mathf.Abs(vec.y - other.y) <= 20f;

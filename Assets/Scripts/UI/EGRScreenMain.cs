@@ -253,6 +253,15 @@ namespace MRK.UI {
 
             m_RegionScreens[m_CurrentPage].HideScreen(null, 0.1f, true);
 
+            //WTE override
+            if (s == 0 && idx == 3) {
+                HideScreen(() => {
+                    Manager.GetScreen<EGRScreenWTE>().ShowScreen();
+                }, 0f, true);
+
+                return;
+            }
+
             EGRScreenMapInterface scr = Manager.GetScreen<EGRScreenMapInterface>();
             scr.SetContextText(txt);
             scr.OnInterfaceEarlyShow();
