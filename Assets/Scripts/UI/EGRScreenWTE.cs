@@ -34,6 +34,12 @@ namespace MRK.UI {
         readonly EGRColorFade m_TransitionFade;
         bool m_ShouldUpdateAnimFSM;
         UIDissolve m_WTETextBgDissolve;
+        GameObject m_OverlayWTE;
+        RectTransform m_WTELogoMaskTransform;
+        RectTransform m_ContextualTextMaskTransform;
+        TextMeshProUGUI m_ContextualText;
+        RectTransform m_ContextualButtonsMaskTransform;
+        RectTransform m_ContextualButtonsLayoutTransform;
 
         public EGRScreenWTE() {
             m_Strips = new List<Strip>();
@@ -64,7 +70,13 @@ namespace MRK.UI {
                 }, () => {
                     m_WTETextBgDissolve.effectPlayer.duration = 0.5f;
                     Client.Runnable.RunLater(() => m_WTETextBgDissolve.effectPlayer.Play(false), 1f);
-                })
+                }),
+
+                //exit
+                new Tuple<Func<bool>, Action, Action>(() => {
+                    return true;
+                }, () => {
+                }, OnWTETransitionEnd)
             });
         }
 
@@ -113,6 +125,15 @@ namespace MRK.UI {
             m_WTEText = m_WTETextBg.GetComponentInChildren<TextMeshProUGUI>();
 
             m_WTETextBgDissolve = m_WTETextBg.GetComponent<UIDissolve>();
+
+            m_OverlayWTE = GetTransform("Overlay").gameObject;
+            m_WTELogoMaskTransform = (RectTransform)GetTransform("Overlay/WTEText");
+
+            m_ContextualTextMaskTransform = (RectTransform)GetTransform("Overlay/ContextualText");
+            m_ContextualText = m_ContextualTextMaskTransform.GetComponentInChildren<TextMeshProUGUI>();
+
+            m_ContextualButtonsMaskTransform = (RectTransform)GetTransform("Overlay/ContextualButtons");
+            m_ContextualButtonsLayoutTransform = (RectTransform)m_ContextualButtonsMaskTransform.Find("Layout");
         }
 
         protected override void OnScreenShow() {
@@ -127,6 +148,7 @@ namespace MRK.UI {
 
             //we dont wanna see that yet
             m_WTETextBg.gameObject.SetActive(false);
+            m_OverlayWTE.SetActive(false);
 
             StartInitialTransition();
 
@@ -208,6 +230,43 @@ namespace MRK.UI {
             DOTween.To(() => m_LensDistortion.centerX.value, x => m_LensDistortion.centerX.value = x, 0f, 1f);
             DOTween.To(() => m_LensDistortion.centerY.value, x => m_LensDistortion.centerY.value = x, 0f, 1f);
             DOTween.To(() => m_LensDistortion.scale.value, x => m_LensDistortion.scale.value = x, 1f, 1f);
+        }
+
+        void AnimateStretchableTransform(RectTransform staticTransform, RectTransform stretchableTransform) {
+            Rect oldRect = staticTransform.rect;
+            Vector3 oldPos = staticTransform.position;
+            staticTransform.anchorMin = staticTransform.anchorMax = new Vector2(0f, 1f);
+            staticTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, oldRect.width);
+            staticTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, oldRect.height);
+
+            Rect oldStretchRect = stretchableTransform.rect;
+            Vector3 oldStretchPos = stretchableTransform.position;
+            stretchableTransform.anchorMin = stretchableTransform.anchorMax = new Vector2(0f, 1f);
+
+            stretchableTransform.DOSizeDelta(oldStretchRect.size, 0.5f)
+                .ChangeStartValue(new Vector2(0f, oldStretchRect.height))
+                .OnUpdate(() => {
+                    staticTransform.position = oldPos;
+                    stretchableTransform.position = oldStretchPos;
+                })
+                .SetEase(Ease.OutSine);
+        }
+
+        void OnWTETransitionEnd() {
+            m_OverlayWTE.SetActive(true);
+
+            foreach (Graphic gfx in m_OverlayWTE.GetComponentsInChildren<Graphic>()) {
+                gfx.DOFade(gfx.color.a, 0.5f)
+                    .ChangeStartValue(gfx.color.AlterAlpha(0f))
+                    .SetEase(Ease.OutSine);
+            }
+
+            m_WTELogoMaskTransform.DOSizeDelta(m_WTELogoMaskTransform.sizeDelta, 0.5f)
+                .ChangeStartValue(new Vector2(0f, m_WTELogoMaskTransform.sizeDelta.y))
+                .SetEase(Ease.OutSine);
+
+            AnimateStretchableTransform(m_ContextualText.rectTransform, m_ContextualTextMaskTransform);
+            AnimateStretchableTransform(m_ContextualButtonsLayoutTransform, m_ContextualButtonsMaskTransform);
         }
     }
 }
