@@ -207,11 +207,6 @@ namespace MRK.UI {
         }
 
         void StartInitialTransition() {
-            /*m_LensDistortion.intensity.value = -100f;
-            m_LensDistortion.centerX.value = -0.5f;
-            m_LensDistortion.centerY.value = 0.68f;
-            m_LensDistortion.scale.value = 1.55f;*/
-
             DOTween.To(() => m_LensDistortion.intensity.value, x => m_LensDistortion.intensity.value = x, -100f, 1f);
             DOTween.To(() => m_LensDistortion.centerX.value, x => m_LensDistortion.centerX.value = x, -0.5f, 1f);
             DOTween.To(() => m_LensDistortion.centerY.value, x => m_LensDistortion.centerY.value = x, 0.68f, 1f);

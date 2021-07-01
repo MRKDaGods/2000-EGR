@@ -49,7 +49,8 @@ namespace MRK {
 		int m_ExS;
 		int m_ExW;
 		int m_ExE;
-		string m_BackupTileset;
+        string m_BackupTileset;
+		MRKTileID m_CenterTile;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -71,6 +72,7 @@ namespace MRK {
 		public bool TileDestroyZoomUpdatedDirty => m_TileDestroyZoomUpdatedDirty;
 		public List<MRKTilePlane> ActivePlanes => m_ActivePlanes;
 		public int PreviousTilesCount => m_PreviousTiles.Count;
+		public int MaxValidTile { get; private set; }
 
 		public MRKMap() {
 			m_ActiveTileIDs = new List<MRKTileID>();
@@ -197,19 +199,17 @@ namespace MRK {
 			}
 		}
 
-		void UpdatePosition() {
-			m_CenterMercator = MRKMapUtils.LatLonToMeters(m_CenterLatLng);
-
+		void UpdateTileExtents() {
 			m_ActiveTileIDs.Clear();
 			m_SortedTileIDs.Clear();
 			m_SortedToActiveIDs.Clear();
 			m_VisibleTiles.Clear();
-			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
 
-			int maxValidTile = (1 << m_AbsoluteZoom) - 1;
-			for (int x = (centerTile.X - m_ExW); x <= (centerTile.X + m_ExE); x++) {
-				for (int y = (centerTile.Y - m_ExN); y <= (centerTile.Y + m_ExS); y++) {
-					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y, x < 0 || x > maxValidTile || y < 0 || y > maxValidTile));
+			//set max valid tile
+			MaxValidTile = (1 << m_AbsoluteZoom) - 1;
+			for (int x = (m_CenterTile.X - m_ExW); x <= (m_CenterTile.X + m_ExE); x++) {
+				for (int y = (m_CenterTile.Y - m_ExN); y <= (m_CenterTile.Y + m_ExS); y++) {
+					m_ActiveTileIDs.Add(new MRKTileID(m_AbsoluteZoom, x, y, x < 0 || x > MaxValidTile || y < 0 || y > MaxValidTile));
 				}
 			}
 
@@ -222,12 +222,8 @@ namespace MRK {
 			}
 
 			if (m_TileDestroyZoomUpdatedDirty) {
-				foreach (MRKTilePlane plane in m_ActivePlanes) {
-					//plane.RecyclePlane(false);
-                }
-
 				m_ActivePlanes.Clear();
-            }
+			}
 
 			foreach (MRKTile tile in buf) {
 				tile.OnDestroy();
@@ -241,7 +237,7 @@ namespace MRK {
 			m_TileDestroyZoomUpdatedDirty = false;
 
 			foreach (MRKTileID id in m_ActiveTileIDs) {
-				MRKTileID sortedID = new MRKTileID(0, id.X - centerTile.X, id.Y - centerTile.Y);
+				MRKTileID sortedID = new MRKTileID(0, id.X - m_CenterTile.X, id.Y - m_CenterTile.Y);
 				m_SortedTileIDs.Add(sortedID);
 				m_SortedToActiveIDs[sortedID] = id;
 			}
@@ -252,6 +248,16 @@ namespace MRK {
 
 				return sqrMagX.CompareTo(sqrMagY);
 			});
+		}
+
+		void UpdatePosition() {
+			m_CenterMercator = MRKMapUtils.LatLonToMeters(m_CenterLatLng);
+
+			MRKTileID centerTile = MRKMapUtils.CoordinateToTileId(m_CenterLatLng, m_AbsoluteZoom);
+			if (m_CenterTile != centerTile) {
+				m_CenterTile = centerTile;
+				UpdateTileExtents();
+			}
 
 			float scaleFactor = Mathf.Pow(2, m_InitialZoom - m_AbsoluteZoom);
 
@@ -259,14 +265,16 @@ namespace MRK {
 			foreach (MRKTileID tileID in m_SortedTileIDs) {
 				MRKTileID realID = m_SortedToActiveIDs[tileID];
 				MRKTile tile = m_Tiles.Find(x => x.ID == realID);
-				if (tile == null)
+				if (tile == null) {
 					tile = new MRKTile();
+				}
 
 				tile.InitTile(this, realID, siblingIdx);
 
-				RectD rect = tile.Rect;
+				RectD rect = tile.Rect.Value;
 				Vector3 position = new Vector3((float)(rect.Center.x - m_CenterMercator.x) * m_WorldRelativeScale * scaleFactor, 0f,
 					(float)(rect.Center.y - m_CenterMercator.y) * m_WorldRelativeScale * scaleFactor);
+
 				tile.Obj.transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 				tile.Obj.transform.localPosition = position;
 				tile.Obj.transform.SetSiblingIndex(siblingIdx++);
@@ -340,8 +348,8 @@ namespace MRK {
 			double xDelta = centerLatitudeLongitude.x;
 			double zDelta = centerLatitudeLongitude.y;
 
-			xDelta = xDelta > 0 ? Mathd.Min(xDelta, MRKMapUtils.LATITUDE_MAX) : Mathd.Max(xDelta, -MRKMapUtils.LATITUDE_MAX);
-			zDelta = zDelta > 0 ? Mathd.Min(zDelta, MRKMapUtils.LONGITUDE_MAX) : Mathd.Max(zDelta, -MRKMapUtils.LONGITUDE_MAX);
+			//xDelta = xDelta > 0 ? Mathd.Min(xDelta, MRKMapUtils.LATITUDE_MAX) : Mathd.Max(xDelta, -MRKMapUtils.LATITUDE_MAX);
+			//zDelta = zDelta > 0 ? Mathd.Min(zDelta, MRKMapUtils.LONGITUDE_MAX) : Mathd.Max(zDelta, -MRKMapUtils.LONGITUDE_MAX);
 
 			//Set Center in Latitude Longitude and Mercator.
 			m_CenterLatLng = new Vector2d(xDelta, zDelta);

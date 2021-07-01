@@ -32,9 +32,22 @@ namespace MRK {
         TextureFetcherLock m_LastLock;
         MRKMonitoredTexture m_Texture;
         Reference<UnityWebRequest> m_WebRequest;
+        bool m_IsTextureIDDirty;
+        MRKTileID m_TextureID;
 
         public MRKTileID ID { get; private set; }
-        public RectD Rect { get; private set; }
+        public MRKTileID TextureID {
+            get {
+                return m_IsTextureIDDirty ? m_TextureID : ID;
+            }
+
+            set {
+                m_IsTextureIDDirty = true;
+                m_TextureID = value;
+            }
+        }
+        public Vector2Int Revolution { get; private set; }
+        public RectD? Rect { get; private set; }
         public GameObject Obj { get; private set; }
         public int SiblingIndex => m_SiblingIndex;
         public Material Material => m_Material;
@@ -92,7 +105,11 @@ namespace MRK {
             m_Map = map;
             ID = id;
             m_SiblingIndex = siblingIdx;
-            Rect = MRKMapUtils.TileBounds(id);
+            Revolution = Vector2Int.one; //occurance in map
+
+            if (!Rect.HasValue) {
+                Rect = MRKMapUtils.TileBounds(id);
+            }
 
             if (ms_TileMesh == null) {
                 CreateTileMesh(m_Map.TileSize);
@@ -115,10 +132,42 @@ namespace MRK {
                 m_MeshRenderer.material = m_Material;
 
                 if (ID.Stationary) {
-                    SetTexture(m_Map.StationaryTexture);
+                    //Fix ups :)
+                    //map the tile to the inverse most valid tile ex: if x=-1, x becomes maxValidTile
+
+                    bool isXStationary = ID.X < 0 || ID.X > m_Map.MaxValidTile;
+                    bool isYStationary = ID.Y < 0 || ID.Y > m_Map.MaxValidTile;
+                    int newX = isXStationary ? m_Map.MaxValidTile - (ID.X - (int)Mathf.Sign(ID.X)) : ID.X;
+                    int newY = isYStationary ? m_Map.MaxValidTile - (ID.Y - (int)Mathf.Sign(ID.Y)) : ID.Y;
+                    TextureID = new MRKTileID(ID.Z, newX, newY);
+                    /*Rect = MRKMapUtils.TileBounds(TextureID);
+
+                    int revolutionX = 1;
+                    int revolutionY = 1;
+                    if (isXStationary) {
+                        revolutionX = Mathf.FloorToInt(ID.X / (float)m_Map.MaxValidTile) + (int)Mathf.Sign(ID.X);
+                    }
+
+                    if (isYStationary) {
+                        revolutionY = Mathf.FloorToInt(ID.Y / (float)m_Map.MaxValidTile) + (int)Mathf.Sign(ID.Y);
+                    }
+
+                    Revolution = new Vector2Int(revolutionX, revolutionY); */
+
+                    //test cases:
+                    // -1 / 3 = -0.33333 fti= 0, 0 - 1 = -1
+                    // 4 / 3 = 1.3333 fti= 1, 1 + 1 = 2
+                    // 8 / 3 = 2.3333 fti= 2, 2 + 1 = 3
+                    // -4 / 3 = -1.3333 fti=-1, -1 - 1 = -2
+
+                    //Debug.Log($"OLD={ID} NEW={TextureID}, REV={Revolution}");
+
+                    //SetTexture(m_Map.StationaryTexture);
                 }
-                else if (m_SiblingIndex < 5 && ms_CachedTiles[0].ContainsKey(m_Map.Tileset) && ms_CachedTiles[0][m_Map.Tileset].ContainsKey(ID)) {
-                    SetTexture(ms_CachedTiles[0][m_Map.Tileset][ID]);
+
+                Reference<MRKMonitoredTexture> texRef = ReferencePool<MRKMonitoredTexture>.Default.Rent();
+                if (m_SiblingIndex < 5 && HasTexture(TextureID, false, null, texRef)) {
+                    SetTexture(texRef.Value);
                 }
                 else {
                     m_Runnable = Obj.GetComponent<MRKRunnable>();
@@ -132,6 +181,8 @@ namespace MRK {
                         //m_Runnable.Run(LateFetchHighTex());
                     }
                 }
+
+                ReferencePool<MRKMonitoredTexture>.Default.Free(texRef);
             }
             else {
                 if (!m_FetchingTile) {
@@ -159,7 +210,7 @@ namespace MRK {
             //DateTime t0 = DateTime.Now;
 
             TextureFetcherLock texLock = low ? ms_LowFetcherLock : ms_HighFetcherLock;
-            int recursionMax = low ? (ID.Z >= 19 ? 5 : 9) : 2;
+            int recursionMax = low ? (TextureID.Z >= 19 ? 5 : 9) : 2;
             while (texLock.Recursion > recursionMax) {
                 yield return new WaitForEndOfFrame();//new WaitForSeconds(0.4f + 0.1f * m_SiblingIndex);
             }
@@ -184,7 +235,7 @@ namespace MRK {
             m_LastLock = texLock;
 
             int lowIdx = low.ToInt();
-            bool isLocalTile = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(ID);
+            bool isLocalTile = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(TextureID);
             float sqrMag;
             while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
                 yield return new WaitForSeconds(Time.deltaTime * m_SiblingIndex);
@@ -193,18 +244,18 @@ namespace MRK {
             //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
 
             if (isLocalTile) {
-                SetTexture(ms_CachedTiles[lowIdx][m_Map.Tileset][ID]);
+                SetTexture(ms_CachedTiles[lowIdx][m_Map.Tileset][TextureID]);
             }
             else {
                 string tileset = m_Map.Tileset;
-                MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, ID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
+                MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, TextureID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
                 m_WebRequest = ObjectPool<Reference<UnityWebRequest>>.Default.Rent();
                 MRKTileFetcherContext context = new MRKTileFetcherContext();
-                yield return fetcher.Fetch(context, tileset, ID, m_WebRequest, low);
+                yield return fetcher.Fetch(context, tileset, TextureID, m_WebRequest, low);
 
                 if (context.Error) {
-                    Debug.Log($"{fetcher.GetType().Name}: low={low} Error for tile {ID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
+                    Debug.Log($"{fetcher.GetType().Name}: low={low} Error for tile {TextureID} {(fetcher as MRKFileTileFetcher)?.GetFolderPath(tileset)}");
                     HasAnyTexture = true; //free the poor tile plane, so users can still use the map, welp
                 }
                 else {
@@ -213,14 +264,14 @@ namespace MRK {
                             ms_CachedTiles[lowIdx][tileset] = new ConcurrentDictionary<MRKTileID, MRKMonitoredTexture>();
                         }
 
-                        context.Texture.name = ID.ToString();
+                        context.Texture.name = TextureID.ToString();
                         MRKMonitoredTexture tex = new MRKMonitoredTexture(context.Texture);
                         SetTexture(tex);
 
-                        ms_CachedTiles[lowIdx][tileset].AddOrUpdate(ID, tex, (x, y) => tex);
+                        ms_CachedTiles[lowIdx][tileset].AddOrUpdate(TextureID, tex, (x, y) => tex);
 
                         if (context.Texture.isReadable)
-                            MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, ID, low);
+                            MRKTileRequestor.Instance.AddToSaveQueue(context.Data, tileset, TextureID, low);
                     }
                 }
 
@@ -250,11 +301,18 @@ namespace MRK {
             Obj.name += "HIGH";
         }
 
-        bool HasTexture(MRKTileID id, bool low, Reference<Texture2D> tex = null) {
+        bool HasTexture(MRKTileID id, bool low, Reference<Texture2D> tex = null, Reference<MRKMonitoredTexture> monitoredTex = null) {
             int lowIdx = low.ToInt();
             bool exists = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(id);
-            if (exists && tex != null) {
-                tex.Value = ms_CachedTiles[lowIdx][m_Map.Tileset][id].Texture;
+            if (exists) {
+                MRKMonitoredTexture _tex = ms_CachedTiles[lowIdx][m_Map.Tileset][id];
+                if (tex != null) {
+                    tex.Value = _tex.Texture;
+                }
+
+                if (monitoredTex != null) {
+                    monitoredTex.Value = _tex;
+                }
             }
 
             return exists;
@@ -262,7 +320,7 @@ namespace MRK {
 
         MRKTileID GetParentID(MRKTileID id = null) {
             if (id == null)
-                id = ID;
+                id = TextureID;
 
             Vector2d center = MRKMapUtils.TileBounds(id).Center;
             Vector2d geoCenter = MRKMapUtils.MetersToLatLon(center);
@@ -302,14 +360,14 @@ namespace MRK {
                 m_MeshRenderer.material.SetTexture("_SecTex", tex);
 
                 if (tex != m_Map.LoadingTexture) {
-                    var tileZoom = ID.Z;
+                    var tileZoom = TextureID.Z;
                     var parentZoom = previous.Z;
 
                     var scale = 1f;
                     var offsetX = 0f;
                     var offsetY = 0f;
 
-                    var current = ID;
+                    var current = TextureID;
                     var currentParent = previous;
 
                     for (int i = tileZoom - 1; i >= parentZoom; i--) {
@@ -388,9 +446,9 @@ namespace MRK {
 
             //elbt3 da 3amel 2l2, destroy!!
             if (m_MeshRenderer != null) {
-                if (m_SiblingIndex < 9 && m_Map.TileDestroyZoomUpdatedDirty) {
+                if (m_SiblingIndex < 15 && m_Map.TileDestroyZoomUpdatedDirty && !ID.Stationary) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
-                    tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect, ID.Z, () => {
+                    tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect.Value, ID.Z, () => {
                         MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
                         if (tile != null)
                             return tile.HasAnyTexture;
@@ -426,6 +484,8 @@ namespace MRK {
             if (m_Texture != null) {
                 m_Texture.IsActive = false;
             }
+
+            Rect = null;
         }
 
         void UpdateMaterialBlend() {

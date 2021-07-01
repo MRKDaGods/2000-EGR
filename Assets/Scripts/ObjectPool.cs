@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MRK {
@@ -8,28 +9,39 @@ namespace MRK {
         readonly List<T> m_ActiveObjects;
         readonly Dictionary<T, int> m_PoolIndex;
         int m_PoolCount;
-        static ObjectPool<T> ms_DefaultPool;
+        protected static ObjectPool<T> ms_DefaultPool;
+        Action<T> m_OnFree;
 
         public int ActiveCount => m_ActiveObjects.Count;
         public static ObjectPool<T> Default {
             get {
-                if (ms_DefaultPool == null)
+                if (ms_DefaultPool == null) {
                     ms_DefaultPool = new ObjectPool<T>(null);
+                }
 
                 return ms_DefaultPool;
             }
         }
 
-        public ObjectPool(Func<T> instantiator, bool indexPool = false) {
+        public ObjectPool(Func<T> instantiator, bool indexPool = false, Action<T> onFree = null) {
             m_Instantiator = instantiator;
             m_FreeObjects = new List<T>();
             m_ActiveObjects = new List<T>();
 
             if (indexPool)
                 m_PoolIndex = new Dictionary<T, int>();
+
+            m_OnFree = onFree;
         }
 
-        public virtual void Free(T obj) {
+        public void Free(T obj) {
+            if (obj == null)
+                return;
+            
+            if (m_OnFree != null) {
+                m_OnFree(obj);
+            }
+
             m_ActiveObjects.Remove(obj);
             m_FreeObjects.Add(obj);
         }

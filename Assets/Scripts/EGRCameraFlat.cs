@@ -52,14 +52,16 @@ namespace MRK {
             m_CurrentLatLong = m_TargetLatLong = latlng;
             m_CurrentZoom = m_TargetZoom = zoom;
 
-            var pool = ObjectPool<Reference<float>>.Default;
+            /*var pool = ObjectPool<Reference<float>>.Default;
 
             Reference<float> zoomRef = pool.Rent();
             m_Map.FitToBounds(new Vector2d(-MRKMapUtils.LATITUDE_MAX, -MRKMapUtils.LONGITUDE_MAX), 
                 new Vector2d(MRKMapUtils.LATITUDE_MAX, MRKMapUtils.LONGITUDE_MAX), 0f, false, zoomRef);
 
             m_MinViewportZoomLevel = zoomRef.Value;
-            pool.Free(zoomRef);
+            pool.Free(zoomRef); */
+
+            m_MinViewportZoomLevel = 0f;
         }
 
         void OnReceiveControllerMessage(EGRControllerMessage msg) {
@@ -97,7 +99,7 @@ namespace MRK {
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
 
                         Vector3 delta = (Vector3)msg.Payload[2];
-                        if (!m_PassedThreshold[data.Index] && delta.sqrMagnitude > 5f) {
+                        if (!m_PassedThreshold[data.Index] && delta.sqrMagnitude > 8f) {
                             m_PassedThreshold[data.Index] = true;
                         }
 

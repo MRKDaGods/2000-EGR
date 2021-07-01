@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace MRK {
     public class EGRLocationManager : EGRBehaviour {
-        const float LOCATION_REQUEST_DELAY = 0.5f;
+        const float LOCATION_REQUEST_DELAY = 0f; //0.5f
 
         Image m_CurrentLocationSprite;
         bool m_IsActive;

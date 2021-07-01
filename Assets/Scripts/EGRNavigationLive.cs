@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +8,20 @@ using UnityEngine;
 
 namespace MRK.Navigation {
     public class EGRNavigationLive : EGRNavigation {
-        const double TOLERANCE = 5d;
+        const double TOLERANCE = 8d;
+        const float REROUTE_WAIT_TIME = 3f;
+
+        struct LineSegmentPointRank {
+            public int Index;
+            public double SqrDistance;
+            public Vector2d? Intersection;
+        }
 
         int m_FailCount;
         int m_StepIndex;
         Vector2d? m_LastKnownCoords;
         float? m_LastKnownBearing;
+        bool m_IsRerouting;
 
         protected override void Prepare() {
             m_FailCount = 0;
@@ -21,9 +30,14 @@ namespace MRK.Navigation {
             m_LastKnownBearing = null;
         }
 
-        int IsPointOnLine(Vector2d p, List<Vector2d> points, double tolerance, Reference<Vector2d> intersection = null) {
+        int IsPointOnLine(Vector2d p, List<Vector2d> points, double tolerance, Reference<Vector2d> intersection = null, bool rank = false) {
             int pointIdx = 0;
             Vector2d current = MRKMapUtils.LatLonToMeters(p);
+
+            List<LineSegmentPointRank> rankedList = null;
+            if (rank) {
+                rankedList = ListPool<LineSegmentPointRank>.Default.Rent();
+            }
 
             while (pointIdx + 1 < points.Count) {
                 Vector2d start = MRKMapUtils.LatLonToMeters(points[pointIdx]);
@@ -65,15 +79,57 @@ namespace MRK.Navigation {
                 if (sqrDist > tolerance * tolerance)
                     goto __continue;
 
-                if (intersection != null) {
-                    Vector2d intersectionMeters = new Vector2d(x, y);
-                    intersection.Value = MRKMapUtils.MetersToLatLon(intersectionMeters);
-                }
+                if (rank) {
+                    rankedList.Add(new LineSegmentPointRank {
+                        Index = pointIdx,
+                        SqrDistance = sqrDist,
+                        Intersection = intersection != null ? new Vector2d?(MRKMapUtils.MetersToLatLon(new Vector2d(x, y))) : null
+                    });
 
-                return pointIdx;
+                    goto __continue;
+                }
+                else {
+                    if (intersection != null) {
+                        Vector2d intersectionMeters = new Vector2d(x, y);
+                        intersection.Value = MRKMapUtils.MetersToLatLon(intersectionMeters);
+                    }
+
+                    return pointIdx;
+                }
 
             __continue:
                 pointIdx++;
+            }
+
+            if (rank && rankedList.Count > 0) {
+                int minIdx;
+                int rankIdx = 0;
+
+                if (rankedList.Count == 1) {
+                    minIdx = rankedList[0].Index;
+                    goto __rankedExit;
+                }
+
+                //find the one with the min distance, list count must be >= 2
+                double minDist = rankedList[0].SqrDistance;
+                minIdx = rankedList[0].Index;
+
+                for (int i = 1; i < rankedList.Count; i++) {
+                    LineSegmentPointRank pointRank = rankedList[i];
+                    if (pointRank.SqrDistance < minDist) {
+                        minDist = pointRank.SqrDistance;
+                        minIdx = pointRank.Index;
+                        rankIdx = i;
+                    }
+                }
+
+            __rankedExit:
+                if (intersection != null) {
+                    intersection.Value = rankedList[rankIdx].Intersection.Value;
+                }
+
+                ListPool<LineSegmentPointRank>.Default.Free(rankedList);
+                return minIdx;
             }
 
             return -1;
@@ -87,7 +143,7 @@ namespace MRK.Navigation {
                 if (realIdx >= steps.Count || realIdx < 0)
                     continue;
 
-                int subIdx = IsPointOnLine(p, steps[realIdx].Geometry.Coordinates, TOLERANCE);
+                int subIdx = IsPointOnLine(p, steps[realIdx].Geometry.Coordinates, TOLERANCE, null, false);
                 if (subIdx != -1)
                     return realIdx;
             }
@@ -110,6 +166,15 @@ namespace MRK.Navigation {
                 return;
             }
 
+            if (m_StepIndex == -1) {
+                //increment reroute
+                if (!m_IsRerouting) {
+                    Client.Runnable.Run(StartRerouting());
+                }
+
+                return;
+            }
+
             //current step
             EGRNavigationStep step = m_Route.Legs[0].Steps[m_StepIndex];
             ObjectPool<Reference<Vector2d>> refPool = ObjectPool<Reference<Vector2d>>.Default;
@@ -117,14 +182,15 @@ namespace MRK.Navigation {
 
             m_LastKnownBearing = bearing.Value;
 
-            int subIdx = IsPointOnLine(coords.Value, step.Geometry.Coordinates, TOLERANCE, intersection);
+            int subIdx = IsPointOnLine(coords.Value, step.Geometry.Coordinates, TOLERANCE, intersection, true);
             if (subIdx == -1) {
                 m_LastKnownCoords = coords.Value;
 
-                int backup = m_StepIndex;
+                //backup purposes to ignore rerouting
+                //int b = m_StepIndex;
                 m_StepIndex = GetNeighbouringStep(m_StepIndex, coords.Value);
                 if (m_StepIndex == -1) {
-                    m_StepIndex = backup;
+                    //m_StepIndex = b;
                     Debug.Log("RE ROUTE REQUIRED");
                     goto __exit;
                 }
@@ -138,6 +204,18 @@ namespace MRK.Navigation {
 
         __exit:
             refPool.Free(intersection);
+        }
+
+        IEnumerator StartRerouting() {
+            m_IsRerouting = true;
+
+            //so I guess lets say we should we for 2-3 secs (about 6 location updates) before we re route
+            float totalWaitTime = 0f;
+            while (totalWaitTime < REROUTE_WAIT_TIME) {
+
+            }
+
+            yield break;
         }
 
         public override void Update() {

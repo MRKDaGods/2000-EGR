@@ -17,6 +17,7 @@ namespace MRK {
         int m_AbsoluteZoom;
         int m_Tween;
         int m_SiblingIdx;
+        bool m_MapHasHigherZoom;
 
         static MRKTilePlane() {
             ms_MaterialPool = new ObjectPool<Material>(() => {
@@ -73,13 +74,16 @@ namespace MRK {
             StartCoroutine(KillPlane(killPredicate));
 
             m_Tween = -999;
+            m_MapHasHigherZoom = Client.FlatMap.AbsoluteZoom > m_AbsoluteZoom;
         }
 
         IEnumerator KillPlane(Func<bool> killPredicate) {
-            while (!killPredicate())
-                yield return new WaitForSeconds(0.04f);
+            while (!killPredicate()) {
+                UpdatePlane();
+                yield return new WaitForEndOfFrame();
+            }
 
-            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, 0.3f)
+            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, m_MapHasHigherZoom ? 0.6f : 0.3f)
                 .OnUpdate(() => {
                     if (m_Material != null) m_Material.SetFloat("_Amount", m_DissolveValue);
                 })
@@ -117,7 +121,6 @@ namespace MRK {
             StopAllCoroutines();
             gameObject.SetActive(false);
             MRKTile.PlanePool.Free(this);
-
         }
 
         static void CreateTileMesh(float size) {
