@@ -61,6 +61,7 @@ namespace MRK.UI {
             Color m_InverseColor => m_InitialColor.AlterAlpha(m_State ? 0.5f : 1f);
             Vector2 m_PreferredTextPosition => m_State ? m_ActiveTextPosition : m_InitialTextPosition;
             Vector2 m_InverseTextPosition => m_State ? m_InitialTextPosition : m_ActiveTextPosition;
+            public MapButtonInfo Info => m_Info;
 
             public MapButton(EGRScreenMapInterface owner, int idx, MapButtonInfo info, Tuple<GameObject, TextMeshProUGUI> pooled) {
                 m_Info = info;
@@ -110,6 +111,26 @@ namespace MRK.UI {
                 m_Text.gameObject.SetActive(true);
 
                 m_Dirty = new bool[3];
+
+                ms_Owner.Client.Runnable.RunLater(LateInit, 0.2f);
+            }
+
+            void LateInit() {
+                if (!m_InvokedLateInit) {
+                    m_InvokedLateInit = true;
+
+                    m_InitialPosition = new Vector2(ms_Owner.m_IdleButtonPositioner.GetWorldPositionX(m_Index), Button.transform.position.y);
+                    m_ActivePosition = new Vector2(ms_Owner.m_ActiveButtonPositioner.GetWorldPositionX(m_Index), ms_TemplateTransform.position.y);
+
+                    m_InitialTextPosition = m_Text.transform.position;
+                    m_InitialTextPosition.x = m_InitialPosition.x; //m_ActivePosition.x; //centre with active pos
+                    m_Text.transform.position = m_InitialTextPosition;
+
+                    m_ActiveTextPosition = m_ActivePosition;
+                    m_ActiveTextPosition.y -= Mathf.Min(100f, m_InitialSize) * ACTIVE_SIZE_MOD / 2f + m_Text.rectTransform.sizeDelta.y * 0.7f;
+
+                    Reset();
+                }
             }
 
             void OnButtonClick(bool broadcast) {
@@ -148,19 +169,8 @@ namespace MRK.UI {
             }
 
             public void Update() {
-                if (!m_InvokedLateInit) {
-                    m_InvokedLateInit = true;
-
-                    m_InitialPosition = new Vector2(ms_Owner.m_IdleButtonPositioner.GetWorldPositionX(m_Index), Button.transform.position.y);
-                    m_ActivePosition = new Vector2(ms_Owner.m_ActiveButtonPositioner.GetWorldPositionX(m_Index), ms_TemplateTransform.position.y);
-
-                    m_InitialTextPosition = m_Text.transform.position;
-                    m_InitialTextPosition.x = m_InitialPosition.x; //m_ActivePosition.x; //centre with active pos
-                    m_Text.transform.position = m_InitialTextPosition;
-
-                    m_ActiveTextPosition = m_ActivePosition;
-                    m_ActiveTextPosition.y -= Mathf.Min(100f, m_InitialSize) * ACTIVE_SIZE_MOD / 2f + m_Text.rectTransform.sizeDelta.y * 0.7f;
-                }
+                if (!m_InvokedLateInit)
+                    return;
 
                 if ((m_QueuedUpdates & MapButtonUpdate.Position) == MapButtonUpdate.Position) {
                     m_Delta[0] += Time.deltaTime * 5f;
@@ -171,7 +181,7 @@ namespace MRK.UI {
                         m_QueuedUpdates |= MapButtonUpdate.Size;
                     }
 
-                    if (m_Delta[0] >= 0.5f && (m_QueuedUpdates & MapButtonUpdate.Label) == 0 && !m_Dirty[1]) {
+                    if (m_Delta[0] >= 0.2f && (m_QueuedUpdates & MapButtonUpdate.Label) == 0 && !m_Dirty[1]) {
                         m_Dirty[1] = true;
                         m_QueuedUpdates |= MapButtonUpdate.Label;
                     }
@@ -281,6 +291,8 @@ namespace MRK.UI {
             public Sprite Sprite;
             [NonSerialized]
             public Action OnDown;
+            [NonSerialized]
+            public int Index;
         }
 
         [Serializable]
@@ -289,8 +301,17 @@ namespace MRK.UI {
             public Sprite Sprite;
         }
 
+        public static class MapButtonIDs {
+            public static int CURRENT_LOCATION = 0;
+            public static int HOTTEST_TRENDS = 1;
+            public static int SETTINGS = 2;
+            public static int NAVIGATION = 3;
+            public static int BACK_TO_EARTH = 4;
+        }
+
         MRKMap m_Map;
-        MapButton[] m_MapButtons;
+        readonly List<MapButton> m_MapButtons;
+        readonly List<MapButtonInfo> m_TempMapButtonInfoBuffer;
         TextMeshProUGUI m_CamDistLabel;
         [SerializeField]
         TextMeshPro m_ContextLabel;
@@ -348,6 +369,8 @@ namespace MRK.UI {
         public EGRScreenMapInterface() {
             m_InterfaceComponents = new Dictionary<EGRMapInterfaceComponentType, EGRMapInterfaceComponent>();
             m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
+            m_MapButtons = new List<MapButton>();
+            m_TempMapButtonInfoBuffer = new List<MapButtonInfo>();
         }
 
         protected override void OnScreenInit() {
@@ -367,15 +390,18 @@ namespace MRK.UI {
             m_ActiveButtonPositioner = new Positioner(GetTransform(Others.MapActiveTemplate));
 
             //assign mapinfo delegates
-            m_ButtonInfoDelegates = new Action[4] {
+            m_ButtonInfoDelegates = new Action[5] {
                 OnCurrentLocationClick,
                 OnHottestTrendsClick,
                 OnSettingsClick, //settings
-                OnNavigationClick
+                OnNavigationClick,
+                OnBackToEarthClick
             };
 
-            for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++)
+            for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++) {
                 m_ButtonInfos[i].OnDown = m_ButtonInfoDelegates[i];
+                m_ButtonInfos[i].Index = i;
+            }
 
             ObservedTransform = Client.GlobalMap.transform;
 
@@ -421,7 +447,7 @@ namespace MRK.UI {
 
             Client.DisableAllScreensExcept<EGRScreenMapInterface>();
 
-            SetMapButtons(m_ButtonInfos);
+            //SetMapButtons(m_ButtonInfos);
 
             foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
                 pair.Value.OnComponentShow();
@@ -449,7 +475,7 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenUpdate() {
-            if (m_MapButtons != null) {
+            if (m_MapButtons.Count > 0) {
                 foreach (MapButton button in m_MapButtons) {
                     button.Update();
                 }
@@ -481,6 +507,25 @@ namespace MRK.UI {
                     .ChangeStartValue(0f)
                     .SetEase(Ease.OutBack);
             }
+
+            //set base map buttons
+            List<int> ids = ListPool<int>.Default.Rent();
+            ids.Add(MapButtonIDs.SETTINGS);
+            ids.Add(MapButtonIDs.CURRENT_LOCATION);
+
+            if (mode == EGRMapMode.Globe) {
+                if (ObservedTransform != Client.GlobalMap.transform) {
+                    ids.Add(MapButtonIDs.BACK_TO_EARTH);
+                }
+            }
+            else if (mode == EGRMapMode.Flat) {
+                ids.Add(MapButtonIDs.HOTTEST_TRENDS);
+                ids.Add(MapButtonIDs.NAVIGATION);
+                ids.Add(MapButtonIDs.BACK_TO_EARTH);
+            }
+
+            SetMapButtons(ids.ToArray());
+            ListPool<int>.Default.Free(ids);
         }
 
         void OnControllerMessageReceived(EGRControllerMessage msg) {
@@ -540,7 +585,17 @@ namespace MRK.UI {
                     ObservedTransformDirty = true;
 
                     SetObservedTransformNameState(true);
+                    OnObservedTransformChanged();
                 }
+            }
+        }
+
+        void OnObservedTransformChanged() {
+            if (ObservedTransform == Client.GlobalMap.transform) {
+                RemoveMapButton(MapButtonIDs.BACK_TO_EARTH);
+            }
+            else {
+                AddMapButton(MapButtonIDs.BACK_TO_EARTH);
             }
         }
 
@@ -565,11 +620,11 @@ namespace MRK.UI {
             Client.StartCoroutine(SetTextEnumerator(x => m_TimeLabel.text = x, DateTime.Now.ToString("HH:mm"), 1f, ":"));
         }
 
-        public void SetTransitionTex(RenderTexture rt, TweenCallback callback = null) {
+        public void SetTransitionTex(RenderTexture rt, TweenCallback callback = null, float speed = 0.6f) {
             m_TransitionImg.texture = rt;
             m_TransitionImg.gameObject.SetActive(true);
 
-            m_TransitionImg.DOColor(Color.white.AlterAlpha(0f), 0.6f)
+            m_TransitionImg.DOColor(Color.white.AlterAlpha(0f), speed)
                 .ChangeStartValue(Color.white.AlterAlpha(1f))
                 .SetEase(Ease.Linear)
                 .OnComplete(() => {
@@ -577,7 +632,7 @@ namespace MRK.UI {
                 });
 
             UIDissolve dis = m_TransitionImg.GetComponent<UIDissolve>();
-            DOTween.To(() => dis.effectFactor, x => dis.effectFactor = x, 1f, 0.6f)
+            DOTween.To(() => dis.effectFactor, x => dis.effectFactor = x, 1f, speed)
                 .SetEase(Ease.OutSine)
                 .ChangeStartValue(0f)
                 .OnComplete(callback);
@@ -715,34 +770,81 @@ namespace MRK.UI {
             m_ActiveButtonPositioner.SetChildSize(activeSz);
         }
 
+        void SetMapButtons(params int[] indices) {
+            if (m_TempMapButtonInfoBuffer.Count > 0) {
+                m_TempMapButtonInfoBuffer.Clear();
+            }
+
+            foreach (int i in indices) {
+                m_TempMapButtonInfoBuffer.Add(m_ButtonInfos[i]);
+            }
+
+            SetMapButtons(m_TempMapButtonInfoBuffer.ToArray());
+        }
+
+        void AddMapButton(int idx) {
+            if (m_TempMapButtonInfoBuffer.Count > 0) {
+                m_TempMapButtonInfoBuffer.Clear();
+            }
+
+            foreach (MapButton mb in m_MapButtons) {
+                if (mb.Info.Index == idx) {
+                    //we already have the button
+                    return;
+                }
+
+                m_TempMapButtonInfoBuffer.Add(mb.Info);
+            }
+
+            m_TempMapButtonInfoBuffer.Add(m_ButtonInfos[idx]);
+            SetMapButtons(m_TempMapButtonInfoBuffer.ToArray());
+        }
+
+        void RemoveMapButton(int idx) {
+            if (m_TempMapButtonInfoBuffer.Count > 0) {
+                m_TempMapButtonInfoBuffer.Clear();
+            }
+
+            foreach (MapButton mb in m_MapButtons) {
+                if (mb.Info.Index == idx) {
+                    continue;
+                }
+
+                m_TempMapButtonInfoBuffer.Add(mb.Info);
+            }
+
+            SetMapButtons(m_TempMapButtonInfoBuffer.ToArray());
+        }
+
         public void SetMapButtons(MapButtonInfo[] infos) {
             //free active buttons
-            if (m_MapButtons != null && m_MapButtons.Length > 0) {
-                for (int i = 0; i < m_MapButtons.Length; i++) {
+            if (m_MapButtons.Count > 0) {
+                for (int i = 0; i < m_MapButtons.Count; i++) {
                     GameObject obj = m_MapButtons[i].Button.gameObject;
                     obj.SetActive(false);
                     TextMeshProUGUI txt = m_MapButtons[i].Text;
                     txt.gameObject.SetActive(false);
 
                     m_MapButtons[i].Reset();
-                    m_MapButtons[i] = null;
+                    //m_MapButtons[i] = null;
                     m_MapButtonsPool.Add(new Tuple<GameObject, TextMeshProUGUI>(obj, txt));
                 }
+
+                m_MapButtons.Clear();
             }
 
             m_IdleButtonPositioner.SetChildCount(infos.Length);
             m_ActiveButtonPositioner.SetChildCount(infos.Length);
             m_PositionersDirty = true;
 
-            m_MapButtons = new MapButton[infos.Length];
-            for (int i = 0; i < m_MapButtons.Length; i++) {
+            for (int i = 0; i < infos.Length; i++) {
                 Tuple<GameObject, TextMeshProUGUI> pooled = null;
                 if (m_MapButtonsPool.Count > 0) {
                     pooled = m_MapButtonsPool[0];
                     m_MapButtonsPool.RemoveAt(0);
                 }
 
-                m_MapButtons[i] = new MapButton(this, i, infos[i], pooled);
+                m_MapButtons.Add(new MapButton(this, i, infos[i], pooled));
             }
         }
 
@@ -782,6 +884,29 @@ namespace MRK.UI {
         void OnCurrentLocationClick() {
             if (Client.MapMode == EGRMapMode.Flat) {
                 Client.LocationManager.RequestCurrentLocation(false, true, true);
+            }
+            else if (Client.MapMode == EGRMapMode.Globe) {
+                Client.GlobeCamera.SwitchToFlatMapExternal(() => {
+                    Client.Runnable.RunLater(() => {
+                        Client.LocationManager.RequestCurrentLocation(false, true, true);
+                    }, 0.2f);
+                });
+            }
+        }
+
+        void OnBackToEarthClick() {
+            if (Client.MapMode == EGRMapMode.Globe) {
+                if (ObservedTransform != Client.GlobalMap.transform) {
+                    SetObservedTransformNameState(false);
+
+                    //set back to earth
+                    ObservedTransform = Client.GlobalMap.transform;
+                    ObservedTransformDirty = true;
+                    OnObservedTransformChanged();
+                }
+            }
+            else if (Client.MapMode == EGRMapMode.Flat) {
+                Client.FlatCamera.SwitchToGlobe();
             }
         }
     }

@@ -253,6 +253,8 @@ namespace MRK.UI {
 
             m_RegionScreens[m_CurrentPage].HideScreen(null, 0.1f, true);
 
+            //TODO: implement a better way to execute section indices delegates
+
             //WTE override
             if (s == 0 && idx == 3) {
                 HideScreen(() => {

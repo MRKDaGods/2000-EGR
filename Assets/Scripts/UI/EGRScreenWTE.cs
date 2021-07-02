@@ -40,6 +40,7 @@ namespace MRK.UI {
         TextMeshProUGUI m_ContextualText;
         RectTransform m_ContextualButtonsMaskTransform;
         RectTransform m_ContextualButtonsLayoutTransform;
+        EGRUIFancyScrollView m_ContextualScrollView;
 
         public EGRScreenWTE() {
             m_Strips = new List<Strip>();
@@ -132,8 +133,10 @@ namespace MRK.UI {
             m_ContextualTextMaskTransform = (RectTransform)GetTransform("Overlay/ContextualText");
             m_ContextualText = m_ContextualTextMaskTransform.GetComponentInChildren<TextMeshProUGUI>();
 
-            m_ContextualButtonsMaskTransform = (RectTransform)GetTransform("Overlay/ContextualButtons");
-            m_ContextualButtonsLayoutTransform = (RectTransform)m_ContextualButtonsMaskTransform.Find("Layout");
+            m_ContextualScrollView = GetElement<EGRUIFancyScrollView>("Overlay/ContextualButtons");
+
+            //m_ContextualButtonsMaskTransform = (RectTransform)GetTransform("Overlay/ContextualButtons");
+            //m_ContextualButtonsLayoutTransform = (RectTransform)m_ContextualButtonsMaskTransform.Find("Layout");
         }
 
         protected override void OnScreenShow() {
@@ -261,7 +264,14 @@ namespace MRK.UI {
                 .SetEase(Ease.OutSine);
 
             AnimateStretchableTransform(m_ContextualText.rectTransform, m_ContextualTextMaskTransform);
-            AnimateStretchableTransform(m_ContextualButtonsLayoutTransform, m_ContextualButtonsMaskTransform);
+            //AnimateStretchableTransform(m_ContextualButtonsLayoutTransform, m_ContextualButtonsMaskTransform);
+
+            var items = Enumerable.Range(0, 10)
+                .Select(i => new EGRUIFancyScrollViewItemData($"{i}"))
+                .ToArray();
+
+            m_ContextualScrollView.UpdateData(items);
+            m_ContextualScrollView.SelectCell(0);
         }
     }
 }

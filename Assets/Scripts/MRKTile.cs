@@ -460,7 +460,7 @@ namespace MRK {
                 }
 
                 m_MeshRenderer.material = null;
-                UnityEngine.Object.DestroyImmediate(m_MeshRenderer);
+                Object.DestroyImmediate(m_MeshRenderer);
             }
 
             ms_MaterialPool.Free(m_Material);
@@ -496,12 +496,6 @@ namespace MRK {
                 //m_MeshRenderer.material.mainTextureScale = Vector2.Lerp(m_MeshRenderer.material.mainTextureScale, Vector2.one, 1f - m_MaterialBlend);
                 //m_MeshRenderer.material.mainTextureOffset = Vector2.Lerp(m_MeshRenderer.material.mainTextureOffset, Vector2.zero, 1f - m_MaterialBlend);
             }
-        }
-
-        public void Test() {
-            float scaleX = Mathf.Cos(Time.time) * 0.5f + 1;
-            float scaleY = Mathf.Sin(Time.time) * 0.5f + 1;
-            m_MeshRenderer.material.SetTextureScale("_MainTex", new Vector2(scaleX, scaleY));
         }
     }
 }

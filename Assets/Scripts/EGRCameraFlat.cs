@@ -200,13 +200,18 @@ namespace MRK {
             Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
         }
 
+        public void SwitchToGlobe() {
+            m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
+            Client.GlobeCamera.SetDistance(7000f);
+            Client.SetMapMode(EGRMapMode.Globe);
+        }
+
         void ProcessZoomInternal(float rawDelta) {
             m_TargetZoom += rawDelta * Time.deltaTime * EGRSettings.GetMapSensitivity();
 
             if (m_TargetZoom < 0.5f) {
-                m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
-                Client.GlobeCamera.SetDistance(7000f);
-                Client.SetMapMode(EGRMapMode.Globe);
+                SwitchToGlobe();
+                return;
             }
 
             m_TargetZoom = Mathf.Clamp(m_TargetZoom, m_MinViewportZoomLevel, 21f);
