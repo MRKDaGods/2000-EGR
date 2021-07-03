@@ -636,7 +636,7 @@ namespace MRK {
                 InputModel.UpdateInputModel();
             }
 
-            //if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen("FU").ShowScreen();
+            if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen<EGRScreenSpaceFOV>().ShowScreen();
         }
 
         /// <summary>

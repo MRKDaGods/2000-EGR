@@ -30,6 +30,7 @@ namespace MRK {
         Vector3 m_OriginalLightRotation;
 
         public bool IsLocked => m_PositionLocked || m_RotationLocked;
+        public float TargetFOV { get; set; }
 
         public EGRCameraGlobe() : base() {
             m_CurrentDistance = m_TargetDistance = m_BackupDistance = 9000f;
@@ -57,6 +58,8 @@ namespace MRK {
 
             m_Light = Client.Sun.parent.GetChild(0); //Directional Light
             m_OriginalLightRotation = m_Light.transform.rotation.eulerAngles; //0,180,0
+
+            TargetFOV = m_Camera.fieldOfView; //init fov
         }
 
         void OnDestroy() {
@@ -146,7 +149,7 @@ namespace MRK {
             return Vector2d.zero;
         }
 
-        void SwitchToFlatMap() {
+            void SwitchToFlatMap() {
             Client.SetMapMode(EGRMapMode.Flat);
             Client.FlatCamera.SetInitialSetup(GetCurrentGeoPos(), 3f);
 
@@ -395,6 +398,8 @@ namespace MRK {
 
             if (!m_InterfaceActive)
                 ProcessRotationIdle(new Vector3(10f, 0f), false);
+
+            m_Camera.fieldOfView += (TargetFOV - m_Camera.fieldOfView) * Time.deltaTime * 7f;
         }
 
         float ClampAngle(float angle, float min = 0f, float max = 0f) {

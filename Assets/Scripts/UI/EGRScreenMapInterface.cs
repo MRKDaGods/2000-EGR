@@ -308,7 +308,7 @@ namespace MRK.UI {
             public static int SETTINGS = 2;
             public static int NAVIGATION = 3;
             public static int BACK_TO_EARTH = 4;
-            public static int VIEW = 5;
+            public static int SPACE_FOV = 5;
         }
 
         MRKMap m_Map;
@@ -398,7 +398,7 @@ namespace MRK.UI {
                 OnSettingsClick, //settings
                 OnNavigationClick,
                 OnBackToEarthClick,
-                null
+                OnSpaceFOVClick
             };
 
             for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++) {
@@ -521,7 +521,7 @@ namespace MRK.UI {
                     ids.Add(MapButtonIDs.BACK_TO_EARTH);
                 }
 
-                ids.Add(MapButtonIDs.VIEW);
+                ids.Add(MapButtonIDs.SPACE_FOV);
             }
             else if (mode == EGRMapMode.Flat) {
                 ids.Add(MapButtonIDs.HOTTEST_TRENDS);
@@ -913,6 +913,10 @@ namespace MRK.UI {
             else if (Client.MapMode == EGRMapMode.Flat) {
                 Client.FlatCamera.SwitchToGlobe();
             }
+        }
+
+        void OnSpaceFOVClick() {
+            ScreenManager.GetScreen<EGRScreenSpaceFOV>().ShowScreen();
         }
     }
 }
