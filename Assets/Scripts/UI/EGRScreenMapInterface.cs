@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
+using System.Linq;
 
 namespace MRK.UI {
     [Serializable]
@@ -307,6 +308,7 @@ namespace MRK.UI {
             public static int SETTINGS = 2;
             public static int NAVIGATION = 3;
             public static int BACK_TO_EARTH = 4;
+            public static int VIEW = 5;
         }
 
         MRKMap m_Map;
@@ -390,12 +392,13 @@ namespace MRK.UI {
             m_ActiveButtonPositioner = new Positioner(GetTransform(Others.MapActiveTemplate));
 
             //assign mapinfo delegates
-            m_ButtonInfoDelegates = new Action[5] {
+            m_ButtonInfoDelegates = new Action[6] {
                 OnCurrentLocationClick,
                 OnHottestTrendsClick,
                 OnSettingsClick, //settings
                 OnNavigationClick,
-                OnBackToEarthClick
+                OnBackToEarthClick,
+                null
             };
 
             for (int i = 0; i < Mathf.Min(m_ButtonInfoDelegates.Length, m_ButtonInfos.Length); i++) {
@@ -517,6 +520,8 @@ namespace MRK.UI {
                 if (ObservedTransform != Client.GlobalMap.transform) {
                     ids.Add(MapButtonIDs.BACK_TO_EARTH);
                 }
+
+                ids.Add(MapButtonIDs.VIEW);
             }
             else if (mode == EGRMapMode.Flat) {
                 ids.Add(MapButtonIDs.HOTTEST_TRENDS);

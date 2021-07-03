@@ -229,7 +229,7 @@ namespace MRK {
 				tile.OnDestroy();
 
 				//tell the map interface to dispose markers owned by such tiles
-				EventManager.BroadcastEvent<EGREventTileDestroyed>(new EGREventTileDestroyed(tile, m_TileDestroyZoomUpdatedDirty));
+				EventManager.BroadcastEvent(new EGREventTileDestroyed(tile, m_TileDestroyZoomUpdatedDirty));
 				m_Tiles.Remove(tile);
 			}
 
