@@ -255,18 +255,33 @@ namespace MRK.UI {
 
             //TODO: implement a better way to execute section indices delegates
 
-            //WTE override
-            if (s == 0 && idx == 3) {
-                HideScreen(() => {
-                    Manager.GetScreen<EGRScreenWTE>().ShowScreen();
-                }, 0f, true);
-
-                return;
-            }
-
             EGRScreenMapInterface scr = Manager.GetScreen<EGRScreenMapInterface>();
             scr.SetContextText(txt);
             scr.OnInterfaceEarlyShow();
+
+            //WTE override
+            if (s == 0) {
+                switch (idx) {
+
+                    //QUICK LOCATIONS
+                    case 2:
+                        HideScreen(() => {
+                            scr.ShowScreen();
+                            Manager.GetScreen<EGRScreenQuickLocations>().ShowScreen();
+                        }, 0f, true);
+
+                        break;
+                    
+                    //WHAT TO EAT
+                    case 3:
+                        HideScreen(() => {
+                            Manager.GetScreen<EGRScreenWTE>().ShowScreen();
+                        }, 0f, true);
+
+                        break;
+
+                }
+            }
 
             HideScreen(() => {
                 scr.ShowScreen();

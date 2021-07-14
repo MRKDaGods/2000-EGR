@@ -149,13 +149,15 @@ namespace MRK {
             return Vector2d.zero;
         }
 
-            void SwitchToFlatMap() {
+        void SwitchToFlatMap() {
             Client.SetMapMode(EGRMapMode.Flat);
             Client.FlatCamera.SetInitialSetup(GetCurrentGeoPos(), 3f);
 
-            if (!PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 0).ToBool()) {
-                PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, 1);
-                PlayerPrefs.Save();
+            m_Camera.fieldOfView = 65f; //default fov
+
+            if (!MRKPlayerPrefs.Get<bool>(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, false)) {
+                MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_RUNS_FLAT_MAP, true);
+                MRKPlayerPrefs.Save();
 
                 EGRScreenManager.Instance.GetScreen<EGRScreenMapChooser>().ShowScreen();
             }
@@ -433,6 +435,8 @@ namespace MRK {
 
                 for (int i = 0; i < m_Down.Length; i++)
                     m_Down[i] = false;
+
+                TargetFOV = EGRScreenSpaceFOV.GetFOV(EGRSettings.SpaceFOV);
             }
             else {
                 m_BackupRotation = m_TargetRotation;

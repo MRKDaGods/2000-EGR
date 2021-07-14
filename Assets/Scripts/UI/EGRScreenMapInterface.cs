@@ -10,6 +10,7 @@ using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
 using System.Linq;
+using MRK.GeoJson;
 
 namespace MRK.UI {
     [Serializable]
@@ -737,25 +738,43 @@ namespace MRK.UI {
             ScreenManager.GetScreen<EGRPopupPlaceGroup>().Warmup();
         }
 
+        EGRGeoJson? m_GeoJson;
+
         void OnGUI() {
-            /* if (PlaceMarkers.ActiveMarkers != null && PlaceMarkers.ActiveMarkers.Count > 0) {
-                foreach (EGRPlaceMarker marker in PlaceMarkers.ActiveMarkers) {
-                    if (!marker.IsOverlapMaster)
-                        continue;
+            //render geojson borders
+            /*if (Client.MapMode != EGRMapMode.Flat)
+                return;
 
-                    if (marker.Overlappers == null) {
-                        Debug.Log("shouldnt happen");
-                        continue;
+            if (!m_GeoJson.HasValue) {
+                m_GeoJson = Newtonsoft.Json.JsonConvert.DeserializeObject<EGRGeoJson>(Resources.Load<TextAsset>("Map/countries").text);
+            }
+
+            int drawCount = 0;
+
+            foreach (EGRGeoJsonFeature feature in m_GeoJson.Value.Features) {
+                if (feature.Geometry == null || feature.Geometry.Polygons.Count == 0)
+                    continue;
+
+                foreach (List<Vector2d> poly in feature.Geometry.Polygons) {
+                    Vector2? lastPos = null;
+
+                    foreach (Vector2d geoPoint in poly) {
+                        //calculate current spos
+                        Vector3 wPos = m_Map.GeoToWorldPosition(geoPoint);
+                        Vector2 sPos = Client.ActiveCamera.WorldToScreenPoint(wPos);
+                        sPos.y = Screen.height - sPos.y;
+
+                        if (lastPos.HasValue) {
+                            EGRGL.DrawLine(lastPos.Value, sPos, Color.blue, 1.2f);
+                            drawCount++;
+                        }
+
+                        lastPos = sPos;
                     }
-
-                    foreach (EGRPlaceMarker overlapper in marker.Overlappers) {
-                        EGRGL.DrawLine(marker.ScreenPoint, overlapper.ScreenPoint, Color.blue, 1.4f);
-                    }
-
-                    Vector2 center = Client.PlaceManager.GetOverlapCenter(marker);
-                    EGRGL.DrawCircle(center, 20f, Color.blue);
                 }
-            } */
+            }
+
+            Debug.Log($"DC={drawCount}");*/
         }
 
         public float EvaluateMarkerScale(float time) {

@@ -56,6 +56,58 @@ namespace MRK {
         }
     }
 
+    public class LonLatMultiArrayToVector2dMultiListConverter : CustomCreationConverter<List<List<Vector2d>>> {
+        public override bool CanWrite => false;
+
+        public override List<List<Vector2d>> Create(Type objectType) {
+            throw new NotImplementedException();
+        }
+
+        List<Vector2d> ParsePolygon(JArray arr, JArray proot = null, JArray root = null) {
+            List<Vector2d> v = new List<Vector2d>();
+
+            bool useParent = false;
+            for (int i = 0; i < arr.Count; i++) {
+                try {
+                    JArray val = (JArray)arr[i];
+                    v.Add(new Vector2d((double)val[1], (double)val[0]));
+                }
+                catch {
+                    //invalid cast, weird case?
+                    useParent = true;
+                    break;
+                }
+            }
+
+            if (useParent) {
+                for (int i = 0; i < proot.Count; i++) {
+                    JArray val = (JArray)proot[i];
+                    v.Add(new Vector2d((double)val[1], (double)val[0]));
+                }
+            }
+
+            return v;
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+            List<List<Vector2d>> polygons = new List<List<Vector2d>>();
+
+            JArray root = JArray.Load(reader);
+            if (root.Count == 1) {
+                //normal polygon
+                polygons.Add(ParsePolygon((JArray)root[0]));
+                return polygons;
+            }
+
+            for (int i = 0; i < root.Count; i++) {
+                JArray polyRoot = (JArray)root[i];
+                polygons.Add(ParsePolygon((JArray)polyRoot[0], polyRoot, root));
+            }
+
+            return polygons;
+        }
+    }
+
     public class PolylineToVector2dListConverter : CustomCreationConverter<List<Vector2d>> {
 		public override bool CanWrite => true;
 

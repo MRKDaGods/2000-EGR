@@ -28,6 +28,7 @@ namespace MRK {
                 if (!ms_Dirty) {
                     build++;
                     PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_BUILD, build);
+                    PlayerPrefs.Save();
                     ms_Dirty = true;
                 }
 

@@ -20,6 +20,50 @@ namespace MRK.UI {
             public float ScaleOffset;
         }
 
+        class ContextArea {
+            EGRUIFancyScrollView m_ContextualScrollView;
+            TextMeshProUGUI m_ContextualText;
+            Image m_ContextualBg;
+
+            public EGRUIFancyScrollView ContextualScrollView => m_ContextualScrollView;
+
+            public ContextArea(Transform screenspaceTrans) {
+                m_ContextualScrollView = screenspaceTrans.Find("ContextualButtons").GetComponent<EGRUIFancyScrollView>();
+                m_ContextualText = screenspaceTrans.Find("ContextualText").GetComponent<TextMeshProUGUI>();
+                m_ContextualBg = screenspaceTrans.Find("ContextualBG").GetComponent<Image>();
+            }
+
+            public void SetActive(bool active) {
+                m_ContextualScrollView.gameObject.SetActive(active);
+                m_ContextualText.gameObject.SetActive(active);
+                m_ContextualBg.gameObject.SetActive(active);
+
+                if (active) {
+                    m_ContextualBg.DOColor(Color.white, 0.5f)
+                        .ChangeStartValue(Color.white.AlterAlpha(0f))
+                        .SetEase(Ease.OutSine);
+                }
+            }
+        }
+
+        class Indicator {
+            Graphic[] m_Gfx;
+
+            public float LastAlpha { get; private set; }
+
+            public Indicator(Transform trans) {
+                m_Gfx = trans.GetComponentsInChildren<Graphic>(true);
+            }
+
+            public void SetAlpha(float alpha) {
+                LastAlpha = alpha;
+
+                foreach (Graphic gfx in m_Gfx) {
+                    gfx.color = gfx.color.AlterAlpha(alpha);
+                }
+            }
+        }
+
         [SerializeField]
         GameObject m_ScreenSpaceWTE;
         Image m_LinePrefab;
@@ -40,7 +84,10 @@ namespace MRK.UI {
         TextMeshProUGUI m_ContextualText;
         RectTransform m_ContextualButtonsMaskTransform;
         RectTransform m_ContextualButtonsLayoutTransform;
-        EGRUIFancyScrollView m_ContextualScrollView;
+        ContextArea m_ContextArea;
+        bool m_Down;
+        Vector2 m_DownPos;
+        Indicator m_BackIndicator;
 
         public EGRScreenWTE() {
             m_Strips = new List<Strip>();
@@ -90,9 +137,9 @@ namespace MRK.UI {
             m_Canvas = Manager.GetScreenSpaceLayer();
 
             RectTransform canvasTransform = (RectTransform)m_Canvas.transform;
-            Debug.Log(canvasTransform.rect.width + " | " + m_LinePrefab.rectTransform.rect.width);
+            //Debug.Log(canvasTransform.rect.width + " | " + m_LinePrefab.rectTransform.rect.width);
             int hStripCount = Mathf.CeilToInt(canvasTransform.rect.width / m_LinePrefab.rectTransform.rect.width);
-            Debug.Log($"Strips={hStripCount}");
+            //Debug.Log($"Strips={hStripCount}");
 
             m_LinePrefab.rectTransform.sizeDelta = new Vector2(m_LinePrefab.rectTransform.sizeDelta.x, canvasTransform.rect.height);
 
@@ -133,15 +180,27 @@ namespace MRK.UI {
             m_ContextualTextMaskTransform = (RectTransform)GetTransform("Overlay/ContextualText");
             m_ContextualText = m_ContextualTextMaskTransform.GetComponentInChildren<TextMeshProUGUI>();
 
-            m_ContextualScrollView = GetElement<EGRUIFancyScrollView>("Overlay/ContextualButtons");
+            //m_ContextualScrollView = m_ScreenSpaceWTE.transform.Find("ContextualButtons").GetComponent<EGRUIFancyScrollView>(); //GetElement<EGRUIFancyScrollView>("Overlay/ContextualButtons");
 
             //m_ContextualButtonsMaskTransform = (RectTransform)GetTransform("Overlay/ContextualButtons");
             //m_ContextualButtonsLayoutTransform = (RectTransform)m_ContextualButtonsMaskTransform.Find("Layout");
+
+            m_ContextArea = new ContextArea(m_ScreenSpaceWTE.transform);
+
+            m_BackIndicator = new Indicator(GetTransform("Overlay/Indicator"));
         }
 
         protected override void OnScreenShow() {
             m_ScreenSpaceWTE.SetActive(true);
+            m_WTEText.gameObject.SetActive(true);
             Client.ActiveEGRCamera.SetInterfaceState(true);
+
+            m_ContextArea.SetActive(false);
+            m_BackIndicator.SetAlpha(0f);
+
+            foreach (Strip s in m_Strips) {
+                s.Image.gameObject.SetActive(true);
+            }
 
             //set initial lens distortion values
             m_LensDistortion.intensity.value = 0f;
@@ -156,6 +215,17 @@ namespace MRK.UI {
             StartInitialTransition();
 
             Client.Runnable.RunLater(StartWTETransition, 1.2f);
+
+            Client.RegisterControllerReceiver(OnControllerMessageReceived);
+
+            //initials
+            m_StripFade.Reset();
+            m_StripFade.SetColors(Color.white.AlterAlpha(0f), Color.white, 1f);
+            m_TransitionFade.Reset();
+            m_TransitionFade.SetColors(Color.clear, Color.white, 0.8f);
+
+            m_Time = 0f;
+            m_AnimFSM.ResetMachine();
         }
 
         protected override void OnScreenShowAnim() {
@@ -176,6 +246,8 @@ namespace MRK.UI {
         protected override void OnScreenHide() {
             m_ScreenSpaceWTE.SetActive(false);
             Client.ActiveEGRCamera.SetInterfaceState(false);
+
+            Client.UnregisterControllerReceiver(OnControllerMessageReceived);
         }
 
         protected override void OnScreenUpdate() {
@@ -188,6 +260,9 @@ namespace MRK.UI {
             }
 
             foreach (Strip strip in m_Strips) {
+                if (!strip.Image.gameObject.activeInHierarchy)
+                    break;
+
                 if (stripFadeUpdated) {
                     strip.Image.material.color = m_StripFade.Current;
                 }
@@ -251,7 +326,17 @@ namespace MRK.UI {
         }
 
         void OnWTETransitionEnd() {
+            m_ShouldUpdateAnimFSM = false;
+
             m_OverlayWTE.SetActive(true);
+            //m_ContextualScrollView.gameObject.SetActive(true);
+            m_WTEText.gameObject.SetActive(false);
+
+            m_ContextArea.SetActive(true);
+
+            foreach (Strip s in m_Strips) {
+                s.Image.gameObject.SetActive(false);
+            }
 
             foreach (Graphic gfx in m_OverlayWTE.GetComponentsInChildren<Graphic>()) {
                 gfx.DOFade(gfx.color.a, 0.5f)
@@ -263,15 +348,65 @@ namespace MRK.UI {
                 .ChangeStartValue(new Vector2(0f, m_WTELogoMaskTransform.sizeDelta.y))
                 .SetEase(Ease.OutSine);
 
-            AnimateStretchableTransform(m_ContextualText.rectTransform, m_ContextualTextMaskTransform);
+            //AnimateStretchableTransform(m_ContextualText.rectTransform, m_ContextualTextMaskTransform);
             //AnimateStretchableTransform(m_ContextualButtonsLayoutTransform, m_ContextualButtonsMaskTransform);
 
-            var items = Enumerable.Range(0, 10)
+            var items = Enumerable.Range(1, 20)
                 .Select(i => new EGRUIFancyScrollViewItemData($"{i}"))
                 .ToArray();
 
-            m_ContextualScrollView.UpdateData(items);
-            m_ContextualScrollView.SelectCell(0);
+            m_ContextArea.ContextualScrollView.UpdateData(items);
+            m_ContextArea.ContextualScrollView.SelectCell(0);
+        }
+
+        void OnControllerMessageReceived(EGRControllerMessage msg) {
+            if (m_ShouldUpdateAnimFSM)
+                return;
+
+            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
+                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
+
+                switch (kind) {
+
+                    case EGRControllerMouseEventKind.Down:
+                        m_Down = true;
+                        m_DownPos = (Vector3)msg.Payload[msg.ObjectIndex]; //down pos
+
+                        msg.Payload[2] = true;
+
+                        break;
+
+                    case EGRControllerMouseEventKind.Drag:
+                        if (m_Down) {
+                            float curY = ((Vector3)msg.Payload[msg.ObjectIndex]).y;
+                            float diff = curY - m_DownPos.y;
+
+                            float percyPop = -diff / Screen.width / 0.2f;
+                            if (percyPop > 0.3f) { //30% threshold
+                                m_BackIndicator.SetAlpha(Mathf.Clamp01(percyPop - 0.3f)); //remove the 30% threshold
+                            }
+                        }
+
+                        break;
+
+                    case EGRControllerMouseEventKind.Up:
+                        if (m_Down) {
+                            m_Down = false;
+
+                            if (m_BackIndicator.LastAlpha > 0.7f) {
+                                HideScreen(() => {
+                                    Manager.MapInterface.ForceHideScreen(true);
+                                    Manager.MainScreen.ShowScreen();
+                                });
+                            }
+
+                            DOTween.To(() => m_BackIndicator.LastAlpha, x => m_BackIndicator.SetAlpha(x), 0f, 0.3f);
+                        }
+
+                        break;
+
+                }
+            }
         }
     }
 }

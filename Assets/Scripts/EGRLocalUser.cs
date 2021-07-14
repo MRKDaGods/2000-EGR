@@ -37,7 +37,8 @@ namespace MRK {
         public static void Initialize(EGRProxyUser? user) {
             if (user.HasValue) {
                 Instance = new EGRLocalUser(user.Value);
-                PlayerPrefs.SetString(EGRConstants.EGR_LOCALPREFS_LOCALUSER, JsonUtility.ToJson(user.Value));
+                MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_LOCALUSER, JsonUtility.ToJson(user.Value));
+                MRKPlayerPrefs.Save();
             }
             else
                 Instance = null;

@@ -26,6 +26,9 @@ TextureImporter:
   - first:
       213: -6563273260574890188
     second: UIAtlas2_7
+  - first:
+      213: 738820554434419623
+    second: UIAtlas2_8
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -290,6 +293,27 @@ TextureImporter:
       bones: []
       spriteID: 4372d934eb19ae4a0800000000000000
       internalID: -6563273260574890188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas2_8
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 927
+        width: 256
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 30, y: 245, z: 30, w: 247}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ab12db3161d04a00800000000000000
+      internalID: 738820554434419623
       vertices: []
       indices: 
       edges: []

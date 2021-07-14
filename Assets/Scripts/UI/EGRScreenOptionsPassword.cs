@@ -48,7 +48,7 @@ namespace MRK.UI {
         }
 
         void OnSaveClick() {
-            if (EGRMain.CalculateHash(m_CurrentPassword.text) != EGRLocalUser.PasswordHash) {
+            if (MRKCryptography.Hash(m_CurrentPassword.text) != EGRLocalUser.PasswordHash) {
                 MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.INCORRECT_PASSWORD), null, this);
                 return;
             }
@@ -83,7 +83,7 @@ namespace MRK.UI {
                     return;
                 }
 
-                EGRLocalUser.PasswordHash = EGRMain.CalculateHash(m_PassBuf);
+                EGRLocalUser.PasswordHash = MRKCryptography.Hash(m_PassBuf);
 
                 MessageBox.ShowPopup(Localize(EGRLanguageData.ACCOUNT_INFO), Localize(EGRLanguageData.SAVED), (x, y) => {
                     m_Save.interactable = false;

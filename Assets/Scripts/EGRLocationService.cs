@@ -125,12 +125,13 @@ namespace MRK {
 
         void OnPermissionDeniedAndDontAskAgain(string perm) {
             m_PermissionDenied = true;
-            PlayerPrefs.SetInt($"EGR_PERM_{perm}", 1);
+            MRKPlayerPrefs.Set<bool>($"EGR_PERM_{perm}", true);
+            MRKPlayerPrefs.Save();
             m_PermissionAwaiter.Increment();
         }
 
         bool IsPermissionRestricted(string perm) {
-            return PlayerPrefs.GetInt($"EGR_PERM_{perm}", 0) == 1;
+            return MRKPlayerPrefs.Get<bool>($"EGR_PERM_{perm}", false);
         }
 
         IEnumerator Initialize(Action callback, bool silent) {

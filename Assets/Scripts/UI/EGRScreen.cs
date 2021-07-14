@@ -420,9 +420,9 @@ namespace MRK.UI {
         /// <summary>
         /// Forcefully hides a screen
         /// </summary>
-        public void ForceHideScreen() {
+        public void ForceHideScreen(bool ignoreVis = false) {
             //skip if screen is already hidden 
-            if (!m_Visible)
+            if (!m_Visible && !ignoreVis)
                 return;
 
             //mark as hidden

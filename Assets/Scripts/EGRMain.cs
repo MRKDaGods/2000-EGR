@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using MRK.GeoJson;
 
 namespace MRK {
     /// <summary>
@@ -69,11 +70,6 @@ namespace MRK {
             /// </summary>
             public Vector3 EulerRotation;
         }
-
-        /// <summary>
-        /// Gets suffixed to any raw input before getting hashed
-        /// </summary>
-        const string HASH_SALT = "LrtLpJL4DeGxG5Atjza46OHEiyasOOXtbROGiSbP";
 
         /// <summary>
         /// Logging interfaces available, for example: Android Logger, Unity Editor Logger, etc
@@ -345,6 +341,9 @@ namespace MRK {
 
             //we will only simulate physics manually to save performance
             Physics.autoSimulation = false;
+
+            MRKCryptography.CookSalt();
+            MRKPlayerPrefs.Init();
 
             //add UnityLogger to our list of available loggers
             m_Loggers.Add(new UnityLogger());
@@ -797,25 +796,6 @@ namespace MRK {
         }
 
         /// <summary>
-        /// Calculates a salted hash from an input
-        /// </summary>
-        /// <param name="input">Input string</param>
-        /// <returns></returns>
-        public static string CalculateHash(string input) {
-            using (MD5 md5 = MD5.Create()) {
-                //apply salt
-                byte[] inputBytes = Encoding.ASCII.GetBytes(input + HASH_SALT);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++)
-                    sb.Append(hashBytes[i].ToString("X2"));
-
-                return sb.ToString();
-            }
-        }
-
-        /// <summary>
         /// Gets called when a screen is shown
         /// </summary>
         /// <param name="evt"></param>
@@ -935,6 +915,7 @@ namespace MRK {
             //position and rotate it to match ActiveCamera
             m_ExCamera.transform.position = ActiveCamera.transform.position;
             m_ExCamera.transform.rotation = ActiveCamera.transform.rotation;
+            m_ExCamera.fieldOfView = ActiveCamera.fieldOfView;
             //on-demand render
             m_ExCamera.Render();
 
@@ -963,8 +944,9 @@ namespace MRK {
             m_ActiveScreens.Clear();
 
             //clear saved account preferences
-            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_REMEMBERME, 0);
-            PlayerPrefs.SetString(EGRConstants.EGR_LOCALPREFS_PASSWORD, "");
+            MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, false);
+            MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_PASSWORD, "");
+            MRKPlayerPrefs.Save();
 
             //show login screen
             ScreenManager.GetScreen<EGRScreenLogin>().ShowScreen();
@@ -985,7 +967,7 @@ namespace MRK {
         /// <param name="callback">Response callback</param>
         public bool NetRegisterAccount(string name, string email, string password, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
             //make sure we hash the password
-            return Network.SendPacket(new PacketOutRegisterAccount(name, email, CalculateHash(password)), DeliveryMethod.ReliableOrdered, callback);
+            return Network.SendPacket(new PacketOutRegisterAccount(name, email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>
@@ -997,7 +979,7 @@ namespace MRK {
         /// <returns></returns>
         public bool NetLoginAccount(string email, string password, EGRPacketReceivedCallback<PacketInLoginAccount> callback) {
             //hash the password again
-            return Network.SendPacket(new PacketOutLoginAccount(email, CalculateHash(password)), DeliveryMethod.ReliableOrdered, callback);
+            return Network.SendPacket(new PacketOutLoginAccount(email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>
@@ -1133,6 +1115,9 @@ namespace MRK {
         /// </summary>
         void OnApplicationQuit() {
             IsRunning = false;
+
+            //save unsaved changes
+            MRKPlayerPrefs.Save();
         }
 
         /// <summary>

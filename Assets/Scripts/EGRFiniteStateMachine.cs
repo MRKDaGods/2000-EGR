@@ -8,8 +8,7 @@ namespace MRK {
 
         public EGRFiniteStateMachine(Tuple<Func<bool>, Action, Action>[] states) {
             m_States = states;
-            m_CurrentState = 0;
-            m_Dirty = true;
+            ResetMachine();
         }
 
         public void UpdateFSM() {
@@ -28,6 +27,11 @@ namespace MRK {
             }
 
             m_States[m_CurrentState].Item2();
+        }
+
+        public void ResetMachine() {
+            m_CurrentState = 0;
+            m_Dirty = true;
         }
     }
 }

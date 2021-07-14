@@ -40,10 +40,10 @@ namespace MRK.UI {
             GetElement<Image>(Images.Bg).gameObject.SetActive(false);
             Client.SetMapMode(EGRMapMode.General);
 
-            m_RememberMe.isOn = PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_REMEMBERME, 0) == 1 ? true : false;
+            m_RememberMe.isOn = MRKPlayerPrefs.Get<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, false);
             if (m_RememberMe.isOn) {
-                m_Email.text = PlayerPrefs.GetString(EGRConstants.EGR_LOCALPREFS_USERNAME, "");
-                m_Password.text = PlayerPrefs.GetString(EGRConstants.EGR_LOCALPREFS_PASSWORD, "");
+                m_Email.text = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_USERNAME, "");
+                m_Password.text = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_PASSWORD, "");
 
                 //login with token instead uh?
                 LoginWithToken();
@@ -146,11 +146,13 @@ namespace MRK.UI {
             MessageBox.ShowButton(false);
             MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN___), null, this);
 
-            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn ? 1 : 0);
+            MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn);
             if (m_RememberMe.isOn) {
-                PlayerPrefs.SetString(EGRConstants.EGR_LOCALPREFS_USERNAME, m_Email.text);
-                PlayerPrefs.SetString(EGRConstants.EGR_LOCALPREFS_PASSWORD, m_Password.text);
+                MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_USERNAME, m_Email.text);
+                MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_PASSWORD, m_Password.text);
             }
+
+            MRKPlayerPrefs.Save();
         }
 
         void LoginWithToken() {
@@ -160,7 +162,7 @@ namespace MRK.UI {
                 mxv token.Length m1
                 mxcmp
             */
-            string token = PlayerPrefs.GetString(EGRConstants.EGR_LOCALPREFS_TOKEN, "");
+            string token = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_TOKEN, "");
 
             string shellcode = "mxr 2 \n" +
                                "mxv 200 m0 \n" +
@@ -181,7 +183,7 @@ namespace MRK.UI {
 
             if (!Client.NetLoginAccountToken(token, OnNetLogin)) {
                 //find local one?
-                EGRProxyUser user = JsonUtility.FromJson<EGRProxyUser>(PlayerPrefs.GetString(EGRConstants.EGR_LOCALPREFS_LOCALUSER));
+                EGRProxyUser user = JsonUtility.FromJson<EGRProxyUser>(MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_LOCALUSER, ""));
                 if (user.Token != token) {
                     MessageBox.HideScreen();
                     MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_NOTCONNECTED), null, this);
@@ -200,7 +202,7 @@ namespace MRK.UI {
             MessageBox.ShowButton(false);
             MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN_OFFLINE___), null, this);
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.5f);
             OnNetLogin(new PacketInLoginAccount(user));
         }
 
@@ -218,7 +220,8 @@ namespace MRK.UI {
                 Debug.Log(EGRLocalUser.Instance.ToString());
 
                 if (m_RememberMe.isOn) {
-                    PlayerPrefs.SetString(EGRConstants.EGR_LOCALPREFS_TOKEN, response.ProxyUser.Token);
+                    MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_TOKEN, response.ProxyUser.Token);
+                    MRKPlayerPrefs.Save();
                 }
 
                 HideScreen(() => {
@@ -256,7 +259,8 @@ namespace MRK.UI {
             MessageBox.ShowButton(false);
             MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN___), null, this);
 
-            PlayerPrefs.SetInt(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn ? 1 : 0);
+            MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn);
+            MRKPlayerPrefs.Save();
         }
     }
 }

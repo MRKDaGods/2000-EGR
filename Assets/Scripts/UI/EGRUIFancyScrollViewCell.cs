@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.Extensions;
+using DG.Tweening;
 
 namespace MRK.UI {
     class EGRUIFancyScrollViewCell : FancyCell<EGRUIFancyScrollViewItemData, EGRUIFancyScrollViewContext> {
@@ -35,9 +36,11 @@ namespace MRK.UI {
             m_Text.text = itemData.Message;
 
             var selected = Context.SelectedIndex == Index;
-            m_Background.color = selected
-                ? new Color32(255, 0, 0, 100)
-                : new Color32(0, 0, 0, 77);
+
+            m_Background.DOColor(selected ? Color.white : Color.black.AlterAlpha(0.5f), 0.3f)
+                .SetEase(Ease.OutSine);
+
+            //m_Background.color = selected ? Color.white : Color.black.AlterAlpha(0.5f);
         }
 
         public override void UpdatePosition(float position) {

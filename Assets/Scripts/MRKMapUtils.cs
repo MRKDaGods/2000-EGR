@@ -104,5 +104,26 @@ namespace MRK {
 			var p = MetersToPixels(m, zoom);
 			return PixelsToTile(p);
 		}
+
+		public static Vector3 GeoToWorldGlobePosition(double lat, double lon, float radius) {
+			double xPos = (radius) * Math.Cos(Mathf.Deg2Rad * lat) * Math.Cos(Mathf.Deg2Rad * lon);
+			double zPos = (radius) * Math.Cos(Mathf.Deg2Rad * lat) * Math.Sin(Mathf.Deg2Rad * lon);
+			double yPos = (radius) * Math.Sin(Mathf.Deg2Rad * lat);
+
+			return new Vector3((float)xPos, (float)yPos, (float)zPos);
+
+			/*float rad = Mathf.Deg2Rad * angle;
+			Matrix4x4 matrix = new Matrix4x4 {
+				m00 = Mathf.Cos(rad), m01 = 0, m02 = Mathf.Sin(rad), m03 = 0f,
+
+				m10 = 0, m11 = 1f, m12 = 0f, m13 = 0f,
+
+				m20 = -Mathf.Sin(rad), m21 = 0f, m22 = Mathf.Cos(rad), m23 = 0f,
+
+				m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f
+			}; */
+
+			//return matrix.MultiplyPoint3x4(new Vector3((float)xPos, (float)yPos, (float)zPos));
+		}
 	}
 }
