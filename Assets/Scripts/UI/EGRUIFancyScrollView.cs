@@ -11,14 +11,21 @@ namespace MRK.UI {
     public class EGRUIFancyScrollViewContext {
         public int SelectedIndex = -1;
         public Action<int> OnCellClicked;
+        public EGRUIFancyScrollView Scroll;
     }
 
+    [Serializable]
     public class EGRUIFancyScrollViewItemData {
-        public string Message { get; private set; }
+        public string Text;
 
         public EGRUIFancyScrollViewItemData(string message) {
-            Message = message;
+            Text = message;
         }
+    }
+
+    public enum EGRUIFancyScrollViewDirection {
+        Horizontal,
+        Vertical
     }
 
     public class EGRUIFancyScrollView : FancyScrollView<EGRUIFancyScrollViewItemData, EGRUIFancyScrollViewContext> {
@@ -27,12 +34,18 @@ namespace MRK.UI {
         [SerializeField]
         GameObject m_CellPrefab;
         Action<int> m_OnSelectionChanged;
+        [SerializeField]
+        EGRUIFancyScrollViewDirection m_Direction;
+
+        public event Action<int> OnDoubleSelection;
 
         protected override GameObject CellPrefab => m_CellPrefab;
+        public EGRUIFancyScrollViewDirection Direction => m_Direction;
 
         protected override void Initialize() {
             base.Initialize();
 
+            Context.Scroll = this;
             Context.OnCellClicked = SelectCell;
 
             m_Scroller.OnValueChanged(UpdatePosition);
@@ -70,6 +83,10 @@ namespace MRK.UI {
         public void SelectCell(int index) {
             if (index < 0 || index >= ItemsSource.Count || index == Context.SelectedIndex) {
                 return;
+            }
+
+            if (Context.SelectedIndex == index) {
+
             }
 
             UpdateSelection(index);

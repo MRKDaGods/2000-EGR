@@ -1,16 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MRK;
-using System;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Rendering.PostProcessing;
+﻿using Coffee.UIEffects;
 using DG.Tweening;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.UI;
+using UnityEngine.UI.Extensions;
 using Random = UnityEngine.Random;
-using Coffee.UIEffects;
 
 namespace MRK.UI {
     public class EGRScreenWTE : EGRScreen {
@@ -20,22 +18,107 @@ namespace MRK.UI {
             public float ScaleOffset;
         }
 
-        class ContextArea {
-            EGRUIFancyScrollView m_ContextualScrollView;
-            TextMeshProUGUI m_ContextualText;
-            Image m_ContextualBg;
+        [Serializable]
+        struct ContextGradient {
+            public Color First;
+            public Color Second;
 
-            public EGRUIFancyScrollView ContextualScrollView => m_ContextualScrollView;
+            public Color Third;
+            public Color Fourth;
+            public float Offset;
+
+            public Color Fifth;
+            public Color Sixth;
+            public UIGradient.Direction Direction;
+        }
+
+        [Serializable]
+        struct ContextOptions {
+            public string[] Options;
+        }
+
+        class ContextArea {
+            EGRUIFancyScrollView[] m_ContextualScrollView;
+            TextMeshProUGUI[] m_ContextualText;
+            Image m_ContextualBg;
+            UIGradient m_ContextualBgGradient;
+            ScrollSnap m_ScrollSnap;
+            int m_LastPage;
+
+            public EGRUIFancyScrollView[] ContextualScrollView => m_ContextualScrollView;
+            public int Page => m_LastPage;
 
             public ContextArea(Transform screenspaceTrans) {
-                m_ContextualScrollView = screenspaceTrans.Find("ContextualButtons").GetComponent<EGRUIFancyScrollView>();
-                m_ContextualText = screenspaceTrans.Find("ContextualText").GetComponent<TextMeshProUGUI>();
+                m_ScrollSnap = screenspaceTrans.Find("SSVM").GetComponent<ScrollSnap>();
+                m_ScrollSnap.onPageChange += OnPageChanged;
+
+                Transform list = m_ScrollSnap.transform.Find("List");
+                m_ContextualScrollView = new EGRUIFancyScrollView[list.childCount];
+                m_ContextualText = new TextMeshProUGUI[list.childCount];
+
+                for (int i = 0; i < list.childCount; i++) {
+                    Transform owner = list.Find($"{i + 1}"); //1 - 2 - 3
+                    m_ContextualText[i] = owner.Find("ContextualText").GetComponent<TextMeshProUGUI>();
+                    m_ContextualScrollView[i] = owner.Find("ContextualButtons")?.GetComponent<EGRUIFancyScrollView>();
+                }
+
                 m_ContextualBg = screenspaceTrans.Find("ContextualBG").GetComponent<Image>();
+                m_ContextualBgGradient = m_ContextualBg.GetComponent<UIGradient>();
+
+                m_LastPage = -1;
+                m_ScrollSnap.ChangePage(0);
+                OnPageChanged(0);
+            }
+
+            public void SetupCellGradients() {
+                //cells must've been init before doing this
+
+                //setup cell gradients
+                for (int i = 0; i < m_ContextualScrollView.Length; i++) {
+                    UIGradient[] grads = m_ContextualScrollView[i]?.GetComponentsInChildren<UIGradient>();
+                    if (grads == null)
+                        continue;
+
+                    ContextGradient grad = ms_Instance.m_ContextGradients[i];
+
+                    foreach (UIGradient gradient in grads) {
+                        gradient.color1 = grad.Third;
+                        gradient.color2 = grad.Fourth;
+                        gradient.color3 = grad.Fifth;
+                        gradient.color4 = grad.Sixth;
+                        gradient.offset = grad.Offset;
+                        gradient.direction = grad.Direction;
+                    }
+                }
+            }
+
+            void OnPageChanged(int page) {
+                if (m_LastPage == page)
+                    return;
+
+                ContextGradient curGradient = ms_Instance.m_ContextGradients[page];
+                DOTween.To(() => m_ContextualBgGradient.color1, x => m_ContextualBgGradient.color1 = x, curGradient.First, 0.5f).SetEase(Ease.OutSine);
+                DOTween.To(() => m_ContextualBgGradient.color2, x => m_ContextualBgGradient.color2 = x, curGradient.Second, 0.5f).SetEase(Ease.OutSine);
+
+                //last page, hide WTE logo
+                if (page == 2) {
+                    ms_Instance.m_WTELogoMaskTransform.DOSizeDelta(new Vector2(0f, ms_Instance.m_WTELogoSizeDelta.Value.y), 0.5f)
+                        .SetEase(Ease.OutSine);
+                }
+                else if (m_LastPage == 2) {
+                    ms_Instance.m_WTELogoMaskTransform.DOSizeDelta(ms_Instance.m_WTELogoSizeDelta.Value, 0.5f)
+                        .SetEase(Ease.OutSine);
+                }
+
+                m_LastPage = page;
             }
 
             public void SetActive(bool active) {
-                m_ContextualScrollView.gameObject.SetActive(active);
-                m_ContextualText.gameObject.SetActive(active);
+                for (int i = 0; i < m_ContextualScrollView.Length; i++) {
+                    m_ContextualScrollView[i]?.gameObject.SetActive(active);
+                    m_ContextualText[i].gameObject.SetActive(active);
+                }
+
                 m_ContextualBg.gameObject.SetActive(active);
 
                 if (active) {
@@ -88,6 +171,13 @@ namespace MRK.UI {
         bool m_Down;
         Vector2 m_DownPos;
         Indicator m_BackIndicator;
+        [SerializeField]
+        ContextGradient[] m_ContextGradients;
+        [SerializeField]
+        ContextOptions[] m_ContextOptions;
+        Vector2? m_WTELogoSizeDelta;
+
+        static EGRScreenWTE ms_Instance { get; set; }
 
         public EGRScreenWTE() {
             m_Strips = new List<Strip>();
@@ -129,12 +219,14 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenInit() {
+            ms_Instance = this;
+
             m_ScreenSpaceWTE.SetActive(false);
 
             m_LinePrefab = m_ScreenSpaceWTE.transform.Find("LinePrefab").GetComponent<Image>();
             m_LinePrefab.gameObject.SetActive(false);
 
-            m_Canvas = Manager.GetScreenSpaceLayer();
+            m_Canvas = Manager.GetScreenSpaceLayer(1);
 
             RectTransform canvasTransform = (RectTransform)m_Canvas.transform;
             //Debug.Log(canvasTransform.rect.width + " | " + m_LinePrefab.rectTransform.rect.width);
@@ -146,6 +238,7 @@ namespace MRK.UI {
             for (int i = 0; i < hStripCount; i++) {
                 Image strip = Instantiate(m_LinePrefab, m_LinePrefab.transform.parent);
                 strip.rectTransform.anchoredPosition = strip.rectTransform.rect.size * new Vector2(i + 0.5f, -0.5f);
+
                 Material stripMat = Instantiate(strip.material);
                 stripMat.color = Color.white.AlterAlpha(0f);
 
@@ -344,23 +437,34 @@ namespace MRK.UI {
                     .SetEase(Ease.OutSine);
             }
 
-            m_WTELogoMaskTransform.DOSizeDelta(m_WTELogoMaskTransform.sizeDelta, 0.5f)
-                .ChangeStartValue(new Vector2(0f, m_WTELogoMaskTransform.sizeDelta.y))
+            if (!m_WTELogoSizeDelta.HasValue) {
+                m_WTELogoSizeDelta = m_WTELogoMaskTransform.sizeDelta;
+            }
+
+            m_WTELogoMaskTransform.DOSizeDelta(m_WTELogoSizeDelta.Value, 0.5f)
+                .ChangeStartValue(new Vector2(0f, m_WTELogoSizeDelta.Value.y))
                 .SetEase(Ease.OutSine);
 
             //AnimateStretchableTransform(m_ContextualText.rectTransform, m_ContextualTextMaskTransform);
             //AnimateStretchableTransform(m_ContextualButtonsLayoutTransform, m_ContextualButtonsMaskTransform);
 
-            var items = Enumerable.Range(1, 20)
-                .Select(i => new EGRUIFancyScrollViewItemData($"{i}"))
-                .ToArray();
+            int idx = 0;
+            foreach (EGRUIFancyScrollView view in m_ContextArea.ContextualScrollView) {
+                if (view == null) {
+                    idx++;
+                    continue;
+                }
 
-            m_ContextArea.ContextualScrollView.UpdateData(items);
-            m_ContextArea.ContextualScrollView.SelectCell(0);
+                view.UpdateData(m_ContextOptions[idx++].Options
+                    .Select(x => new EGRUIFancyScrollViewItemData(x)).ToList());
+                view.SelectCell(0);
+            }
+
+            m_ContextArea.SetupCellGradients();
         }
 
         void OnControllerMessageReceived(EGRControllerMessage msg) {
-            if (m_ShouldUpdateAnimFSM)
+            if (m_ShouldUpdateAnimFSM) //animating
                 return;
 
             if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
@@ -369,10 +473,12 @@ namespace MRK.UI {
                 switch (kind) {
 
                     case EGRControllerMouseEventKind.Down:
-                        m_Down = true;
-                        m_DownPos = (Vector3)msg.Payload[msg.ObjectIndex]; //down pos
+                        if (m_ContextArea.Page == 0) {
+                            m_Down = true;
+                            m_DownPos = (Vector3)msg.Payload[msg.ObjectIndex]; //down pos
 
-                        msg.Payload[2] = true;
+                            msg.Payload[2] = true;
+                        }
 
                         break;
 

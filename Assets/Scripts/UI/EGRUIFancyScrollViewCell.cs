@@ -11,29 +11,45 @@ using DG.Tweening;
 
 namespace MRK.UI {
     class EGRUIFancyScrollViewCell : FancyCell<EGRUIFancyScrollViewItemData, EGRUIFancyScrollViewContext> {
-        [SerializeField] 
+        static class AnimatorHash {
+            public static readonly int Scroll = Animator.StringToHash("scroll");
+        }
+
+        [SerializeField]
         Animator m_Animator;
-        [SerializeField] 
+        [SerializeField]
+        RuntimeAnimatorController m_VController;
+        [SerializeField]
+        RuntimeAnimatorController m_HController;
+        [SerializeField]
         TextMeshProUGUI m_Text;
         [SerializeField] 
         Image m_Background;
         [SerializeField]
         Button m_Button;
+        [SerializeField]
+        bool m_ShouldResize = true;
         float m_CurrentPosition;
 
-        static class AnimatorHash {
-            public static readonly int Scroll = Animator.StringToHash("scroll");
-        }
-
         public override void Initialize() {
+            m_Animator.runtimeAnimatorController = Context.Scroll.Direction == EGRUIFancyScrollViewDirection.Horizontal ? m_HController : m_VController;
+
             m_Button.onClick.AddListener(() => Context.OnCellClicked?.Invoke(Index));
-            
-            m_Background.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 
-                ((RectTransform)transform).rect.height);
+
+            if (m_ShouldResize) {
+                if (Context.Scroll.Direction == EGRUIFancyScrollViewDirection.Horizontal) {
+                    m_Background.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                        ((RectTransform)transform).rect.height);
+                }
+                else {
+                    m_Background.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,
+                        ((RectTransform)transform).rect.width);
+                }
+            }
         }
 
         public override void UpdateContent(EGRUIFancyScrollViewItemData itemData) {
-            m_Text.text = itemData.Message;
+            m_Text.text = itemData.Text;
 
             var selected = Context.SelectedIndex == Index;
 

@@ -1151,6 +1151,10 @@ namespace MRK {
                 Debug.Log(msg);
         }
 
+        public static void LogSingle(float val) {
+            Log($"{val}");
+        }
+
         /// <summary>
         /// Sets the contextual color of a screen, currently only status bar is supported
         /// </summary>

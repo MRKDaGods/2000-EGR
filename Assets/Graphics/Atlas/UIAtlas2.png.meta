@@ -29,6 +29,12 @@ TextureImporter:
   - first:
       213: 738820554434419623
     second: UIAtlas2_8
+  - first:
+      213: -387314761183955688
+    second: UIAtlas2_9
+  - first:
+      213: 4485402233199832179
+    second: UIAtlas2_10
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -314,6 +320,48 @@ TextureImporter:
       bones: []
       spriteID: 7ab12db3161d04a00800000000000000
       internalID: 738820554434419623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas2_9
+      rect:
+        serializedVersion: 2
+        x: 1272
+        y: 344
+        width: 508
+        height: 508
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8157d5bd64bff9af0800000000000000
+      internalID: -387314761183955688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas2_10
+      rect:
+        serializedVersion: 2
+        x: 732
+        y: 944
+        width: 260
+        height: 516
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 30, y: 100, z: 30, w: 100}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37cae9001995f3e30800000000000000
+      internalID: 4485402233199832179
       vertices: []
       indices: 
       edges: []

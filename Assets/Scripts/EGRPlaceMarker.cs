@@ -54,7 +54,7 @@ namespace MRK {
             if (ms_MapInterface == null) {
                 ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
                 //ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
-                ms_Canvas = ScreenManager.GetScreenSpaceLayer();
+                ms_Canvas = ScreenManager.GetScreenSpaceLayer(0);
             }
 
             m_TextContainer = (RectTransform)m_Text.transform.parent;
@@ -180,7 +180,7 @@ namespace MRK {
 
         public static Vector3 ScreenToMarkerSpace(Vector2 spos) {
             if (ms_Canvas == null) {
-                ms_Canvas = EGRScreenManager.Instance.GetScreenSpaceLayer();
+                ms_Canvas = EGRScreenManager.Instance.GetScreenSpaceLayer(0);
             }
 
             Vector2 point;

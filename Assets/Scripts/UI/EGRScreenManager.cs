@@ -19,7 +19,7 @@ namespace MRK.UI {
         Dictionary<Type, EGRScreen> m_ScreensTypes;
         static List<EGRProxyScreen> m_ProxyPipe;
         [SerializeField]
-        Canvas m_ScreenSpaceLayer;
+        Canvas[] m_ScreenSpaceLayers;
         EGRScreenMapInterface m_MapInterface;
 
         public static int SceneChangeIndex { get; private set; }
@@ -182,8 +182,8 @@ namespace MRK.UI {
             return GetLayer(screen.Layer);
         }
 
-        public Canvas GetScreenSpaceLayer() {
-            return m_ScreenSpaceLayer;
+        public Canvas GetScreenSpaceLayer(int idx) {
+            return m_ScreenSpaceLayers[idx];
         }
 
         public EGRProxyScreen CreateProxy(string name, uint expectedInc) {
