@@ -375,11 +375,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Animator: {fileID: 95308934392137032}
-  m_VController: {fileID: 9100000, guid: 980d16614f25c499e88c8b55a5caa63f, type: 2}
+  m_VLController: {fileID: 9100000, guid: 3a3775fb7b225b74cacfaffed4bc659d, type: 2}
+  m_VRController: {fileID: 9100000, guid: f367a37683531f74994ae39f2340c98c, type: 2}
   m_HController: {fileID: 9100000, guid: 71bb768100a5d7949a6edc7a3464ddcc, type: 2}
   m_Text: {fileID: 8250641365340272885}
   m_Background: {fileID: 114838212754810210}
   m_Button: {fileID: 114221931273792762}
+  m_ShouldResize: 1
 --- !u!225 &225474622916379966
 CanvasGroup:
   m_ObjectHideFlags: 0

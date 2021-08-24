@@ -1,7 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using MRK.Networking.Packets;
+using System;
 using System.Collections.Generic;
-using MRK.Networking.Packets;
+using System.Net;
 using UnityEngine;
 
 namespace MRK.Networking {
@@ -20,9 +20,9 @@ namespace MRK.Networking {
             public float StartTime { get; private set; }
             public Type PacketType { get; private set; }
 
-            public BufferedRequest(EGRPacketReceivedCallback<Packet> callback, Type packetType) {
+            public BufferedRequest(EGRPacketReceivedCallback<Packet> callback, Type packetType, float time) {
                 Callback = callback;
-                StartTime = Time.time;
+                StartTime = time;
                 PacketType = packetType;
             }
         }
@@ -43,12 +43,15 @@ namespace MRK.Networking {
         string m_XorKey;
         readonly Dictionary<ulong, EGRDownloadContext> m_ActiveDownloads;
         float m_LastConnectTime;
+        Func<float> m_GetTime;
 
         NetPeer Remote => m_Network.FirstPeer;
         public bool IsConnected => Remote != null && Remote.ConnectionState == ConnectionState.Connected;
         public IPEndPoint Endpoint => m_Endpoint;
+        public IEGRNetworkExternal External { get; private set; }
+        public EGRPacketWatchdog PacketWatchdog { get; private set; }
 
-        public EGRNetwork(string ip, int port, string key) {
+        public EGRNetwork(string ip, int port, string key, IEGRNetworkExternal externalInterface = null, Func<float> getTime = null) {
             m_BufferedRequests = new Dictionary<int, BufferedRequest>();
             m_RequestClearBuffer = new List<int>();
             m_ActiveDownloads = new Dictionary<ulong, EGRDownloadContext>();
@@ -66,6 +69,15 @@ namespace MRK.Networking {
             m_Listener.NetworkReceiveEvent += OnReceive;
 
             EGREventManager.Instance.Register<EGREventPacketReceived>(OnPacketReceived);
+
+            if (externalInterface != null) {
+                External = externalInterface;
+                External.SetNetwork(this);
+            }
+
+            PacketWatchdog = new EGRPacketWatchdog(this);
+
+            m_GetTime = getTime ?? (() => Time.time);
         }
 
         ~EGRNetwork() {
@@ -105,8 +117,10 @@ namespace MRK.Networking {
         }
 
         void OnPacketReceived(EGREventPacketReceived evt) {
-            switch (evt.Packet.PacketType) {
+            if (evt.Network != this)
+                return;
 
+            switch (evt.Packet.PacketType) {
                 case PacketType.TEST: {
                         PacketInTestPacket packet = (PacketInTestPacket)evt.Packet;
                         EGRMain.Log($"{packet.ByteLength} - {packet.ReadStr}");
@@ -115,7 +129,7 @@ namespace MRK.Networking {
 
                 case PacketType.XKEY: {
                         m_XorKey = ((PacketInXorKey)evt.Packet).XorKey;
-                        EGRMain.Log($"Set xor key to {m_XorKey}");
+                        EGRMain.Log($"[{m_Key}] Set xor key to {m_XorKey}");
                     }
                     break;
 
@@ -155,17 +169,17 @@ namespace MRK.Networking {
                         }
                     }
                     break;
-
             }
         }
 
         void OnConnected(NetPeer server) {
-            EGREventManager.Instance.BroadcastEvent(new EGREventNetworkConnected(this));
             m_HasConnected = true;
             m_RaisedDisconnectEvent = false;
 
             //send device info (auto)
-            SendPacket(new PacketOutDeviceInfo(SystemInfo.deviceUniqueIdentifier));
+            SendPacket(new PacketOutDeviceInfo(MRKSysUtils.DeviceUniqueIdentifier));
+
+            EGREventManager.Instance.BroadcastEvent(new EGREventNetworkConnected(this));
         }
 
         void OnDisconnected(NetPeer server, DisconnectInfo info) {
@@ -182,7 +196,7 @@ namespace MRK.Networking {
             m_Endpoint = new IPEndPoint(IPAddress.Parse(newIp), int.Parse(newPort));
             Connect();
         }
-        
+
         public void Connect() {
             if (!m_Network.IsRunning)
                 m_Network.Start();
@@ -192,10 +206,12 @@ namespace MRK.Networking {
         }
 
         public void UpdateNetwork() {
+            float time = m_GetTime();
+
             if (!IsConnected) {
                 if (m_InitiatedConnection) {
-                    if (Time.time - m_LastConnectTime > CONNECTION_DELAY) {
-                        m_LastConnectTime = Time.time;
+                    if (time - m_LastConnectTime > CONNECTION_DELAY) {
+                        m_LastConnectTime = time;
                         Connect();
                     }
                 }
@@ -208,7 +224,7 @@ namespace MRK.Networking {
 
             m_RequestClearBuffer.Clear();
             foreach (KeyValuePair<int, BufferedRequest> pair in m_BufferedRequests) {
-                if (Time.time - pair.Value.StartTime >= PACKET_TIMEOUT) {
+                if (time - pair.Value.StartTime >= PACKET_TIMEOUT) {
                     //force callback
                     if (pair.Value.PacketType == typeof(PacketInStandardResponse)) {
                         pair.Value.Callback(new PacketInStandardResponse(EGRStandardResponse.TIMED_OUT));
@@ -253,7 +269,7 @@ namespace MRK.Networking {
 
             if (receivedCallback != null) {
                 int req = GetEmptyBufferRequest();
-                m_BufferedRequests[req] = new BufferedRequest(x => receivedCallback((T)x), typeof(T));
+                m_BufferedRequests[req] = new BufferedRequest(x => receivedCallback((T)x), typeof(T), m_GetTime());
                 dataStream.WriteInt32(req);
                 //EGRMain.Log($"BUF={req}");
             }
@@ -278,6 +294,11 @@ namespace MRK.Networking {
 
         public bool SendStationaryPacket<T>(PacketType type, DeliveryMethod deliveryMethod, EGRPacketReceivedCallback<T> receivedCallback, Action<PacketDataStream> customWrite = null) where T : Packet {
             return SendPacket(new Packet(PacketNature.Out, type), deliveryMethod, receivedCallback, customWrite);
+        }
+
+        public void Stop() {
+            PacketWatchdog.Stop();
+            m_Network.Stop();
         }
     }
 }

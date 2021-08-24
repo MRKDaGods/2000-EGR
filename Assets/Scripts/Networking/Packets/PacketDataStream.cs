@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace MRK.Networking.Packets {
@@ -30,7 +32,7 @@ namespace MRK.Networking.Packets {
                     break;
 
                 default:
-                    throw new System.Exception("Unknown stream nature");
+                    throw new Exception("Unknown stream nature");
 
             }
         }
@@ -90,6 +92,16 @@ namespace MRK.Networking.Packets {
 
         public double ReadDouble() {
             return m_Reader.ReadDouble();
+        }
+
+        public List<T> ReadList<T>(Func<PacketDataStream, T> deserialize) {
+            int count = ReadInt32();
+            List<T> list = new List<T>(count);
+            for (int i = 0; i < count; i++) {
+                list.Add(deserialize(this));
+            }
+
+            return list;
         }
 
         public void WriteByte(byte b) {
@@ -152,6 +164,18 @@ namespace MRK.Networking.Packets {
 
         public void WriteDouble(double d) {
             m_Writer.Write(d);
+        }
+
+        public void WriteList<T>(List<T> list, Action<T, PacketDataStream> serialize) {
+            if (list != null) {
+                m_Writer.Write(list.Count);
+
+                if (list.Count > 0) {
+                    foreach (T item in list) {
+                        serialize(item, this);
+                    }
+                }
+            }
         }
 
         public void Clean() {

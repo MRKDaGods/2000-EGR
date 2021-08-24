@@ -76,12 +76,12 @@ namespace MRK {
         }
 
         void OnConnectClick() {
-            EGRMain.Instance.Network.AlterConnection(m_Ip.text, m_Port.text);
+            EGRMain.Instance.NetworkingClient.MainNetwork.AlterConnection(m_Ip.text, m_Port.text);
             UpdateConnectionLabels();
         }
 
         void UpdateConnectionLabels() {
-            var ep = EGRMain.Instance.Network.Endpoint;
+            var ep = EGRMain.Instance.NetworkingClient.MainNetwork.Endpoint;
             m_IpLabel.text = ep.Address.ToString();
             m_PortLabel.text = ep.Port.ToString();
 
@@ -89,7 +89,7 @@ namespace MRK {
         }
 
         void UpdateStateLabel() {
-            bool connected = EGRMain.Instance.Network.IsConnected;
+            bool connected = EGRMain.Instance.NetworkingClient.MainNetwork.IsConnected;
             m_StateLabel.text = connected ? "Connected" : "Disconnected";
             m_StateLabel.color = connected ? Color.green : Color.red;
         }

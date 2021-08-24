@@ -9,14 +9,20 @@ namespace MRK {
             public volatile int Count;
         }
 
+        class RunnableAction {
+            public bool IsPersistent;
+            public Action Action;
+        }
+
         readonly Lock m_Lock;
-        readonly List<Action> m_MainThreadQueue;
+        readonly List<RunnableAction> m_MainThreadQueue;
 
         public int Count => m_Lock.Count;
+        public bool IsCalledByRunnable { get; private set; }
 
         public MRKRunnable() {
             m_Lock = new Lock();
-            m_MainThreadQueue = new List<Action>();
+            m_MainThreadQueue = new List<RunnableAction>();
         }
 
         IEnumerator _Run(IEnumerator routine) {
@@ -52,20 +58,30 @@ namespace MRK {
             StartCoroutine(_RunLater(act, time));
         }
 
-        public void RunOnMainThread(Action action) {
+        public void RunOnMainThread(Action action, bool persistent = false) {
             lock (m_MainThreadQueue) {
-                m_MainThreadQueue.Add(action);
+                m_MainThreadQueue.Add(new RunnableAction {
+                    Action = action,
+                    IsPersistent = persistent
+                });
             }
         }
 
         void Update() {
             if (m_MainThreadQueue.Count > 0) {
                 lock (m_MainThreadQueue) {
-                    foreach (Action action in m_MainThreadQueue) {
-                        action();
+                    IsCalledByRunnable = true;
+
+                    for (int i = m_MainThreadQueue.Count - 1; i > -1; i--) {
+                        RunnableAction action = m_MainThreadQueue[i];
+                        action.Action();
+
+                        if (!action.IsPersistent) {
+                            m_MainThreadQueue.RemoveAt(i);
+                        }
                     }
 
-                    m_MainThreadQueue.Clear();
+                    IsCalledByRunnable = false;
                 }
             }
         }

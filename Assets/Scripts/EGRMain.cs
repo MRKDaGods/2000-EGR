@@ -74,147 +74,176 @@ namespace MRK {
         /// <summary>
         /// Logging interfaces available, for example: Android Logger, Unity Editor Logger, etc
         /// </summary>
-        readonly List<EGRLogger> m_Loggers;
+        readonly List<IEGRLogger> m_Loggers;
+
         /// <summary>
         /// Available camera configurations
         /// </summary>
         [SerializeField]
         EGRCameraConfig[] m_CameraConfigs;
+
         /// <summary>
         /// Currently selected map mode
         /// </summary>
         [SerializeField]
         EGRMapMode m_MapMode;
+
         /// <summary>
         /// Time transition progress between 2 camera configurations, 0 to 1
         /// </summary>
         float m_CamDelta;
+
         /// <summary>
         /// Indicates if the camera configuration has changed and that the camera state has to be updated ASAP
         /// </summary>
         bool m_CamDirty;
+
         /// <summary>
         /// The Earth globe object
         /// </summary>
         GameObject m_GlobalMap;
+
         /// <summary>
         /// The flat/geographical map
         /// </summary>
         MRKMap m_FlatMap;
+
         /// <summary>
         /// Gets called when the map mode is changed
         /// </summary>
         EGRMapModeChangedDelegate m_OnMapModeChanged;
+
         /// <summary>
         /// Camera handler when the selected map mode is Globe
         /// </summary>
         EGRCameraGlobe m_GlobeCamera;
+
         /// <summary>
         /// Camera handler when the selected map mode is Flat
         /// </summary>
         EGRCameraFlat m_FlatCamera;
+
         /// <summary>
         /// Camera handler when the selected map mode is General
         /// </summary>
         EGRCameraGeneral m_GeneralCamera;
-        /// <summary>
-        /// The main network
-        /// </summary>
-        EGRNetwork m_Network;
+
         /// <summary>
         /// Indicates if the flat/geographical has initialized
         /// </summary>
         bool m_MapsInitialized;
+
         /// <summary>
         /// Currently active screens
         /// </summary>
         readonly List<EGRScreen> m_ActiveScreens;
+
         /// <summary>
         /// Indicates if the active screens should become locked and may not become modified
         /// </summary>
         bool m_LockScreens;
+
         /// <summary>
         /// Indicates if the FPS should be drawn
         /// </summary>
         [SerializeField]
         bool m_DrawFPS;
+
         /// <summary>
         /// Time difference since last frame, used for calculating FPS
         /// </summary>
         float m_DeltaTime;
+
         /// <summary>
         /// Render style of the FPS label
         /// </summary>
         GUIStyle m_FPSStyle;
+
         /// <summary>
         /// Active input controllers
         /// </summary>
         readonly List<EGRController> m_Controllers;
+
         /// <summary>
         /// The planets' transform, does not include Earth
         /// </summary>
         [SerializeField]
         Transform[] m_Planets;
+
         /// <summary>
         /// The sun's transform
         /// </summary>
         [SerializeField]
         Transform m_Sun;
+
         /// <summary>
         /// Extra camera that is used on-demand for Post-Processing and transition effects
         /// </summary>
         [SerializeField]
         Camera m_ExCamera;
+
         /// <summary>
         /// Developer settings manager, manually initialized
         /// </summary>
         EGRDevSettingsManager m_DevSettingsManager;
+
         /// <summary>
         /// Starting position of camera as soon as the map mode has changed
         /// </summary>
         Vector3 m_CamStartPos;
+
         /// <summary>
         /// Starting rotation of camera as soon as the map mode has changed
         /// </summary>
         Vector3 m_CamStartRot;
+
         /// <summary>
         /// The previous map mode that was active before the current map mode
         /// </summary>
         EGRMapMode m_PreviousMapMode;
+
         /// <summary>
         /// Indicates if the initial transition between General and Globe map modes is active
         /// </summary>
         bool m_InitialModeTransition;
+
         /// <summary>
         /// Active status bar color in ARGB (Android and iOS only)
         /// </summary>
         uint m_StatusBarColor;
+
         /// <summary>
         /// Indicates if the status bar texture should be re-generated, for example: the status bar color being changed
         /// </summary>
         bool m_StatusBarTextureDirty;
+
         /// <summary>
         /// The status bar texture
         /// </summary>
         Texture2D m_StatusBarTexture;
+
         /// <summary>
         /// A particle emitter to simulate some space dust around the globe
         /// </summary>
         [SerializeField]
         ParticleSystem m_EnvironmentEmitter;
+
         /// <summary>
         /// A table that stores planet rotation coefficients, some planets rotate differently than others
         /// </summary>
         readonly Dictionary<Transform, float> m_PlanetRotationCache;
+
         /// <summary>
         /// Time when physics were last simulated
         /// <para>We need to manually simulate physics for the sun flare to stop appearing through planets</para>
         /// </summary>
         float m_LastPhysicsSimulationTime;
+
         /// <summary>
         /// Current skybox rotation along the Y-axis, 0 to 360
         /// </summary>
         float m_SkyboxRotation;
+
 
         /// <summary>
         /// EGRMain's singleton instance
@@ -225,100 +254,123 @@ namespace MRK {
         /// The screen manager
         /// </summary>
         public EGRScreenManager ScreenManager => EGRScreenManager.Instance;
+
         /// <summary>
         /// Currently active camera
         /// </summary>
         public Camera ActiveCamera => Camera.main;
+
         /// <summary>
         /// Currently selected map mode
         /// </summary>
         public EGRMapMode MapMode => m_MapMode;
+
         /// <summary>
         /// The Earth globe object
         /// </summary>
         public GameObject GlobalMap => m_GlobalMap;
+
         /// <summary>
         /// The flat/geographical map
         /// </summary>
         public MRKMap FlatMap => m_FlatMap;
+
         /// <summary>
         /// Currently active camera handler
         /// </summary>
-        public EGRCamera ActiveEGRCamera => m_MapMode == EGRMapMode.Flat ? (EGRCamera)m_FlatCamera : m_MapMode == EGRMapMode.Globe ? (EGRCamera)m_GlobeCamera : m_GeneralCamera;
+        public EGRCamera ActiveEGRCamera => m_MapMode == EGRMapMode.Flat ? (EGRCamera)m_FlatCamera 
+            : m_MapMode == EGRMapMode.Globe ? (EGRCamera)m_GlobeCamera : m_GeneralCamera;
+
         /// <summary>
         /// Camera handler when the selected map mode is Flat
         /// </summary>
         public EGRCameraFlat FlatCamera => m_FlatCamera;
+
         /// <summary>
         /// Camera handler when the selected map mode is Globe
         /// </summary>
         public EGRCameraGlobe GlobeCamera => m_GlobeCamera;
-        /// <summary>
-        /// The main network
-        /// </summary>
-        public EGRNetwork Network => m_Network;
+
+        public EGRNetworkingClient NetworkingClient { get; private set; }
+
         /// <summary>
         /// The language manager
         /// </summary>
         public EGRLanguageManager LanguageManager { get; private set; }
+
         /// <summary>
         /// Indicates if the camera configuration has changed and that the camera state has to be updated ASAP
         /// </summary>
         public bool CamDirty => m_CamDirty;
+
         /// <summary>
         /// Currently active screens
         /// </summary>
         public List<EGRScreen> ActiveScreens => m_ActiveScreens;
+
         /// <summary>
         /// The place manager
         /// </summary>
         public EGRPlaceManager PlaceManager { get; private set; }
+
         /// <summary>
         /// Indicates if the initial transition between General and Globe map modes is active
         /// </summary>
         public bool InitialModeTransition => m_InitialModeTransition;
+
         /// <summary>
         /// The previous map mode that was active before the current map mode
         /// </summary>
         public EGRMapMode PreviousMapMode => m_PreviousMapMode;
+
         /// <summary>
         /// The planets' transform, does not include Earth
         /// </summary>
         public Transform[] Planets => m_Planets;
+
         /// <summary>
         /// The sun's transform
         /// </summary>
         public Transform Sun => m_Sun;
+
         /// <summary>
         /// A runnable having the same lifetime as the client (owned by EGRMain)
         /// </summary>
         public MRKRunnable Runnable { get; private set; }
+
         /// <summary>
         /// Currently active input model
         /// </summary>
         public EGRInputModel InputModel { get; private set; }
+
         /// <summary>
         /// The navigation manager
         /// </summary>
         public EGRNavigationManager NavigationManager { get; private set; }
+
         /// <summary>
         /// Indicates if the application is running/alive
         /// </summary>
         public bool IsRunning { get; private set; }
+
         /// <summary>
         /// Initializes the location service and provides location information
         /// </summary>
         public EGRLocationService LocationService { get; private set; }
+
         /// <summary>
         /// The location manager
         /// </summary>
         public EGRLocationManager LocationManager { get; private set; }
 
+        public IEGRScreenFOVStabilizer FOVStabilizer { get; private set; }
+
+
         /// <summary>
         /// Constructor
         /// </summary>
         public EGRMain() {
-            m_Loggers = new List<EGRLogger>();
+            m_Loggers = new List<IEGRLogger>();
             m_ActiveScreens = new List<EGRScreen>();
             m_Controllers = new List<EGRController>();
             m_PlanetRotationCache = new Dictionary<Transform, float>();
@@ -341,6 +393,9 @@ namespace MRK {
 
             //we will only simulate physics manually to save performance
             Physics.autoSimulation = false;
+
+            MRKTime.Initialize();
+            MRKSysUtils.Initialize();
 
             MRKCryptography.CookSalt();
             MRKPlayerPrefs.Init();
@@ -394,6 +449,8 @@ namespace MRK {
 
             //manually add MRKRunnable to our main object
             Runnable = gameObject.AddComponent<MRKRunnable>();
+
+            NetworkingClient = new EGRNetworkingClient();
         }
 
         /// <summary>
@@ -404,8 +461,7 @@ namespace MRK {
             Log($"2000-EGR started v{EGRVersion.VersionString()} - {EGRVersion.VersionSignature()}");
 
             //keep waiting until all screens have initialized
-            while (!ScreenManager.FullyInitialized)
-                yield return new WaitForSeconds(0.2f);
+            yield return ScreenManager.WaitForInitialization();
 
             Log("EGRScreenManager initialized");
 
@@ -440,33 +496,7 @@ namespace MRK {
             ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen();
 #endif
 
-            //we need to manually get all packets and register them in our packet registry
-            //get all types in the current assembly
-            foreach (Type type in Assembly.GetExecutingAssembly().GetLoadedModules()[0].GetTypes()) {
-                //skip type if it does not belong to MRK.Networking.Packets
-                if (type.Namespace != "MRK.Networking.Packets")
-                    continue;
-
-                //get packet registration info
-                PacketRegInfo regInfo = type.GetCustomAttribute<PacketRegInfo>();
-                if (regInfo != null) {
-                    //type is a packet, assign to the appropriate registry depending on the nature
-                    if (regInfo.PacketNature == PacketNature.Out)
-                        Packet.RegisterOut(regInfo.PacketType, type);
-                    else
-                        Packet.RegisterIn(regInfo.PacketType, type);
-                }
-            }
-
-#if MRK_LOCAL_SERVER
-            //initialize network, and let it connect to localhost
-            m_Network = new EGRNetwork("127.0.0.1", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
-#else
-            m_Network = new EGRNetwork("37.58.62.171", EGRConstants.EGR_MAIN_NETWORK_PORT, EGRConstants.EGR_MAIN_NETWORK_KEY);
-#endif
-
-            //connect to the server
-            m_Network.Connect();
+            NetworkingClient.Initialize();
         }
 
         /// <summary>
@@ -581,9 +611,7 @@ namespace MRK {
             }
 
             //update and process network messages
-            if (m_Network != null) {
-                m_Network.UpdateNetwork();
-            }
+            NetworkingClient.Update();
 
             //calculate delta time for FPS
             if (m_DrawFPS) {
@@ -634,8 +662,6 @@ namespace MRK {
             if (InputModel != null && InputModel.NeedsUpdate) {
                 InputModel.UpdateInputModel();
             }
-
-            if (Input.GetKeyDown(KeyCode.K)) ScreenManager.GetScreen<EGRScreenSpaceFOV>().ShowScreen();
         }
 
         /// <summary>
@@ -801,8 +827,13 @@ namespace MRK {
         /// <param name="evt"></param>
         void OnScreenShown(EGREventScreenShown evt) {
             //add to active screens, make sure to ignore developer settings screen
-            if (evt.Screen.ScreenName != "EGRDEV")
+            if (evt.Screen.ScreenName != "EGRDEV") {
                 m_ActiveScreens.Add(evt.Screen);
+
+                if (evt.Screen is IEGRScreenFOVStabilizer stabilizer) {
+                    FOVStabilizer = stabilizer;
+                }
+            }
         }
 
         /// <summary>
@@ -811,8 +842,22 @@ namespace MRK {
         /// <param name="evt"></param>
         void OnScreenHidden(EGREventScreenHidden evt) {
             //only remove when unlocked as m_ActiveScreens might have an active enumerator
-            if (!m_LockScreens)
+            if (!m_LockScreens) {
                 m_ActiveScreens.Remove(evt.Screen);
+
+                if (evt.Screen is IEGRScreenFOVStabilizer stabilizer) {
+                    if (stabilizer == FOVStabilizer) {
+                        foreach (EGRScreen screen in m_ActiveScreens) {
+                            if (screen is IEGRScreenFOVStabilizer secStabilizer) {
+                                FOVStabilizer = secStabilizer;
+                                return;
+                            }
+                        }
+
+                        FOVStabilizer = null;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -952,162 +997,10 @@ namespace MRK {
             ScreenManager.GetScreen<EGRScreenLogin>().ShowScreen();
 
             //send logout packet to server if we are connected
-            Network.SendStationaryPacket<Packet>(PacketType.LGNOUT, DeliveryMethod.ReliableOrdered, null);
+            NetworkingClient.MainNetwork.SendStationaryPacket<Packet>(PacketType.LGNOUT, DeliveryMethod.ReliableOrdered, null);
 
             //clear the local user state
             EGRLocalUser.Initialize(null);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to register an account
-        /// </summary>
-        /// <param name="name">Full name</param>
-        /// <param name="email">Email</param>
-        /// <param name="password">Password</param>
-        /// <param name="callback">Response callback</param>
-        public bool NetRegisterAccount(string name, string email, string password, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
-            //make sure we hash the password
-            return Network.SendPacket(new PacketOutRegisterAccount(name, email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to log into an account
-        /// </summary>
-        /// <param name="email">Email</param>
-        /// <param name="password">Password</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetLoginAccount(string email, string password, EGRPacketReceivedCallback<PacketInLoginAccount> callback) {
-            //hash the password again
-            return Network.SendPacket(new PacketOutLoginAccount(email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to log into an account with a token
-        /// </summary>
-        /// <param name="token">Token</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetLoginAccountToken(string token, EGRPacketReceivedCallback<PacketInLoginAccount> callback) {
-            return Network.SendPacket(new PacketOutLoginAccountToken(token), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to log into an account with a device id
-        /// </summary>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetLoginAccountDev(EGRPacketReceivedCallback<PacketInLoginAccount> callback) {
-            return Network.SendStationaryPacket(PacketType.LGNACCDEV, DeliveryMethod.ReliableOrdered, callback, writer => {
-                //we'll send the deviceName and deviceModel as our first/last name
-                writer.WriteString(SystemInfo.deviceName);
-                writer.WriteString(SystemInfo.deviceModel);
-            });
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to update an account's information
-        /// </summary>
-        /// <param name="name">Full name</param>
-        /// <param name="email">Email</param>
-        /// <param name="gender">Gender</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetUpdateAccountInfo(string name, string email, sbyte gender, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
-            return Network.SendPacket(new PacketOutUpdateAccountInfo(EGRLocalUser.Instance.Token, name, email, gender), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to fetch a place's data
-        /// </summary>
-        /// <param name="cid">Place ID</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetFetchPlace(ulong cid, EGRPacketReceivedCallback<PacketInFetchPlaces> callback) {
-            return Network.SendPacket(new PacketOutFetchPlaces(cid), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to fetch places' IDs inside a bounding box at a certain zoom level
-        /// </summary>
-        /// <param name="ctx">Fetching context ID</param>
-        /// <param name="minLat">Minimum latitude</param>
-        /// <param name="minLng">Minimum longitude</param>
-        /// <param name="maxLat">Maximum latitude</param>
-        /// <param name="maxLng">Maximum longitude</param>
-        /// <param name="zoom">Zoom level</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetFetchPlacesIDs(ulong ctx, double minLat, double minLng, double maxLat, double maxLng, int zoom, EGRPacketReceivedCallback<PacketInFetchPlacesIDs> callback) {
-            return Network.SendPacket(new PacketOutFetchPlacesIDs(ctx, minLat, minLng, maxLat, maxLng, zoom), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to fetch places' data inside a bounding box at a certain zoom level
-        /// </summary>
-        /// <param name="hash">Tile hash</param>
-        /// <param name="minLat">Minimum latitude</param>
-        /// <param name="minLng">Minimum longitude</param>
-        /// <param name="maxLat">Maximum latitude</param>
-        /// <param name="maxLng">Maximum longitude</param>
-        /// <param name="zoom">Zoom level</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetFetchPlacesV2(int hash, double minLat, double minLng, double maxLat, double maxLng, int zoom, EGRPacketReceivedCallback<PacketInFetchPlacesV2> callback) {
-            return Network.SendPacket(new PacketOutFetchPlacesV2(hash, minLat, minLng, maxLat, maxLng, zoom), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to fetch a raster tile
-        /// </summary>
-        /// <param name="tileSet">Tileset</param>
-        /// <param name="id">Tile ID</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetFetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
-            return Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to update an account's password
-        /// </summary>
-        /// <param name="pass">New password</param>
-        /// <param name="logoutAll">Logout from other sessions?</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetUpdateAccountPassword(string pass, bool logoutAll, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
-            return Network.SendPacket(new PacketOutUpdatePassword(EGRLocalUser.Instance.Token, pass, logoutAll), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to autocomplete a geographical query
-        /// </summary>
-        /// <param name="query">Query</param>
-        /// <param name="proximity">Proximity location</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetGeoAutoComplete(string query, Vector2d proximity, EGRPacketReceivedCallback<PacketInGeoAutoComplete> callback) {
-            //query cannot be of length greater than 256
-            if (query.Length > 256)
-                return false;
-
-            return Network.SendPacket(new PacketOutGeoAutoComplete(query, proximity), DeliveryMethod.ReliableOrdered, callback);
-        }
-
-        /// <summary>
-        /// Attempts to send a network request to query directions between 2 points
-        /// </summary>
-        /// <param name="from">Start location</param>
-        /// <param name="to">End location</param>
-        /// <param name="profile">Routing profile</param>
-        /// <param name="callback">Response callback</param>
-        /// <returns></returns>
-        public bool NetQueryDirections(Vector2d from, Vector2d to, byte profile, EGRPacketReceivedCallback<PacketInStandardJSONResponse> callback) {
-            //0=driving, 1=walking, 2=cycling, 3+ = invalid
-            if (profile > 2)
-                return false;
-
-            return Network.SendPacket(new PacketOutQueryDirections(from, to, profile), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>
@@ -1118,6 +1011,7 @@ namespace MRK {
 
             //save unsaved changes
             MRKPlayerPrefs.Save();
+            NetworkingClient.Shutdown();
         }
 
         /// <summary>
@@ -1127,7 +1021,7 @@ namespace MRK {
         /// <param name="type">Type of message</param>
         /// <param name="msg">Content of message</param>
         void _Log(DateTime timestamp, LogType type, string msg) {
-            foreach (EGRLogger logger in m_Loggers)
+            foreach (IEGRLogger logger in m_Loggers)
                 logger.Log(timestamp, type, msg);
         }
 

@@ -49,11 +49,18 @@ namespace MRK {
         Spacious
     }
 
+    public enum EGRSettingsMapViewingAngle {
+        Flat,
+        Spherical,
+        Globe
+    }
+
     public class EGRSettings {
         static readonly int[] ms_EGRToUnityQualityMap = { 2, 2, 3, 3 };
         static readonly float[] ms_ResolutionMap = { 1f, 0.9f, 0.8f, 0.75f };
         static readonly float[] ms_SensitivityMap = { 0.1f, 0.3f, 0.5f, 0.7f, 0.9f };
         static readonly string[] ms_StyleMap = { "main", "basic", "satellite" };
+        static readonly float[] ms_ViewingAngleMap = { 0f, 25f, -50f };
         static int ms_Counter;
         static int ms_InitialWidth;
         static int ms_InitialHeight;
@@ -68,6 +75,7 @@ namespace MRK {
         public static bool ShowDistance { get; set; }
         public static EGRSettingsInputModel InputModel { get; set; }
         public static EGRSettingsSpaceFOV SpaceFOV { get; set; }
+        public static EGRSettingsMapViewingAngle MapViewingAngle { get; set; }
 
         public static void Load() {
             if (ms_InitialWidth == 0 || ms_InitialHeight == 0) {
@@ -85,6 +93,7 @@ namespace MRK {
             ShowDistance = MRKPlayerPrefs.Get<bool>(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, true);
             InputModel = (EGRSettingsInputModel)MRKPlayerPrefs.Get<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_INPUT_MODEL, 0);
             SpaceFOV = (EGRSettingsSpaceFOV)MRKPlayerPrefs.Get<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_SPACE_FOV, 0);
+            MapViewingAngle = (EGRSettingsMapViewingAngle)MRKPlayerPrefs.Get<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_VIEWING_ANGLE, 1);
         }
 
         public static void Save() {
@@ -99,6 +108,7 @@ namespace MRK {
             MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_SETTINGS_SHOW_DISTANCE, ShowDistance);
             MRKPlayerPrefs.Set<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_INPUT_MODEL, (int)InputModel);
             MRKPlayerPrefs.Set<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_SPACE_FOV, (int)SpaceFOV);
+            MRKPlayerPrefs.Set<int>(EGRConstants.EGR_LOCALPREFS_SETTINGS_FLAT_MAP_VIEWING_ANGLE, (int)MapViewingAngle);
 
             MRKPlayerPrefs.Save();
 
@@ -114,10 +124,10 @@ namespace MRK {
                 Application.targetFrameRate = ((int)FPS) * 30 + 30;
             }
 
-            float resFactor = ms_ResolutionMap[(int)Resolution];
+            /*float resFactor = ms_ResolutionMap[(int)Resolution];
             Screen.SetResolution(Mathf.FloorToInt(ms_InitialWidth * resFactor), Mathf.FloorToInt(ms_InitialHeight * resFactor), false);
 
-            Debug.Log($"RES={Screen.currentResolution}, W={Screen.width}, H={Screen.height}");
+            Debug.Log($"RES={Screen.currentResolution}, W={Screen.width}, H={Screen.height}");*/
 
             EGREventManager.Instance.BroadcastEvent<EGREventGraphicsApplied>(new EGREventGraphicsApplied(Quality, FPS, ms_Counter == 0));
             ms_Counter++;
@@ -133,6 +143,11 @@ namespace MRK {
 
         public static string GetCurrentTileset() {
             return ms_StyleMap[(int)MapStyle];
+        }
+
+
+        public static float GetCurrentMapViewingAngle() {
+            return ms_ViewingAngleMap[(int)MapViewingAngle];
         }
     }
 }

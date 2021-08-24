@@ -40,3 +40,9 @@
 39- CANNOT OBTAIN CURRENT LOCATION
 40- START
 41- PREVIEW
+42- LOADING CUISINES...
+43- SEARCHING FOR <color=orange><b><size=80>{0}</size></b></color> RESTAUARANTS$n$nFOR <color=orange><b><size=80>{1}</size></b></color> PEOPLE$n$nWITH A BUDGET OF <color=orange><b><size=80>{2}EGP</size></b></color>
+44- SEARCHING...
+45- WTE
+46- NO RESTAURANTS WERE FOUND MATCHING THE SPECIFIED CRITERIA
+47- <b>{0}</b> RESULTS

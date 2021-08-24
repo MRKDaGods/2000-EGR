@@ -11,7 +11,7 @@ public class EGRLanguageUpdater : MonoBehaviour {
         Dictionary<int, string> strings = new Dictionary<int, string>();
         EGRLanguageManager.Parse(txt, strings, true);
 
-        using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\EGRLanguageData.cs", FileMode.Create))
+        using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\Localization\EGRLanguageData.cs", FileMode.Create))
         using (StreamWriter writer = new StreamWriter(fstream)) {
             writer.WriteLine("namespace MRK {\n\tpublic enum EGRLanguageData {");
 

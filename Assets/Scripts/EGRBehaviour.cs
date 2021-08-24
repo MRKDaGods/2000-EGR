@@ -1,4 +1,5 @@
-﻿using MRK.UI;
+﻿using MRK.Networking;
+using MRK.UI;
 using UnityEngine;
 
 namespace MRK {
@@ -7,6 +8,7 @@ namespace MRK {
     /// </summary>
     public class EGRBehaviour : MonoBehaviour {
         public EGRMain Client => EGRMain.Instance;
+        public EGRNetworkingClient NetworkingClient => Client.NetworkingClient;
         public EGRScreenManager ScreenManager => EGRScreenManager.Instance;
         public EGREventManager EventManager => EGREventManager.Instance;
     }
