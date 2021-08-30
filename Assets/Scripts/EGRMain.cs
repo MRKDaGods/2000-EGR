@@ -365,6 +365,8 @@ namespace MRK {
 
         public IEGRScreenFOVStabilizer FOVStabilizer { get; private set; }
 
+        public MRKThreadPool GlobalThreadPool { get; private set; }
+
 
         /// <summary>
         /// Constructor
@@ -377,6 +379,8 @@ namespace MRK {
 
             //application has started running
             IsRunning = true;
+
+            GlobalThreadPool = new MRKThreadPool(EGRConstants.EGR_DEFAULT_THREAD_POOL_INTERVAL);
         }
 
         /// <summary>

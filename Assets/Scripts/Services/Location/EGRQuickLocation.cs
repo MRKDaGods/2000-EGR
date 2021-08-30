@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MRK {
     public class EGRQuickLocation {
@@ -13,10 +15,8 @@ namespace MRK {
 
         public static List<EGRQuickLocation> Locations {
             get {
-                if (ms_Locations == null) {
+                if (ms_Locations == null)
                     ms_Locations = new List<EGRQuickLocation>();
-                    ImportLocalLocations();
-                }
 
                 return ms_Locations;
             }
@@ -27,13 +27,19 @@ namespace MRK {
             Coords = coords;
         }
 
-        static void ImportLocalLocations() {
+        public static void ImportLocalLocations(Action callback) {
             string json = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_LOCAL_QLOCATIONS, null);
             if (json != null) {
-                List<EGRQuickLocation> locs = JsonConvert.DeserializeObject<List<EGRQuickLocation>>(json);
-                if (locs.Count > 0) {
-                    ms_Locations.AddRange(locs);
-                }
+                MRKThreadPool.Global.QueueTask(() => {
+                    List<EGRQuickLocation> locs = JsonConvert.DeserializeObject<List<EGRQuickLocation>>(json);
+                    if (locs.Count > 0) {
+                        Locations.AddRange(locs);
+                    }
+
+                    if (callback != null) {
+                        callback();
+                    }
+                });
             }
         }
 

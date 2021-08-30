@@ -55,7 +55,7 @@ namespace MRK.UI {
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
                 Graphic gfx = m_LastGraphicsBuf[i];
 
-                gfx.DOColor(gfx.color, 0.1f + i * 0.03f + (i > 10 ? 0.3f : 0f))
+                gfx.DOColor(gfx.color, TweenMonitored(0.2f))
                     .ChangeStartValue(Color.clear)
                     .SetEase(Ease.OutSine);
             }
@@ -69,7 +69,7 @@ namespace MRK.UI {
             SetTweenCount(m_LastGraphicsBuf.Length);
 
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                m_LastGraphicsBuf[i].DOColor(Color.clear, 0.1f + i * 0.03f + (i > 10 ? 0.1f : 0f))
+                m_LastGraphicsBuf[i].DOColor(Color.clear, TweenMonitored(0.2f))
                     .SetEase(Ease.OutSine)
                     .OnComplete(OnTweenFinished);
             }

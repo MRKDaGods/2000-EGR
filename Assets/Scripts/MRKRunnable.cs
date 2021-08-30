@@ -41,6 +41,17 @@ namespace MRK {
             StartCoroutine(_Run(coroutine));
         }
 
+        IEnumerator _RunLaterFrames(Action act, int frames) {
+            for (int i = 0; i < frames; i++)
+                yield return new WaitForEndOfFrame();
+
+            act?.Invoke();
+        }
+
+        public void RunLaterFrames(Action act, int frames) {
+            StartCoroutine(_RunLaterFrames(act, frames));
+        }
+
         IEnumerator _RunLater(Action act, float time) {
             lock (m_Lock) {
                 m_Lock.Count++;

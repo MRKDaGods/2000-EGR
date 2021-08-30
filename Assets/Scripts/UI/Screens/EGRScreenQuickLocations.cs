@@ -39,9 +39,11 @@ namespace MRK.UI {
             readonly ObjectPool<Item> m_ItemPool;
             readonly List<Item> m_ActiveItems;
             RectTransform m_Transform;
+            ScrollRect m_ScrollRect;
 
             public int ItemCount => m_ActiveItems.Count;
             public Transform ContentTransform { get; private set; }
+            public RectTransform Other { get; private set; }
 
             public LocationList(RectTransform transform) {
                 m_Transform = transform;
@@ -49,6 +51,9 @@ namespace MRK.UI {
                 ContentTransform = transform.Find("Viewport/Content");
                 m_ItemPrefab = ContentTransform.Find("Item").gameObject;
                 m_ItemPrefab.SetActive(false);
+
+                Other = (RectTransform)transform.Find("OtherVP/Other");
+                m_ScrollRect = transform.GetComponent<ScrollRect>();
 
                 m_ItemPool = new ObjectPool<Item>(() => {
                     GameObject obj = Instantiate(m_ItemPrefab, m_ItemPrefab.transform.parent);
@@ -81,10 +86,24 @@ namespace MRK.UI {
                     item.SetActive(true);
                     item.SetLocation(locs[i]);
                 }
+
+                ms_Instance.Client.Runnable.RunLaterFrames(UpdateOtherPosition, 1);
             }
 
             public void SetActive(bool active) {
                 m_Transform.gameObject.SetActive(active);
+            }
+
+            public void UpdateOtherPosition() {
+                Rect viewportRect = m_ScrollRect.viewport.rect;
+                Rect contentRect = ((RectTransform)ContentTransform).rect;
+
+                //check if contentRect bottom is below other
+                float baseY = contentRect.y < viewportRect.y ? m_ScrollRect.viewport.position.y - (viewportRect.height * 1.05f) 
+                    : ContentTransform.position.y - contentRect.height;
+
+                Vector3 oldPos = Other.position;
+                Other.position = new Vector3(oldPos.x, baseY - Other.rect.height, oldPos.z);
             }
         }
 
@@ -106,7 +125,7 @@ namespace MRK.UI {
 
             public void SetLocation(EGRQuickLocation loc) {
                 m_Location = loc;
-                m_Name.text = loc.Name;
+                //m_Name.text = loc.Name;
             }
 
             void OnCloseClick() {
@@ -128,6 +147,13 @@ namespace MRK.UI {
         int m_OldMapButtonsMask;
 
         static EGRScreenQuickLocations ms_Instance;
+        static bool ms_HasImportedLocalLocations;
+        static int ms_DesiredMapButtonMask;
+
+        static EGRScreenQuickLocations() {
+            ms_DesiredMapButtonMask = (1 << EGRScreenMapInterface.MapButtonIDs.CURRENT_LOCATION) 
+                | (1 << EGRScreenMapInterface.MapButtonIDs.SETTINGS);
+        }
 
         protected override void OnScreenInit() {
             ms_Instance = this;
@@ -146,8 +172,8 @@ namespace MRK.UI {
 
             m_NoLocationsLabel = m_BodyTransform.GetElement<TextMeshProUGUI>("LocationList/Viewport/Content/NoLocs");
 
-            m_LocationList.ContentTransform.GetElement<Button>("Other/CurLoc").onClick.AddListener(AddLocationFromCurrentLocation);
-            m_LocationList.ContentTransform.GetElement<Button>("Other/Custom").onClick.AddListener(AddLocationFromCustom);
+            m_LocationList.Other.GetElement<Button>("CurLoc").onClick.AddListener(AddLocationFromCurrentLocation);
+            m_LocationList.Other.GetElement<Button>("Custom").onClick.AddListener(AddLocationFromCustom);
 
             m_FinishButton = GetElement<Button>("FinishButton");
             m_FinishButton.onClick.AddListener(OnFinishClick);
@@ -167,7 +193,18 @@ namespace MRK.UI {
 
             UpdateNoLocationLabelVisibility();
             UpdateFinishButtonVisibility();
-            UpdateLocationListFromLocal();
+
+            if (!ms_HasImportedLocalLocations) {
+                ms_HasImportedLocalLocations = true;
+                EGRQuickLocation.ImportLocalLocations(() => {
+                    //called from a thread pool
+                    Client.Runnable.RunOnMainThread(UpdateLocationListFromLocal);
+                });
+            }
+            else
+                UpdateLocationListFromLocal();
+
+            ScreenManager.MapInterface.MapButtonsMask = ms_DesiredMapButtonMask;
         }
 
         protected override void OnScreenHide() {
@@ -197,12 +234,11 @@ namespace MRK.UI {
             EGRScreenMapInterface mapInterface = ScreenManager.MapInterface;
             if (m_Expanded) {
                 if (!m_IsChoosingLocation)
-                    m_OldMapButtonsMask = mapInterface.MapButtonsMask;
-                mapInterface.MapButtonsMask = 0; //none?
+                    m_OldMapButtonsMask = mapInterface.MapButtonsInteractivityMask;
+                mapInterface.MapButtonsInteractivityMask = 0; //none?
             }
             else if (!m_IsChoosingLocation) {
-                Debug.Log($"Restoring {m_OldMapButtonsMask}");
-                mapInterface.MapButtonsMask = m_OldMapButtonsMask;
+                mapInterface.MapButtonsInteractivityMask = m_OldMapButtonsMask;
             }
 
             float targetProgress = m_Expanded ? 1f : 0f;
@@ -213,7 +249,7 @@ namespace MRK.UI {
                     m_TopTransform.offsetMin = Vector2.Lerp(m_InitialOffsetMin, Vector2.zero, m_ExpansionProgress);
                     m_DragButton.transform.eulerAngles = Vector3.Lerp(Vector3.zero, rotVec, m_ExpansionProgress);
                 }
-            );
+            ).OnComplete(m_LocationList.UpdateOtherPosition);
 
             UpdateBodyVisibility();
         }

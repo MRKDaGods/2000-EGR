@@ -403,10 +403,10 @@ TextureImporter:
       name: UIAtlas2_12
       rect:
         serializedVersion: 2
-        x: 35
-        y: 40
-        width: 190
-        height: 190
+        x: 36
+        y: 18
+        width: 220
+        height: 220
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -450,7 +450,7 @@ TextureImporter:
         width: 484
         height: 480
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

@@ -139,8 +139,8 @@ namespace MRK.UI {
                 if (ms_Owner.Navigation.IsActive)
                     return;
 
-                int mask = 1 << Info.Index; //bit shifted
-                if ((ms_Owner.MapButtonsMask & mask) != mask)
+                int interactivityMask = 1 << Info.Index; //bit shifted
+                if ((ms_Owner.MapButtonsInteractivityMask & interactivityMask) != interactivityMask)
                     return;
 
                 m_State = !m_State;
@@ -155,8 +155,11 @@ namespace MRK.UI {
                     }
 
                     if (!m_State) {
-                        if (m_Info.OnDown != null)
-                            m_Info.OnDown();
+                        int mask = 1 << Info.Index;
+                        if ((ms_Owner.MapButtonsMask & mask) == mask) {
+                            if (m_Info.OnDown != null)
+                                m_Info.OnDown();
+                        }
                     }
                 }
 
@@ -377,6 +380,7 @@ namespace MRK.UI {
             }
         }
         public int MapButtonsMask { get; set; }
+        public int MapButtonsInteractivityMask { get; set; }
 
         public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers =>
             (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
@@ -394,6 +398,7 @@ namespace MRK.UI {
             m_TempMapButtonInfoBuffer = new List<MapButtonInfo>();
 
             MapButtonsMask = MapButtonIDs.ALL_MASK;
+            MapButtonsInteractivityMask = MapButtonIDs.ALL_MASK;
         }
 
         protected override void OnScreenInit() {
@@ -501,6 +506,7 @@ namespace MRK.UI {
 
             //reset map button mask
             MapButtonsMask = MapButtonIDs.ALL_MASK;
+            MapButtonsInteractivityMask = MapButtonIDs.ALL_MASK;
         }
 
         protected override void OnScreenUpdate() {
