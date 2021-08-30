@@ -1,6 +1,5 @@
 ﻿using DG.Tweening;
 using MRK.UI;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
@@ -29,11 +28,11 @@ namespace MRK {
         Vector3 m_LastZoomPosition;
         bool m_IsInNavigation;
         float m_MinViewportZoomLevel;
-        Vector2 m_CurrentRotation;
-        Vector2 m_TargetRotation;
+        Vector3 m_CurrentRotation;
+        Vector3 m_TargetRotation;
 
         MRKMap m_Map => EGRMain.Instance.FlatMap;
-        public Vector2 MapRotation => m_CurrentRotation;
+        public Vector3 MapRotation => m_CurrentRotation;
 
         public EGRCameraFlat() : base() {
             m_CurrentZoom = m_TargetZoom = 2f; //default zoom
@@ -257,7 +256,7 @@ namespace MRK {
             } */
 
             m_Map.UpdateMap(m_CurrentLatLong, m_CurrentZoom);
-            m_Map.transform.rotation = Quaternion.Euler(m_CurrentRotation.x, m_CurrentRotation.y, 0f);
+            m_Map.transform.rotation = Quaternion.Euler(m_CurrentRotation.x, m_CurrentRotation.y, m_CurrentRotation.z);
         }
 
         void Update() {
@@ -273,7 +272,7 @@ namespace MRK {
         public Vector3 GetMapVelocity() {
             return new Vector3((float)(m_TargetLatLong.x - m_CurrentLatLong.x), (float)(m_TargetLatLong.y - m_CurrentLatLong.y), m_TargetZoom - m_CurrentZoom) * 5f;
         }
-        
+
         public void EnterNavigation() {
             if (!m_IsInNavigation) {
                 m_IsInNavigation = true;
@@ -298,7 +297,7 @@ namespace MRK {
             Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
         }
 
-        public void SetRotation(Vector2 rotation) {
+        public void SetRotation(Vector3 rotation) {
             m_TargetRotation = rotation;
             Client.InputModel.ProcessRotation(ref m_CurrentRotation, ref m_TargetRotation, () => m_CurrentRotation, x => m_CurrentRotation = x);
         }

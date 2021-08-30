@@ -1,98 +1,306 @@
-﻿using System;
-using System.Collections;
+﻿using DG.Tweening;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MRK;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Vectrosity;
-using MRK.GeoJson;
-using Newtonsoft.Json;
+using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
     public class EGRScreenQuickLocations : EGRScreen {
-        EGRGeoJson? m_GeoJson;
-        readonly List<VectorLine> m_Lines;
-        [SerializeField]
-        Material m_LineMaterial;
-        [SerializeField]
-        Texture2D m_LineTexture;
-        GameObject m_LinesParent;
-        string m_RawGeoJson;
+        class LocationList {
+            class Item {
+                RectTransform m_Transform;
+                TextMeshProUGUI m_Name;
+                EGRQuickLocation m_Location;
 
-        public EGRScreenQuickLocations() {
-            m_Lines = new List<VectorLine>();
-        }
+                public Item(RectTransform transform) {
+                    m_Transform = transform;
 
-        protected override void OnScreenInit() {
-        }
+                    m_Name = transform.GetElement<TextMeshProUGUI>("Name");
 
-        protected override void OnScreenShow() {
-            //StartCoroutine(OnShowCoroutine());
-        }
+                    transform.GetComponent<Button>().onClick.AddListener(OnButtonClick);
+                }
 
-        IEnumerator OnShowCoroutine() {
-            if (!m_GeoJson.HasValue) {
-                Reference<bool> awaitRef = ReferencePool<bool>.Default.Rent();
-                ResourceRequest req = Resources.LoadAsync<TextAsset>("Map/countries");
-                while (!req.isDone)
-                    yield return new WaitForSeconds(0.1f);
+                public void SetActive(bool active) {
+                    m_Transform.gameObject.SetActive(active);
+                }
 
-                string json = ((TextAsset)req.asset).text;
+                public void SetLocation(EGRQuickLocation location) {
+                    m_Location = location;
+                    m_Name.text = m_Location.Name;
+                }
 
-                new System.Threading.Thread(() => {
-                    m_GeoJson = JsonConvert.DeserializeObject<EGRGeoJson>(json);
-
-                        awaitRef.Value = true;
-                }).Start();
-
-                m_LinesParent = new GameObject("Lines Parent");
-
-                while (!awaitRef.Value)
-                    yield return new WaitForSeconds(0.1f);
-
-                Debug.Log("e");
-                ReferencePool<bool>.Default.Free(awaitRef);
-            }
-
-            int polyGen = 0;
-            foreach (EGRGeoJsonFeature feature in m_GeoJson.Value.Features) {
-                if (feature.Geometry == null || feature.Geometry.Polygons.Count == 0)
-                    continue;
-
-                foreach (List<Vector2d> poly in feature.Geometry.Polygons) {
-                    VectorLine vl = new VectorLine("LR", new List<Vector3>(), m_LineTexture, 1f, LineType.Continuous, Joins.Weld);
-                    vl.material = m_LineMaterial;
-                    vl.color = Color.yellow;
-
-                    foreach (Vector2d geoPoint in poly) {
-                        Vector3 wPos = MRKMapUtils.GeoToWorldGlobePosition(geoPoint.x, geoPoint.y, 1505f);
-                        wPos += Client.GlobalMap.transform.position;
-                        vl.points3.Add(wPos);
-                    }
-
-                    vl.points3.Add(vl.points3[0]); //loop
-
-                    GameObject subLR = new GameObject("subLR");
-                    subLR.transform.parent = m_LinesParent.transform;
-                    vl.drawTransform = subLR.transform;
-                    vl.Draw3D();      
-
-                    m_Lines.Add(vl);
-
-                    polyGen++;
-                    if (polyGen % 50 == 0) {
-                        yield return new WaitForSeconds(0.5f);
-                    }
+                void OnButtonClick() {
+                    ms_Instance.OpenDetailedView(m_Location);
                 }
             }
 
-            m_LinesParent.transform.position = Client.GlobalMap.transform.position;
-            m_LinesParent.transform.rotation = Client.GlobalMap.transform.rotation;
+            GameObject m_ItemPrefab;
+            readonly ObjectPool<Item> m_ItemPool;
+            readonly List<Item> m_ActiveItems;
+            RectTransform m_Transform;
 
-            //m_Lines.ForEach(x => x.Draw3DAuto());
+            public int ItemCount => m_ActiveItems.Count;
+            public Transform ContentTransform { get; private set; }
+
+            public LocationList(RectTransform transform) {
+                m_Transform = transform;
+
+                ContentTransform = transform.Find("Viewport/Content");
+                m_ItemPrefab = ContentTransform.Find("Item").gameObject;
+                m_ItemPrefab.SetActive(false);
+
+                m_ItemPool = new ObjectPool<Item>(() => {
+                    GameObject obj = Instantiate(m_ItemPrefab, m_ItemPrefab.transform.parent);
+                    Item item = new Item((RectTransform)obj.transform);
+                    return item;
+                });
+
+                m_ActiveItems = new List<Item>();
+            }
+
+            public void SetLocations(List<EGRQuickLocation> locs) {
+                int dif = m_ActiveItems.Count - locs.Count;
+                if (dif > 0) {
+                    for (int i = 0; i < dif; i++) {
+                        Item item = m_ActiveItems[0];
+                        item.SetActive(false);
+                        m_ActiveItems.RemoveAt(0);
+                        m_ItemPool.Free(item);
+                    }
+                }
+                else if (dif < 0) {
+                    for (int i = 0; i < -dif; i++) {
+                        Item item = m_ItemPool.Rent();
+                        m_ActiveItems.Add(item);
+                    }
+                }
+
+                for (int i = 0; i < locs.Count; i++) {
+                    Item item = m_ActiveItems[i];
+                    item.SetActive(true);
+                    item.SetLocation(locs[i]);
+                }
+            }
+
+            public void SetActive(bool active) {
+                m_Transform.gameObject.SetActive(active);
+            }
+        }
+
+        class DetailedView {
+            RectTransform m_Transform;
+            TextMeshProUGUI m_Name;
+            EGRQuickLocation m_Location;
+
+            public DetailedView(RectTransform transform) {
+                m_Transform = transform;
+                m_Name = transform.GetElement<TextMeshProUGUI>("Layout/Top/Name");
+
+                transform.GetElement<Button>("Layout/Top/Close").onClick.AddListener(OnCloseClick);
+            }
+
+            public void SetActive(bool active) {
+                m_Transform.gameObject.SetActive(active);
+            }
+
+            public void SetLocation(EGRQuickLocation loc) {
+                m_Location = loc;
+                m_Name.text = loc.Name;
+            }
+
+            void OnCloseClick() {
+                ms_Instance.CloseDetailedView();
+            }
+        }
+
+        RectTransform m_TopTransform;
+        Button m_DragButton;
+        Vector2 m_InitialOffsetMin;
+        bool m_Expanded;
+        float m_ExpansionProgress;
+        RectTransform m_BodyTransform;
+        LocationList m_LocationList;
+        DetailedView m_DetailedView;
+        TextMeshProUGUI m_NoLocationsLabel;
+        Button m_FinishButton;
+        bool m_IsChoosingLocation;
+        int m_OldMapButtonsMask;
+
+        static EGRScreenQuickLocations ms_Instance;
+
+        protected override void OnScreenInit() {
+            ms_Instance = this;
+
+            m_TopTransform = (RectTransform)GetTransform("Top");
+
+            m_DragButton = m_TopTransform.GetElement<Button>("Drag");
+            m_DragButton.onClick.AddListener(OnDragClick);
+
+            m_InitialOffsetMin = m_TopTransform.offsetMin;
+
+            m_BodyTransform = (RectTransform)GetTransform("Body");
+
+            m_LocationList = new LocationList((RectTransform)m_BodyTransform.Find("LocationList"));
+            m_DetailedView = new DetailedView((RectTransform)m_BodyTransform.Find("DetailedView"));
+
+            m_NoLocationsLabel = m_BodyTransform.GetElement<TextMeshProUGUI>("LocationList/Viewport/Content/NoLocs");
+
+            m_LocationList.ContentTransform.GetElement<Button>("Other/CurLoc").onClick.AddListener(AddLocationFromCurrentLocation);
+            m_LocationList.ContentTransform.GetElement<Button>("Other/Custom").onClick.AddListener(AddLocationFromCustom);
+
+            m_FinishButton = GetElement<Button>("FinishButton");
+            m_FinishButton.onClick.AddListener(OnFinishClick);
+        }
+
+        protected override void OnScreenShow() {
+            Client.GlobeCamera.SetDistanceEased(5000f);
+
+            Client.Runnable.RunLater(() => Client.GlobeCamera.SwitchToFlatMapExternal(() => {
+                Client.FlatCamera.SetRotation(new Vector3(35f, 0f, 0f));
+            }), 0.4f);
+
+            EventManager.Register<EGREventScreenHidden>(OnScreenHidden);
+
+            UpdateBodyVisibility();
+            m_DetailedView.SetActive(false); //hide initially
+
+            UpdateNoLocationLabelVisibility();
+            UpdateFinishButtonVisibility();
+            UpdateLocationListFromLocal();
+        }
+
+        protected override void OnScreenHide() {
+            Client.FlatCamera.SetRotation(Vector3.zero);
+            EventManager.Unregister<EGREventScreenHidden>(OnScreenHidden);
+        }
+
+        void OnScreenHidden(EGREventScreenHidden evt) {
+            if (evt.Screen == ScreenManager.MapInterface) {
+                HideScreen();
+            }
+        }
+
+        void OnDragClick() {
+            if (m_IsChoosingLocation)
+                return;
+
+            m_Expanded = !m_Expanded;
+            UpdateMainView();
+        }
+
+        void UpdateMainView(bool? forcedState = null) {
+            if (forcedState.HasValue) {
+                m_Expanded = forcedState.Value;
+            }
+
+            EGRScreenMapInterface mapInterface = ScreenManager.MapInterface;
+            if (m_Expanded) {
+                if (!m_IsChoosingLocation)
+                    m_OldMapButtonsMask = mapInterface.MapButtonsMask;
+                mapInterface.MapButtonsMask = 0; //none?
+            }
+            else if (!m_IsChoosingLocation) {
+                Debug.Log($"Restoring {m_OldMapButtonsMask}");
+                mapInterface.MapButtonsMask = m_OldMapButtonsMask;
+            }
+
+            float targetProgress = m_Expanded ? 1f : 0f;
+            Vector3 rotVec = new Vector3(0f, 0f, 180f);
+            DOTween.To(() => m_ExpansionProgress, x => m_ExpansionProgress = x, targetProgress, 0.3f)
+                .SetEase(Ease.OutSine)
+                .OnUpdate(() => {
+                    m_TopTransform.offsetMin = Vector2.Lerp(m_InitialOffsetMin, Vector2.zero, m_ExpansionProgress);
+                    m_DragButton.transform.eulerAngles = Vector3.Lerp(Vector3.zero, rotVec, m_ExpansionProgress);
+                }
+            );
+
+            UpdateBodyVisibility();
+        }
+
+        void UpdateBodyVisibility() {
+            m_BodyTransform.gameObject.SetActive(m_Expanded);
+        }
+
+        void OpenDetailedView(EGRQuickLocation location) {
+            m_DetailedView.SetLocation(location);
+            m_DetailedView.SetActive(true);
+            m_LocationList.SetActive(false);
+        }
+
+        void CloseDetailedView() {
+            m_DetailedView.SetActive(false);
+            m_LocationList.SetActive(true);
+        }
+
+        void UpdateNoLocationLabelVisibility() {
+            m_NoLocationsLabel.gameObject.SetActive(m_LocationList.ItemCount == 0);
+        }
+
+        void AddLocation(Vector2d coords) {
+            EGRPopupConfirmation conf = ScreenManager.GetPopup<EGRPopupConfirmation>();
+            conf.SetYesButtonText(Localize(EGRLanguageData.ADD));
+            conf.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+            conf.ShowPopup(
+                Localize(EGRLanguageData.QUICK_LOCATIONS),
+                string.Format(Localize(EGRLanguageData.ADD_CURRENT_LOCATION____0__), coords),
+                (_, res) => {
+                    if (res == EGRPopupResult.YES) {
+                        EGRPopupInputText input = ScreenManager.GetPopup<EGRPopupInputText>();
+                        input.ShowPopup(
+                            Localize(EGRLanguageData.QUICK_LOCATIONS),
+                            Localize(EGRLanguageData.ENTER_LOCATION_NAME),
+                            (_, _res) => {
+                                EGRQuickLocation.Add(input.Input, coords);
+                                UpdateLocationListFromLocal();
+                            },
+                            this
+                        );
+                    }
+                },
+                this
+            );
+        }
+
+        void AddLocationFromCurrentLocation() {
+            Client.LocationService.GetCurrentLocation((success, coords, bearing) => {
+                if (success) {
+                    AddLocation(coords.Value);
+                }
+            });
+        }
+
+        void AddLocationFromCustom() {
+            m_IsChoosingLocation = true;
+            UpdateFinishButtonVisibility();
+
+            UpdateMainView(false);
+
+            ScreenManager.MapInterface.LocationOverlay.ChooseLocationOnMap((coords) => {
+                AddLocation(coords);
+            });
+        }
+
+        void UpdateLocationListFromLocal() {
+            m_LocationList.SetLocations(EGRQuickLocation.Locations);
+            UpdateNoLocationLabelVisibility();
+        }
+
+        void OnFinishClick() {
+            if (!m_IsChoosingLocation)
+                return;
+
+            UpdateMainView(true);
+
+            m_IsChoosingLocation = false;
+            UpdateFinishButtonVisibility();
+
+            ScreenManager.MapInterface.LocationOverlay.Finish();
+        }
+
+        void UpdateFinishButtonVisibility() {
+            m_FinishButton.gameObject.SetActive(m_IsChoosingLocation);
         }
     }
 }
+

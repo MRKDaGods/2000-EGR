@@ -265,10 +265,10 @@ namespace MRK.UI {
 
                     //QUICK LOCATIONS
                     case 2:
-                        HideScreen(() => {
+                        //HideScreen(() => {
                             scr.ShowScreen();
                             Manager.GetScreen<EGRScreenQuickLocations>().ShowScreen();
-                        }, 0f, true);
+                        //}, 0f, true);
 
                         break;
                     

@@ -102,6 +102,8 @@ namespace MRK {
             Vector2d mercator = Client.FlatMap.CenterMercator;
             transform.localPosition = new Vector3((float)(m_Rect.Center.x - mercator.x) * m_WorldRelativeScale * scaleFactor, 0f,
                      (float)(m_Rect.Center.y - mercator.y) * m_WorldRelativeScale * scaleFactor);
+
+            transform.localEulerAngles = Vector3.zero;
         }
 
         public void RecyclePlane(bool destroyMat = true) {

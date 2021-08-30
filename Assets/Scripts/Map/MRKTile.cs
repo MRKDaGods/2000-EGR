@@ -235,7 +235,7 @@ namespace MRK {
             m_LastLock = texLock;
 
             int lowIdx = low.ToInt();
-            bool isLocalTile = ms_CachedTiles[lowIdx].ContainsKey(m_Map.Tileset) && ms_CachedTiles[lowIdx][m_Map.Tileset].ContainsKey(TextureID);
+            bool isLocalTile = HasTexture(TextureID, low);
             float sqrMag;
             while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
                 yield return new WaitForSeconds(Time.deltaTime * m_SiblingIndex);
@@ -243,6 +243,7 @@ namespace MRK {
 
             //Debug.Log($"{(DateTime.Now - t0).TotalMilliseconds} ms elapsed");
 
+            isLocalTile = HasTexture(TextureID, low); //after waiting
             if (isLocalTile) {
                 SetTexture(ms_CachedTiles[lowIdx][m_Map.Tileset][TextureID]);
             }

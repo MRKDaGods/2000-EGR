@@ -31,5 +31,14 @@ namespace MRK {
 
             return pwd.Length >= 8 && pwd.Length <= 32;
         }
+
+        public static int FillBits(int len) {
+            int res = 0;
+            for (int i = 0; i <= len; i++) {
+                res |= 1 << i;
+            }
+
+            return res;
+        }
     }
 }

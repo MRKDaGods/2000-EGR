@@ -42,8 +42,8 @@ namespace MRK {
         }
 
         public bool ShouldProcessControllerMessage(EGRControllerMessage msg, bool ignoreUI = false) {
-            if (Client.ActiveScreens.Count > 1)
-                return false;
+            //if (Client.ActiveScreens.Count > 1)
+            //    return false;
 
             if (!ignoreUI) {
                 EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;

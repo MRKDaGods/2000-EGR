@@ -139,6 +139,10 @@ namespace MRK.UI {
                 if (ms_Owner.Navigation.IsActive)
                     return;
 
+                int mask = 1 << Info.Index; //bit shifted
+                if ((ms_Owner.MapButtonsMask & mask) != mask)
+                    return;
+
                 m_State = !m_State;
                 m_LastChangeTime = Time.time;
 
@@ -310,6 +314,9 @@ namespace MRK.UI {
             public static int NAVIGATION = 3;
             public static int BACK_TO_EARTH = 4;
             public static int SPACE_FOV = 5;
+            public static int MAX = 6;
+
+            public static int ALL_MASK = EGRUtils.FillBits(MAX);
         }
 
         MRKMap m_Map;
@@ -348,6 +355,7 @@ namespace MRK.UI {
         EGRMapInterfacePlaceMarkersResources m_PlaceMarkersResources;
         [SerializeField]
         EGRMapInterfaceResources m_MapInterfaceResources;
+        bool m_MapButtonsEnabled;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -359,6 +367,16 @@ namespace MRK.UI {
         public Transform ScalebarParent { get; private set; }
         public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
         public EGRMapInterfaceResources MapInterfaceResources => m_MapInterfaceResources;
+        public bool MapButtonsEnabled {
+            get {  return m_MapButtonsEnabled; }
+            set {
+                if (m_MapButtonsEnabled != value) {
+                    m_MapButtonsEnabled = value;
+                    RegenerateMapButtons();
+                }
+            }
+        }
+        public int MapButtonsMask { get; set; }
 
         public EGRMapInterfaceComponentPlaceMarkers PlaceMarkers =>
             (EGRMapInterfaceComponentPlaceMarkers)m_InterfaceComponents[EGRMapInterfaceComponentType.PlaceMarkers];
@@ -374,6 +392,8 @@ namespace MRK.UI {
             m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
             m_MapButtons = new List<MapButton>();
             m_TempMapButtonInfoBuffer = new List<MapButtonInfo>();
+
+            MapButtonsMask = MapButtonIDs.ALL_MASK;
         }
 
         protected override void OnScreenInit() {
@@ -456,6 +476,8 @@ namespace MRK.UI {
             foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
                 pair.Value.OnComponentShow();
             }
+
+            MapButtonsEnabled = true;
         }
 
         protected override void OnScreenHide() {
@@ -476,6 +498,9 @@ namespace MRK.UI {
             foreach (KeyValuePair<EGRMapInterfaceComponentType, EGRMapInterfaceComponent> pair in m_InterfaceComponents) {
                 pair.Value.OnComponentHide();
             }
+
+            //reset map button mask
+            MapButtonsMask = MapButtonIDs.ALL_MASK;
         }
 
         protected override void OnScreenUpdate() {
@@ -509,26 +534,35 @@ namespace MRK.UI {
                 Client.FlatCamera.UpdateMapViewingAngles(null, 0f);
             }
 
-            //set base map buttons
-            List<int> ids = ListPool<int>.Default.Rent();
-            ids.Add(MapButtonIDs.SETTINGS);
-            ids.Add(MapButtonIDs.CURRENT_LOCATION);
+            RegenerateMapButtons();
+        }
 
-            if (mode == EGRMapMode.Globe) {
-                if (ObservedTransform != Client.GlobalMap.transform) {
+        void RegenerateMapButtons() {
+            if (MapButtonsEnabled) {
+                //set base map buttons
+                List<int> ids = ListPool<int>.Default.Rent();
+                ids.Add(MapButtonIDs.SETTINGS);
+                ids.Add(MapButtonIDs.CURRENT_LOCATION);
+
+                EGRMapMode mode = Client.MapMode;
+                if (mode == EGRMapMode.Globe) {
+                    if (ObservedTransform != Client.GlobalMap.transform) {
+                        ids.Add(MapButtonIDs.BACK_TO_EARTH);
+                    }
+
+                    ids.Add(MapButtonIDs.SPACE_FOV);
+                }
+                else if (mode == EGRMapMode.Flat) {
+                    ids.Add(MapButtonIDs.HOTTEST_TRENDS);
+                    ids.Add(MapButtonIDs.NAVIGATION);
                     ids.Add(MapButtonIDs.BACK_TO_EARTH);
                 }
 
-                ids.Add(MapButtonIDs.SPACE_FOV);
+                SetMapButtons(ids.ToArray());
+                ListPool<int>.Default.Free(ids);
             }
-            else if (mode == EGRMapMode.Flat) {
-                ids.Add(MapButtonIDs.HOTTEST_TRENDS);
-                ids.Add(MapButtonIDs.NAVIGATION);
-                ids.Add(MapButtonIDs.BACK_TO_EARTH);
-            }
-
-            SetMapButtons(ids.ToArray());
-            ListPool<int>.Default.Free(ids);
+            else
+                SetMapButtons(new MapButtonInfo[0]);
         }
 
         void OnControllerMessageReceived(EGRControllerMessage msg) {
@@ -735,9 +769,9 @@ namespace MRK.UI {
             ScreenManager.GetScreen<EGRPopupPlaceGroup>().Warmup();
         }
 
-        EGRGeoJson? m_GeoJson;
+        //EGRGeoJson? m_GeoJson;
 
-        void OnGUI() {
+        /*void OnGUI() {
             //render geojson borders
             /*if (Client.MapMode != EGRMapMode.Flat)
                 return;
@@ -771,8 +805,8 @@ namespace MRK.UI {
                 }
             }
 
-            Debug.Log($"DC={drawCount}");*/
-        }
+            Debug.Log($"DC={drawCount}");
+        } */
 
         public float EvaluateMarkerScale(float time) {
             return m_MarkerScaleCurve.Evaluate(time);
@@ -798,6 +832,18 @@ namespace MRK.UI {
 
             foreach (int i in indices) {
                 m_TempMapButtonInfoBuffer.Add(m_ButtonInfos[i]);
+            }
+
+            SetMapButtons(m_TempMapButtonInfoBuffer.ToArray());
+        }
+
+        void SetMapButtonsBitShifted(int shift, params int[] indices) {
+            if (m_TempMapButtonInfoBuffer.Count > 0) {
+                m_TempMapButtonInfoBuffer.Clear();
+            }
+
+            foreach (int i in indices) {
+                m_TempMapButtonInfoBuffer.Add(m_ButtonInfos[i >> shift]);
             }
 
             SetMapButtons(m_TempMapButtonInfoBuffer.ToArray());

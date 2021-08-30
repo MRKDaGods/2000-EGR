@@ -12,6 +12,8 @@ namespace MRK {
         Vector2d? m_LastFetchedCoords;
         float? m_LastFetchedBearing;
 
+        public bool AllowMapRotation { get; set; }
+
         void Start() {
             m_CurrentLocationSprite = ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationSprite;
             m_CurrentLocationSprite.gameObject.SetActive(false);
@@ -80,7 +82,9 @@ namespace MRK {
 
             OnMapUpdated(); //position marker
 
-            Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
+            if (AllowMapRotation) {
+                Client.FlatCamera.SetRotation(new Vector2(0f, bearing.Value));
+            }
 
             /*if (Client.NavigationManager.CurrentDirections.HasValue) {
                 TestLineSegs();

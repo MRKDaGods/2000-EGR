@@ -149,7 +149,7 @@ namespace MRK {
             return Vector2d.zero;
         }
 
-        void SwitchToFlatMap() {
+        public void SwitchToFlatMap() {
             Client.SetMapMode(EGRMapMode.Flat);
             Client.FlatCamera.SetInitialSetup(GetCurrentGeoPos(), 3f);
 
@@ -245,6 +245,20 @@ namespace MRK {
             m_DistTween.intId = EGRTweenIDs.IntId;
 
             m_DistanceSpeed = 8f;
+        }
+
+        public void SetDistanceEased(float dist) {
+            m_TargetDistance = dist;
+            /*m_TargetDistance = Mathf.Clamp(dist, 3100f, 20000f);
+
+            if (m_DistTween != null) {
+                DOTween.Kill(m_DistTween.id);
+            }
+
+            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.6f).SetEase(Ease.OutSine);
+            m_DistTween.intId = EGRTweenIDs.IntId;
+
+            m_DistanceSpeed = 8f; */
         }
 
         void ProcessZoomScroll(float delta) {

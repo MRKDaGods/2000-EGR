@@ -206,5 +206,13 @@ namespace MRK {
 
             return null;
         }
+
+        public static bool IsNotEqual(this float f, float other = 0f) {
+            return f - other > Mathf.Epsilon;
+        }
+
+        public static Vector3 ToCoefficientVector(this Vector3 vector) {
+            return new Vector3(vector.x.IsNotEqual() ? 1f : 0f, vector.y.IsNotEqual() ? 1f : 0f, vector.z.IsNotEqual() ? 1f : 0f);
+        }
     }
 }

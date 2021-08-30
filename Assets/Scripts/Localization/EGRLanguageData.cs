@@ -144,6 +144,18 @@ namespace MRK {
 		//<b>{0}</b> RESULTS
 		_b__0___b__RESULTS = 47,
 
+		//ADD
+		ADD = 48,
+
+		//QUICK LOCATIONS
+		QUICK_LOCATIONS = 49,
+
+		//ADD CURRENT LOCATION? ({0})
+		ADD_CURRENT_LOCATION____0__ = 50,
+
+		//ENTER LOCATION NAME
+		ENTER_LOCATION_NAME = 51,
+
 		__LANG_DATA_MAX
 	}
 }

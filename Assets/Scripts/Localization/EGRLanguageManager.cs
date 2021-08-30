@@ -24,7 +24,7 @@ namespace MRK {
         }
 
         public void Init() {
-            CurrentLanguage = (EGRLanguage)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_LANGUAGE, 0);
+            CurrentLanguage = (EGRLanguage)PlayerPrefs.GetInt(EGRConstants.EGR_LOCALPREFS_SETTINGS_LANGUAGE, 0);
             Parse(Resources.Load<TextAsset>($"Lang/{CurrentLanguage}"), m_Strings);
         }
 
