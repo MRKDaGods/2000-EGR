@@ -10,6 +10,9 @@ namespace MRK {
         float m_Speed;
         Vector3 m_Position;
         bool m_Direction;
+        [SerializeField]
+        bool m_ScaleValues;
+        Vector3? m_ScaleVector;
 
         void Start() {
             m_Position = transform.localPosition;
@@ -22,6 +25,14 @@ namespace MRK {
 
         void LateUpdate() {
             Vector3 dev = m_Direction ? m_DeviationTop : m_DeviationBottom;
+            if (m_ScaleValues) {
+                if (m_ScaleVector == null) {
+                    m_ScaleVector = new Vector3(1f.ScaleX(), 1f.ScaleY(), 1f.ScaleX());
+                }
+
+                dev = EGRUtils.MultiplyVectors(dev, m_ScaleVector.Value);
+            }
+
             float adv = (m_Direction ? 1f : -1f) * m_Speed * Time.deltaTime;
             transform.localPosition += dev.ToCoefficientVector() * adv;
 

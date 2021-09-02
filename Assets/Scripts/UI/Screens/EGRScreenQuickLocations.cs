@@ -52,7 +52,7 @@ namespace MRK.UI {
                 m_ItemPrefab = ContentTransform.Find("Item").gameObject;
                 m_ItemPrefab.SetActive(false);
 
-                Other = (RectTransform)transform.Find("OtherVP/Other");
+                Other = (RectTransform)transform.Find("Other");
                 m_ScrollRect = transform.GetComponent<ScrollRect>();
 
                 m_ItemPool = new ObjectPool<Item>(() => {
@@ -95,15 +95,19 @@ namespace MRK.UI {
             }
 
             public void UpdateOtherPosition() {
+                return;
+
                 Rect viewportRect = m_ScrollRect.viewport.rect;
                 Rect contentRect = ((RectTransform)ContentTransform).rect;
 
                 //check if contentRect bottom is below other
-                float baseY = contentRect.y < viewportRect.y ? m_ScrollRect.viewport.position.y - (viewportRect.height * 1.05f) 
-                    : ContentTransform.position.y - contentRect.height;
+                float baseY = contentRect.y < viewportRect.y ? m_ScrollRect.viewport.position.y - (viewportRect.height * 1.1f)
+                    : ContentTransform.position.y - contentRect.height * 1.1f;
+
+                Debug.Log($"METHOD={contentRect.y < viewportRect.y}, out baseY={baseY}");
 
                 Vector3 oldPos = Other.position;
-                Other.position = new Vector3(oldPos.x, baseY - Other.rect.height, oldPos.z);
+                Other.position = new Vector3(oldPos.x, baseY - Other.rect.height * 0.5f, oldPos.z);
             }
         }
 
@@ -160,7 +164,7 @@ namespace MRK.UI {
 
             m_TopTransform = (RectTransform)GetTransform("Top");
 
-            m_DragButton = m_TopTransform.GetElement<Button>("Drag");
+            m_DragButton = m_TopTransform.GetElement<Button>("Layout/Drag");
             m_DragButton.onClick.AddListener(OnDragClick);
 
             m_InitialOffsetMin = m_TopTransform.offsetMin;

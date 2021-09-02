@@ -40,5 +40,9 @@ namespace MRK {
 
             return res;
         }
+
+        public static Vector3 MultiplyVectors(Vector3 lhs, Vector3 rhs) {
+            return new Vector3(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+        }
     }
 }
