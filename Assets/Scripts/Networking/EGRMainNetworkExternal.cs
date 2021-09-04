@@ -168,5 +168,9 @@ namespace MRK.Networking {
         public bool RetrieveNetInfo(EGRPacketReceivedCallback<PacketInRetrieveNetInfo> callback) {
             return m_Network.SendPacket(new PacketOutRetrieveNetInfo(), DeliveryMethod.ReliableOrdered, callback);
         }
+
+        public bool CancelTileFetch(string tileset, int hash, bool low) {
+            return m_Network.SendPacket(new PacketOutCancelFetchTile(tileset, hash, low), DeliveryMethod.ReliableUnordered);
+        }
     }
 }

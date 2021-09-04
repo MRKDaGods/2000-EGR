@@ -43,6 +43,8 @@
         PLCIDFETCH = 0x32,
         //fetch place v2
         PLCFETCHV2 = 0x33,
+        //cancel tile fetch
+        TILEFETCHCANCEL = 0x34,
 
         //geo autocomplete
         GEOAUTOCOMPLETE = 0x40,

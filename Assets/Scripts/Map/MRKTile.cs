@@ -34,6 +34,7 @@ namespace MRK {
         Reference<UnityWebRequest> m_WebRequest;
         bool m_IsTextureIDDirty;
         MRKTileID m_TextureID;
+        string m_TextureTileset;
 
         public MRKTileID ID { get; private set; }
         public MRKTileID TextureID {
@@ -249,6 +250,7 @@ namespace MRK {
             }
             else {
                 string tileset = m_Map.Tileset;
+                m_TextureTileset = tileset;
                 MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, TextureID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
                 m_WebRequest = ObjectPool<Reference<UnityWebRequest>>.Default.Rent();
@@ -439,8 +441,22 @@ namespace MRK {
         }
 
         public void OnDestroy() {
-            if (m_WebRequest != null && m_WebRequest.Value != null && !m_WebRequest.Value.isDone)
-                m_WebRequest.Value.Abort();
+            if (m_WebRequest != null) {
+                //fetching
+                if (m_WebRequest.Value != null) {
+                    //local
+                    if (!m_WebRequest.Value.isDone) {
+                        m_WebRequest.Value.Abort();
+                    }
+                }
+                else {
+                    //remote cdn
+                    m_Map.NetworkingClient.MainNetworkExternal.CancelTileFetch(
+                        m_TextureTileset,
+                        TextureID.GetHashCode(),
+                        m_LastLock == ms_LowFetcherLock);
+                }
+            }
 
             if (m_Tween.IsValidTween())
                 DOTween.Kill(m_Tween);
@@ -449,13 +465,19 @@ namespace MRK {
             if (m_MeshRenderer != null) {
                 if (m_SiblingIndex < 15 && m_Map.TileDestroyZoomUpdatedDirty && !ID.Stationary) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
-                    tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect.Value, ID.Z, () => {
-                        MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
-                        if (tile != null)
-                            return tile.HasAnyTexture;
+                    tilePlane.InitPlane(
+                        (Texture2D)m_MeshRenderer.material.mainTexture,
+                        m_Map.TileSize,
+                        Rect.Value,
+                        ID.Z,
+                        () => {
+                            MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
+                            if (tile != null)
+                                return tile.HasAnyTexture;
 
-                        return false;
-                    }, m_SiblingIndex);
+                            return false;
+                        },
+                        m_SiblingIndex);
 
                     m_Map.ActivePlanes.Add(tilePlane);
                 }
