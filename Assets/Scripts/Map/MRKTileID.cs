@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MRK.Networking.Packets;
 using UnityEngine;
 
 namespace MRK {
-    public class MRKTileID {
+    public class MRKTileID : IMRKNetworkSerializable<MRKTileID> {
         public int Z { get; private set; }
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Magnitude { get; private set; }
         public bool Stationary { get; private set; }
+
+        public MRKTileID() {
+            Z = X = Y = 0;
+        }
 
         public MRKTileID(int z, int x, int y, bool stationary = false) {
             Z = z;
@@ -70,6 +70,20 @@ namespace MRK {
 
         public Vector3Int ToVector() {
             return new Vector3Int(X, Y, Z);
+        }
+
+        public void Write(PacketDataStream stream) {
+            stream.WriteInt32(Z);
+            stream.WriteInt32(X);
+            stream.WriteInt32(Y);
+        }
+
+        public void Read(PacketDataStream stream) {
+            Z = stream.ReadInt32();
+            X = stream.ReadInt32();
+            Y = stream.ReadInt32();
+
+            Magnitude = X * X + Y * Y;
         }
     }
 }

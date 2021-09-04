@@ -104,6 +104,12 @@ namespace MRK.Networking.Packets {
             return list;
         }
 
+        public T Read<T>() where T : IMRKNetworkSerializable<T>, new() {
+            T t = new T();
+            t.Read(this);
+            return t;
+        }
+
         public void WriteByte(byte b) {
             m_Writer.Write(b);
         }
@@ -176,6 +182,10 @@ namespace MRK.Networking.Packets {
                     }
                 }
             }
+        }
+
+        public void Write<T>(T t) where T : IMRKNetworkSerializable<T>, new() {
+            t.Write(this);
         }
 
         public void Clean() {

@@ -28,7 +28,7 @@ namespace MRK.Networking {
         }
 
         const int INVALID_BUFFERED_REQUEST = -1;
-        const float PACKET_TIMEOUT = 15f; //secs
+        const float PACKET_TIMEOUT = 30f; //secs
         const float CONNECTION_DELAY = 2f;
 
         NetManager m_Network;

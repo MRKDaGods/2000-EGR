@@ -439,7 +439,7 @@ namespace MRK {
         }
 
         public void OnDestroy() {
-            if (m_WebRequest != null && !m_WebRequest.Value.isDone)
+            if (m_WebRequest != null && m_WebRequest.Value != null && !m_WebRequest.Value.isDone)
                 m_WebRequest.Value.Abort();
 
             if (m_Tween.IsValidTween())

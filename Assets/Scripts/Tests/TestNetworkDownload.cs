@@ -36,7 +36,7 @@ namespace MRK {
         }
 
         bool NetFetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
-            return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableSequenced, callback);
+            return false; // return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableSequenced, callback);
         }
 
         IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
@@ -49,11 +49,11 @@ namespace MRK {
 
             EGRDownloadContext downloadContext = null;
             void __reqCb(EGREventNetworkDownloadRequest evt) {
-                if (evt.Context.ID == response.DownloadID) {
+                /*if (evt.Context.ID == response.DownloadID) {
                     evt.IsAccepted = true;
                     downloadContext = evt.Context;
                     EGREventManager.Instance.Unregister<EGREventNetworkDownloadRequest>(__reqCb);
-                }
+                }*/
             }
 
             if (!NetFetchTile(tileSet, id, __cb)) {
@@ -73,10 +73,10 @@ namespace MRK {
                 }
             }
 
-            if (timedOut || response.Response != EGRStandardResponse.SUCCESS) {
+            /*if (timedOut || response.Response != EGRStandardResponse.SUCCESS) {
                 context.Error = true;
                 yield break;
-            }
+            }*/
 
             timer = 0f;
             while (downloadContext == null) {

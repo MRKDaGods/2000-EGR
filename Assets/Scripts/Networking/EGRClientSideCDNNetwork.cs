@@ -58,5 +58,12 @@ namespace MRK.Networking {
 
             return m_Network.SendPacket(new PacketOutRequestCDNResource(resource, sig), DeliveryMethod.ReliableOrdered, callback);
         }
+
+        public bool FetchTile(string tileset, MRKTileID tileID, bool lowRes, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
+            if (m_Network == null)
+                return false;
+
+            return m_Network.SendPacket(new PacketOutFetchTile(tileset, tileID, lowRes), DeliveryMethod.ReliableOrdered, callback);
+        }
     }
 }

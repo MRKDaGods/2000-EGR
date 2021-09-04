@@ -116,7 +116,7 @@ namespace MRK.Networking {
         /// <param name="callback">Response callback</param>
         /// <returns></returns>
         public bool FetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
-            return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
+            return false; // return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>

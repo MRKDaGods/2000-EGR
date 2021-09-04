@@ -82,104 +82,88 @@ namespace MRK {
 
     public class MRKRemoteTileFetcher : MRKTileFetcher {
         public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, Reference<UnityWebRequest> request, bool low = false) {
-        __start:
-            MRKTilesetProvider provider = MRKTileRequestor.Instance.GetCurrentTilesetProvider();
-            string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
-            if (low) {
-                //lower res
-                path = path.Replace("@2x", "");
-                    //.Replace("/512/", "/256/");
-            }
-
-            UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
-            request.Value = req;
-            req.SendWebRequest();
-
-            while (!req.isDone) {
-                yield return new WaitForSeconds(0.2f);
-            }
-
-            if (req.result != UnityWebRequest.Result.Success) {
+            EGRClientSideCDNNetwork cdn = EGRMain.Instance.NetworkingClient.ClientSideCDNNetwork;
+            if (cdn == null) {
                 context.Error = true;
-                Debug.Log(req.error + req.downloadHandler.error);
+                Debug.Log("CDN is null");
                 yield break;
             }
 
-            context.Texture = DownloadHandlerTexture.GetContent(req);
-            context.Data = req.downloadHandler.data;
+            Reference<bool> actionDoneRef = ReferencePool<bool>.Default.Rent();
+            PacketInFetchTile responsePacket = null;
+            actionDoneRef.Value = false;
+            if (!cdn.FetchTile(tileSet, id, low, (response) => {
+                if (actionDoneRef == null) //externally released
+                    return;
 
-            if (context.Texture == null) goto __start;
+                actionDoneRef.Value = true;
+                responsePacket = response;
+
+            })) {
+                Debug.Log("CDN not connected");
+                goto __end;
+            }
+
+            float time = 0f;
+            while (!actionDoneRef.Value) {
+                yield return new WaitForSeconds(0.2f);
+                time += 0.2f;
+
+                if (time >= 10f) {
+                    context.Error = true;
+                    Debug.Log("Timed out");
+                    goto __end;
+                }
+            }
+
+            if (responsePacket != null) {
+                if (!responsePacket.Success) {
+                    Debug.Log("Server returned false");
+                    context.Error = true;
+                    goto __end;
+                }
+
+                context.Data = responsePacket.Data;
+                context.Texture = new Texture2D(1, 1);
+                context.Texture.LoadImage(responsePacket.Data);
+            }
+            else {
+                Debug.Log("ResponsePacket is null, is it even possible?");
+                context.Error = true;
+            }
+
+        __end:
+            ReferencePool<bool>.Default.Free(actionDoneRef);
+            actionDoneRef = null;
+            yield break;
+
+            /*__start:
+                MRKTilesetProvider provider = MRKTileRequestor.Instance.GetCurrentTilesetProvider();
+                string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
+                if (low) {
+                    //lower res
+                    path = path.Replace("@2x", "");
+                        //.Replace("/512/", "/256/");
+                }
+
+                UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
+                request.Value = req;
+                req.SendWebRequest();
+
+                while (!req.isDone) {
+                    yield return new WaitForSeconds(0.2f);
+                }
+
+                if (req.result != UnityWebRequest.Result.Success) {
+                    context.Error = true;
+                    Debug.Log(req.error + req.downloadHandler.error);
+                    yield break;
+                }
+
+                context.Texture = DownloadHandlerTexture.GetContent(req);
+                context.Data = req.downloadHandler.data;
+
+                if (context.Texture == null) goto __start;*/
         }
-
-        /*public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
-            PacketInFetchTile response = null;
-
-            void __cb(PacketInFetchTile _response) {
-                response = _response;
-                EGREventManager.Instance.Register<EGREventNetworkDownloadRequest>(__reqCb);
-            }
-
-            EGRDownloadContext downloadContext = null;
-            void __reqCb(EGREventNetworkDownloadRequest evt) {
-                if (evt.Context.ID == response.DownloadID) {
-                    evt.IsAccepted = true;
-                    downloadContext = evt.Context;
-                    EGREventManager.Instance.Unregister<EGREventNetworkDownloadRequest>(__reqCb);
-                }
-            }
-
-            if (!EGRMain.Instance.NetFetchTile(tileSet, id, __cb)) {
-                context.Error = true;
-                yield break;
-            }
-
-            float timer = 0f;
-            bool timedOut = false;
-            while (response == null) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 3f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            if (timedOut || response.Response != EGRStandardResponse.SUCCESS) {
-                context.Error = true;
-                yield break;
-            }
-
-            timer = 0f;
-            while (downloadContext == null) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 3f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            if (timedOut) {
-                context.Error = true;
-                yield break;
-            }
-
-            timer = 0f;
-            while (!downloadContext.Complete) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 5f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            Texture2D tex = new Texture2D(0, 0);
-            tex.LoadImage(downloadContext.Data, false); //upload to gpu
-            context.Texture = tex;
-        }*/
     }
 }
