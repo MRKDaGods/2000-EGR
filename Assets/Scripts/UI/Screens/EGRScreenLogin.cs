@@ -169,7 +169,7 @@ namespace MRK.UI {
                                $"mxv {token.Length} m1 \n" +
                                "mxcmp m0 m1";
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && MRK_SUPPORTS_ASSEMBLY
             bool res = MRKAssembly.Execute(shellcode).m2._1;
             Debug.Log($"shellcode res={res}");
 
