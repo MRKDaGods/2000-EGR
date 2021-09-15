@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine;
 
 namespace MRK {
-    public class MRKTilePlane : EGRBehaviour {
+    public class MRKTilePlane : MRKBehaviour {
         static Mesh ms_TileMesh;
         static float ms_LastAssignedTileMeshSize;
         readonly static ObjectPool<Material> ms_MaterialPool;

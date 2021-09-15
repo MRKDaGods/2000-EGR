@@ -11,7 +11,7 @@ namespace MRK {
         public string API;
     }
 
-    public class MRKTileRequestor : EGRBehaviour {
+    public class MRKTileRequestor : MRKBehaviour {
         class CachedTileInfo {
             public byte[] Texture;
             public string Tileset;

@@ -6,7 +6,7 @@ using static MRK.EGRLanguageManager;
 using MRK.Networking.Packets;
 
 namespace MRK.UI {
-    public class EGRUIWTESearchConfirmation : EGRBehaviour {
+    public class EGRUIWTESearchConfirmation : MRKBehaviour {
         public class WTEContext {
             public string People;
             public int Price;

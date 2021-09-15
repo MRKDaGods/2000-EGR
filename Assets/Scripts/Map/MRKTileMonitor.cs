@@ -31,7 +31,7 @@ namespace MRK {
         }
     }
 
-    public class MRKTileMonitor : EGRBehaviour {
+    public class MRKTileMonitor : MRKBehaviour {
         const long HIGH_DIFF = TimeSpan.TicksPerSecond * 8L;
         const long LOW_DIFF = TimeSpan.TicksPerSecond * 4L;
 

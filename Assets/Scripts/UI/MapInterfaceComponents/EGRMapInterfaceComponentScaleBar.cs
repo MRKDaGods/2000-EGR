@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MRK.UI {
+namespace MRK.UI.MapInterface {
     public class EGRMapInterfaceComponentScaleBar : EGRMapInterfaceComponent {
         Transform m_Parent;
         TextMeshProUGUI m_Text;

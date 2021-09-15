@@ -49,7 +49,7 @@ namespace MRK {
         }
     }
 
-    public class EGRLocationService : EGRBehaviour {
+    public class EGRLocationService : MRKBehaviour {
         class PermissionAwaiter {
             int m_Count;
             int m_Value;

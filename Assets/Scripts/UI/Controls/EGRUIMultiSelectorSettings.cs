@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRUIMultiSelectorSettings : EGRBehaviour {
+    public class EGRUIMultiSelectorSettings : MRKBehaviour {
         [SerializeField]
         GameObject[] m_Options;
         [SerializeField]

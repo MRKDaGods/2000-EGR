@@ -1,12 +1,13 @@
 ﻿using MRK;
 
-namespace MRK.UI {
+namespace MRK.UI.MapInterface {
     public enum EGRMapInterfaceComponentType {
         None,
         PlaceMarkers,
         ScaleBar,
         Navigation,
-        LocationOverlay
+        LocationOverlay,
+        MapButtons
     }
 
     public abstract class EGRMapInterfaceComponent {
@@ -14,6 +15,7 @@ namespace MRK.UI {
         protected EGRScreenMapInterface MapInterface { get; private set; }
         protected EGRMain Client => MapInterface.Client;
         protected MRKMap Map => Client.FlatMap;
+        protected EGRScreenManager ScreenManager => Client.ScreenManager;
         protected EGREventManager EventManager => EGREventManager.Instance;
 
         public virtual void OnComponentInit(EGRScreenMapInterface mapInterface) {

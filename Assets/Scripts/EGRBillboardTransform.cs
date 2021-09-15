@@ -5,7 +5,7 @@ namespace MRK {
     /// <summary>
     /// Keeps a transform billboarded to the currently active camera
     /// </summary>
-    public class EGRBillboardTransform : EGRBehaviour {
+    public class EGRBillboardTransform : MRKBehaviour {
         /// <summary>
         /// Indicates whether the look rotation should become inversed
         /// </summary>

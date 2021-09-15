@@ -316,7 +316,7 @@ namespace MRK.UI {
 
             UpdateMainView(false);
 
-            ScreenManager.MapInterface.LocationOverlay.ChooseLocationOnMap((coords) => {
+            ScreenManager.MapInterface.Components.LocationOverlay.ChooseLocationOnMap((coords) => {
                 AddLocation(coords);
             });
         }
@@ -335,7 +335,7 @@ namespace MRK.UI {
             m_IsChoosingLocation = false;
             UpdateFinishButtonVisibility();
 
-            ScreenManager.MapInterface.LocationOverlay.Finish();
+            ScreenManager.MapInterface.Components.LocationOverlay.Finish();
         }
 
         void UpdateFinishButtonVisibility() {

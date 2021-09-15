@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.UI.Extensions;
 
 namespace MRK.UI {
-    public class EGRUIMultiSelectorScroll : EGRBehaviour {
+    public class EGRUIMultiSelectorScroll : MRKBehaviour {
         [SerializeField]
         List<CanvasGroup> m_Items;
 

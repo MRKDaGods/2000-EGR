@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
-namespace MRK.UI {
+namespace MRK.UI.MapInterface {
     public class EGRMapInterfaceComponentNavigation : EGRMapInterfaceComponent {
         class Top {
             RectTransform m_Transform;
@@ -656,7 +656,7 @@ namespace MRK.UI {
                 return true;
             }
             else {
-                MapInterface.LocationOverlay.Finish();
+                MapInterface.Components.LocationOverlay.Finish();
                 return false;
             }
         }
@@ -737,7 +737,7 @@ namespace MRK.UI {
             m_AutoComplete.SetAutoCompleteState(false);
             m_Bottom.ShowBackButton();
 
-            MapInterface.LocationOverlay.ChooseLocationOnMap((geo) => {
+            MapInterface.Components.LocationOverlay.ChooseLocationOnMap((geo) => {
                 m_IsManualLocating = false;
 
                 if (idx == 0)
@@ -766,7 +766,7 @@ namespace MRK.UI {
             m_AutoComplete.SetAutoCompleteState(false);
             m_Bottom.ShowBackButton();
 
-            MapInterface.LocationOverlay.ChooseLocationOnMap((geo) => {
+            MapInterface.Components.LocationOverlay.ChooseLocationOnMap((geo) => {
                 m_IsManualLocating = false;
                 ToCoords = geo;
 

@@ -113,7 +113,7 @@ namespace MRK {
         }
     }
 
-    public class EGRDevSettingsManager : EGRBehaviour {
+    public class EGRDevSettingsManager : MRKBehaviour {
         readonly List<EGRDevSettings> m_RegisteredSettings;
         bool m_GUIActive;
         Transform m_Screen;

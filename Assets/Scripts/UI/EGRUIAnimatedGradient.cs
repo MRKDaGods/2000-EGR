@@ -8,7 +8,7 @@ using Coffee.UIEffects;
 
 namespace MRK.UI {
     [RequireComponent(typeof(UIGradient))]
-    public class EGRUIAnimatedGradient : EGRBehaviour {
+    public class EGRUIAnimatedGradient : MRKBehaviour {
         readonly static Color[] ms_ColorSequence;
 
         UIGradient m_Gradient;

@@ -1,4 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace MRK {
@@ -14,7 +17,7 @@ namespace MRK {
         public static string GetRandomString(int len) {
             string str = "";
             for (int i = 0; i < len; i++)
-                str += ms_Charset[Random.Range(0, ms_Charset.Length)];
+                str += ms_Charset[UnityEngine.Random.Range(0, ms_Charset.Length)];
 
             return str;
         }
@@ -43,6 +46,50 @@ namespace MRK {
 
         public static Vector3 MultiplyVectors(Vector3 lhs, Vector3 rhs) {
             return new Vector3(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+        }
+
+        public static IEnumerator SetTextEnumerator(Action<string> set, string txt, float speed, string prohibited) {
+            string real = "";
+            List<int> linesIndices = new List<int>();
+            for (int i = 0; i < txt.Length; i++)
+                foreach (char p in prohibited) {
+                    if (txt[i] == p) {
+                        linesIndices.Add(i);
+                        break;
+                    }
+                }
+
+            float timePerChar = speed / txt.Length;
+
+            foreach (char c in txt) {
+                bool leave = false;
+                foreach (char p in prohibited) {
+                    if (c == p) {
+                        real += p;
+                        leave = true;
+                        break;
+                    }
+                }
+
+                if (leave)
+                    continue;
+
+                float secsElaped = 0f;
+                while (secsElaped < timePerChar) {
+                    yield return new WaitForSeconds(0.02f);
+                    secsElaped += 0.02f;
+
+                    string renderedTxt = real + GetRandomString(txt.Length - real.Length);
+                    foreach (int index in linesIndices)
+                        renderedTxt = renderedTxt.ReplaceAt(index, prohibited[prohibited.IndexOf(txt[index])]);
+
+                    set(renderedTxt);
+                }
+
+                real += c;
+            }
+
+            set(txt);
         }
     }
 }

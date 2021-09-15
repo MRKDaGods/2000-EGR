@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MRK {
@@ -13,6 +12,7 @@ namespace MRK {
         Action<T> m_OnFree;
 
         public int ActiveCount => m_ActiveObjects.Count;
+        public List<T> ActiveObjects => m_ActiveObjects;
         public static ObjectPool<T> Default {
             get {
                 if (ms_DefaultPool == null) {
@@ -34,15 +34,18 @@ namespace MRK {
             m_OnFree = onFree;
         }
 
-        public void Free(T obj) {
+        public void Free(T obj, bool manual = false) {
             if (obj == null)
                 return;
-            
+
             if (m_OnFree != null) {
                 m_OnFree(obj);
             }
 
-            m_ActiveObjects.Remove(obj);
+            if (!manual) {
+                m_ActiveObjects.Remove(obj);
+            }
+
             m_FreeObjects.Add(obj);
         }
 
@@ -73,6 +76,14 @@ namespace MRK {
 
             m_ActiveObjects.Add(use);
             return use;
+        }
+
+        public void FreeAll() {
+            foreach (T obj in m_ActiveObjects) {
+                Free(obj, true);
+            }
+
+            m_ActiveObjects.Clear();
         }
     }
 }

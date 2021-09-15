@@ -97,7 +97,7 @@ namespace MRK.UI {
             EGRFadeManager.Fade(1f, 0.5f, () => {
                 Client.Initialize();
 
-                Manager.GetScreen(EGRUI_Main.EGRScreen_Login.SCREEN_NAME).ShowScreen();
+                Manager.GetScreen<EGRScreenLogin>().ShowScreen();
                 HideScreen();
             });
         }

@@ -7,7 +7,7 @@ using UnityEngine;
 using Vectrosity;
 
 namespace MRK {
-    public class MRKARManager : EGRBehaviour {
+    public class MRKARManager : MRKBehaviour {
         [SerializeField]
         bool m_IsListening;
         [SerializeField]

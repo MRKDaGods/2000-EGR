@@ -9,13 +9,13 @@ public class EGRLanguageUpdater : MonoBehaviour {
     static void Main() {
         TextAsset txt = Resources.Load<TextAsset>($"Lang/{EGRLanguage.English}");
         Dictionary<int, string> strings = new Dictionary<int, string>();
-        EGRLanguageManager.Parse(txt, strings, true);
+        EGRLanguageManager.ParseWithOccurence(txt, strings, true);
 
         using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\Localization\EGRLanguageData.cs", FileMode.Create))
         using (StreamWriter writer = new StreamWriter(fstream)) {
             writer.WriteLine("namespace MRK {\n\tpublic enum EGRLanguageData {");
 
-            string fixStr(string s) {
+            static string fixStr(string s) {
                 string chars = "!@#$%^&*()-+=~`'\":;/.,><[]{}|\\ ?";
                 foreach (char c in chars)
                     s = s.Replace(c, '_');

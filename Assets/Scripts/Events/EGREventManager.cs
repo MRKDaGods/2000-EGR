@@ -12,7 +12,9 @@ namespace MRK {
         GraphicsApplied,
         NetworkDownloadRequest,
         TileDestroyed,
-        SettingsSaved
+        SettingsSaved,
+        AppInitialized,
+        UIMapButtonExpansionStateChanged
     }
 
     public abstract class EGREvent {
@@ -37,14 +39,7 @@ namespace MRK {
 
         static EGREventManager ms_Instance;
 
-        public static EGREventManager Instance {
-            get {
-                if (ms_Instance == null)
-                    ms_Instance = new EGREventManager();
-
-                return ms_Instance;
-            }
-        }
+        public static EGREventManager Instance => ms_Instance ??= new EGREventManager();
 
         public EGREventManager() {
             m_Callbacks = new Dictionary<EGREventType, List<EGREventCallback<EGREvent>>>();
@@ -121,6 +116,11 @@ namespace MRK {
             }
         }
 
+        [Obsolete("Currently unsupported due to addition of AnonStore", true)]
+        /// <summary>
+        /// UNSUPPORTED
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         public void UnregisterAll<T>() where T : EGREvent {
             EGREventType eventType = GetFromActivator<T>();
             CreateIfMissing(eventType);

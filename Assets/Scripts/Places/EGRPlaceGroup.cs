@@ -7,7 +7,7 @@ using DG.Tweening;
 using System;
 
 namespace MRK {
-    public class EGRPlaceGroup : EGRBehaviour {
+    public class EGRPlaceGroup : MRKBehaviour {
         Image m_Sprite;
         bool m_OwnerDirty;
         Vector3 m_OriginalScale;

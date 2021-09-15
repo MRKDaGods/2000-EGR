@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace MRK {
-    public class EGRPlaceMarker : EGRBehaviour {
+    public class EGRPlaceMarker : MRKBehaviour {
         TextMeshProUGUI m_Text;
         EGRColorFade m_Fade;
         Vector3 m_OriginalScale;

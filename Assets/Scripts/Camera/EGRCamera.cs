@@ -2,7 +2,7 @@
 using UnityEngine.EventSystems;
 
 namespace MRK {
-    public class EGRCamera : EGRBehaviour {
+    public class EGRCamera : MRKBehaviour {
         protected readonly bool[] m_Down;
         protected readonly float[] m_Delta;
         protected readonly Vector3[] m_Deltas;

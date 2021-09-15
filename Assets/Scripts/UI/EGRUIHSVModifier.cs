@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MRK.UI {
     [RequireComponent(typeof(UIHsvModifier))]
-    public class EGRUIHSVModifier : EGRBehaviour {
+    public class EGRUIHSVModifier : MRKBehaviour {
         UIHsvModifier m_Modifier;
         float m_AnimDelta;
 

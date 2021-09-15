@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MRK.UI {
-    public class EGRUIScrollViewSortingLetters : EGRBehaviour {
+    public class EGRUIScrollViewSortingLetters : MRKBehaviour {
         public static string Letters;
         
         EGRUIFancyScrollView m_ScrollView;

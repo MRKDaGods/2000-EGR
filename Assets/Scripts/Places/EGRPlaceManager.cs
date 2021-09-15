@@ -6,7 +6,7 @@ namespace MRK {
     public delegate void EGRFetchPlacesCallback(EGRPlace place);
     public delegate void EGRFetchPlacesV2Callback(HashSet<EGRPlace> places, int tileHash);
 
-    public class EGRPlaceManager : EGRBehaviour {
+    public class EGRPlaceManager : MRKBehaviour {
         struct ContextInfo {
             public ulong Context;
             public ulong CID;

@@ -781,6 +781,8 @@ namespace MRK {
 
             //Shader.WarmupAllShaders();
             //m_Sun.parent.gameObject.SetActive(true);
+
+            EGREventManager.Instance.BroadcastEvent(new EGREventAppInitialized());
         }
 
         /// <summary>

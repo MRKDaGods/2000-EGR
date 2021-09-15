@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MRK.UI {
+namespace MRK.UI.MapInterface {
     [System.Serializable]
     public class EGRMapInterfacePlaceMarkersResources {
         public GameObject Marker;

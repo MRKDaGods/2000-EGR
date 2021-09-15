@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MRK.UI {
+namespace MRK.UI.MapInterface {
     public class EGRMapInterfaceComponentLocationOverlay : EGRMapInterfaceComponent {
         Image m_LocationPinSprite;
         Action<Vector2d> m_Callback;

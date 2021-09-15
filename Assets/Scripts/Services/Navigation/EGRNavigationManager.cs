@@ -25,7 +25,7 @@ namespace MRK {
         public abstract void Update();
     }
 
-    public class EGRNavigationManager : EGRBehaviour {
+    public class EGRNavigationManager : MRKBehaviour {
         [SerializeField]
         bool m_DrawEditorUI;
         EGRNavigationDirections m_Directions;

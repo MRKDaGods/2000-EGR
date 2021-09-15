@@ -18,7 +18,7 @@ namespace MRK.UI {
     /// <summary>
     /// Base class for all screens
     /// </summary>
-    public class EGRScreen : EGRBehaviour {
+    public class EGRScreen : MRKBehaviour {
         /// <summary>
         /// Holds information about a graphic state
         /// </summary>

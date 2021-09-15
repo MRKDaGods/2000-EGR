@@ -2,7 +2,7 @@
 using System;
 
 namespace MRK.UI {
-    public class EGRUITextRenderer : EGRBehaviour {
+    public class EGRUITextRenderer : MRKBehaviour {
         string m_Text;
         float m_CurTime;
         float m_MaxTime;

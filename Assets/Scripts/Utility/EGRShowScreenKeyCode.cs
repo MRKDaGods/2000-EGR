@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace MRK {
-    public class EGRShowScreenKeyCode : EGRBehaviour {
+    public class EGRShowScreenKeyCode : MRKBehaviour {
         [SerializeField]
         KeyCode m_KeyCode;
         [SerializeField]

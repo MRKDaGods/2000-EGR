@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace MRK {
-	public class MRKMap : EGRBehaviour {
+	public class MRKMap : MRKBehaviour {
 		const int EX_N = 4, EX_S = 2, EX_W = 2, EX_E = 2;
 
 		[SerializeField]

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MRK.UI {
-    public class EGRUIFancyScrollViewContent : EGRBehaviour {
+    public class EGRUIFancyScrollViewContent : MRKBehaviour {
         [SerializeField]
         List<EGRUIFancyScrollViewItemData> m_Data;
 
