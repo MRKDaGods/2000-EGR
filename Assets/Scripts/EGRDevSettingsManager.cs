@@ -28,7 +28,7 @@ namespace MRK {
     }
 
     [EGRDevSettingsInfo(EGRDevSettingsType.None)]
-    public abstract class EGRDevSettings {
+    public abstract class EGRDevSettings : MRKBehaviourPlain {
         GameObject m_Object;
 
         public bool Enabled {
@@ -105,11 +105,22 @@ namespace MRK {
 
     [EGRDevSettingsInfo(EGRDevSettingsType.UsersInfo)]
     public class EGRDevSettingsUsersInfo : EGRDevSettings {
-        public override string Name => "Users Info";
+        public override string Name => "AUTH";
         public override string ChildName => "UsersInfo";
 
         public override void Initialize(Transform trans) {
             base.Initialize(trans);
+
+            trans.GetElement<Button>("Bg/Button").onClick.AddListener(OnButtonClick);
+        }
+
+        void OnButtonClick() {
+            if (!ScreenManager.GetScreen<EGRScreenLogin>().Visible) {
+                Debug.Log("Login isnt active");
+                return;
+            }
+
+            Client.AuthenticationManager.BuiltInLogin();
         }
     }
 
@@ -121,6 +132,8 @@ namespace MRK {
         SegmentedControl m_Toolbar;
         int m_LastSelectedSettings;
         EGRDevSettings m_ActiveSettings;
+        Button m_Toggler;
+        bool m_HiddenToggler;
 
         public EGRDevSettingsManager() {
             m_RegisteredSettings = new List<EGRDevSettings>();
@@ -135,13 +148,25 @@ namespace MRK {
             m_Main = m_Screen.Find("Main").gameObject;
             m_Toolbar = m_Main.transform.Find("Toolbar").GetComponent<SegmentedControl>();
             m_Toolbar.onValueChanged.AddListener(OnToolbarValueChanged);
-            m_Screen.Find("Toggler").GetComponent<Button>().onClick.AddListener(ToggleGUI);
+
+            m_Toggler = m_Screen.Find("Toggler").GetComponent<Button>();
+            m_Toggler.onClick.AddListener(ToggleGUI);
+            m_Main.transform.GetElement<Button>("Hider").onClick.AddListener(() => {
+                m_Toggler.gameObject.SetActive(false);
+                m_HiddenToggler = true;
+                ToggleGUI();
+            });
 
             UpdateGUIVisibility();
             UpdateToolbar();
         }
 
         public void RegisterSettings<T>() where T : EGRDevSettings, new() {
+            if (m_HiddenToggler) {
+                m_Toggler.gameObject.SetActive(true);
+                m_HiddenToggler = false;
+            }
+
             EGRDevSettingsType type = typeof(T).GetCustomAttribute<EGRDevSettingsInfo>().SettingsType;
             if (m_RegisteredSettings.Find(x => x.GetType().GetCustomAttribute<EGRDevSettingsInfo>().SettingsType == type) != null) {
                 EGRMain.Log($"Cant register dev setting of type {type}");

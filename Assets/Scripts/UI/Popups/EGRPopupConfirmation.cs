@@ -52,7 +52,7 @@ namespace MRK.UI {
             base.OnScreenHide();
 
             SetYesButtonText(Localize(EGRLanguageData.YES));
-            SetYesButtonText(Localize(EGRLanguageData.NO));
+            SetNoButtonText(Localize(EGRLanguageData.NO));
         }
 
         protected override void OnScreenShowAnim() {

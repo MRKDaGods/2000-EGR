@@ -1,11 +1,5 @@
-﻿using DG.Tweening;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
+using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
     public class EGRScreenOptionsMapSettings : EGRScreenAnimatedLayout {
@@ -26,6 +20,8 @@ namespace MRK.UI {
             m_SensitivitySelector = GetElement<EGRUIMultiSelectorSettings>("SensitivitySelector");
             m_StyleSelector = GetElement<EGRUIMultiSelectorSettings>("StyleSelector");
             m_AngleSelector = GetElement<EGRUIMultiSelectorSettings>("AngleSelector");
+
+            GetElement<Button>($"{m_LayoutPath}/DeleteCache").onClick.AddListener(OnDeleteCacheClick);
         }
 
         protected override void OnScreenShow() {
@@ -68,6 +64,43 @@ namespace MRK.UI {
 
         void OnMapStyleChosen(int style) {
             m_StyleSelector.SelectedIndex = style;
+        }
+
+        void OnDeleteCacheClick() {
+            EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
+            popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+            popup.ShowPopup(
+                Localize(EGRLanguageData.EGR),
+                Localize(EGRLanguageData.ARE_YOU_SURE_THAT_YOU_WANT_TO_DELETE_THE_OFFLINE_MAP_CACHE_),
+                (_, result) => {
+                    if (result == EGRPopupResult.YES) {
+                        DeleteLocalMapCache();
+                    }
+                },
+                this);
+        }
+
+        void DeleteLocalMapCache() {
+            MessageBox.ShowButton(false);
+            MessageBox.ShowPopup(
+                Localize(EGRLanguageData.EGR),
+                Localize(EGRLanguageData.DELETING_OFFLINE_MAP_CACHE___),
+                null,
+                this);
+
+            Client.GlobalThreadPool.QueueTask(() => {
+                MRKTileRequestor.Instance.DeleteLocalProvidersCache();
+
+                Client.Runnable.RunOnMainThread(() => {
+                    MessageBox.HideScreen(() => {
+                        MessageBox.ShowPopup(
+                            Localize(EGRLanguageData.EGR),
+                            Localize(EGRLanguageData.OFFLINE_MAP_CACHE_HAS_BEEN_DELETED),
+                            null,
+                            this);
+                    }, 1.1f);
+                });
+            });
         }
     }
 }

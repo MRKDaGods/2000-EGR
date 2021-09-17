@@ -20,8 +20,9 @@ namespace MRK.UI {
         static List<EGRProxyScreen> m_ProxyPipe;
         [SerializeField]
         Canvas[] m_ScreenSpaceLayers;
-        EGRScreenMapInterface m_MapInterface;
-        EGRPopupMessageBox m_MessageBox;
+        readonly MRKSelfContainedPtr<EGRScreenMapInterface> m_MapInterface;
+        readonly MRKSelfContainedPtr<EGRPopupMessageBox> m_MessageBox;
+        readonly MRKSelfContainedPtr<EGRScreenMain> m_MainScreen;
 
         public static int SceneChangeIndex { get; private set; }
 
@@ -40,13 +41,19 @@ namespace MRK.UI {
         }
         public int ScreenCount => m_Screens.Keys.Count;
         public bool FullyInitialized => m_TargetScreenCount == ScreenCount;
-        public EGRScreenMain MainScreen => GetScreen<EGRScreenMain>();
-        public EGRScreenMapInterface MapInterface => m_MapInterface ??= GetScreen<EGRScreenMapInterface>();
-        public EGRPopupMessageBox MessageBox => m_MessageBox ??= GetPopup<EGRPopupMessageBox>();
+        public EGRScreenMapInterface MapInterface => m_MapInterface;
+        public EGRPopupMessageBox MessageBox => m_MessageBox;
+        public EGRScreenMain MainScreen => m_MainScreen;
 
         static EGRScreenManager() {
             SceneManager.activeSceneChanged += OnSceneChanged;
             m_ProxyPipe = new List<EGRProxyScreen>();
+        }
+
+        public EGRScreenManager() {
+            m_MapInterface = new MRKSelfContainedPtr<EGRScreenMapInterface>(() => GetScreen<EGRScreenMapInterface>());
+            m_MessageBox = new MRKSelfContainedPtr<EGRPopupMessageBox>(() => GetPopup<EGRPopupMessageBox>());
+            m_MainScreen = new MRKSelfContainedPtr<EGRScreenMain>(() => GetScreen<EGRScreenMain>());
         }
 
         void Awake() {

@@ -1,3 +1,7 @@
+#
+# ENGLISH
+# Last edited by: MRK
+#
 0- ERROR
 1- PASSWORDS MISMATCH
 2- REGISTER
@@ -50,7 +54,19 @@
 49- QUICK LOCATIONS
 50- ADD CURRENT LOCATION? ({0})
 51- ENTER LOCATION NAME
+52- ARE YOU SURE THAT YOU WANT TO DELETE THE OFFLINE MAP CACHE?
+53- DELETING OFFLINE MAP CACHE...
+54- OFFLINE MAP CACHE HAS BEEN DELETED
+#
+# Login Feedback
+#
+100- Email cannot be empty
+101- Email is invalid
+102- Password cannot be empty
+103- Password must consist of atleast 8 characters
+#
 # Map Buttons
+#
 1000- SETTINGS
 1001- CURRENT LOCATION
 1002- TRENDING

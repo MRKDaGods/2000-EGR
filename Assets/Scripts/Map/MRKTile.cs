@@ -1,4 +1,6 @@
-﻿using DG.Tweening;
+﻿#define MRK_OVERCLOCK_MAP
+
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Concurrent;
 using UnityEngine;
@@ -236,8 +238,14 @@ namespace MRK {
 
             int lowIdx = low.ToInt();
             bool isLocalTile = HasTexture(TextureID, low);
+
+#if MRK_OVERCLOCK_MAP
+            float interval = 75f;
+#else
+            float interval = 25f;
+#endif
             float sqrMag;
-            while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > 5f * 5f) {
+            while ((sqrMag = isLocalTile ? Mathf.Pow(cam.GetMapVelocity().z, 2) : cam.GetMapVelocity().sqrMagnitude) > interval) {
                 yield return new WaitForSeconds(Time.deltaTime * m_SiblingIndex);
             }
 
@@ -251,7 +259,7 @@ namespace MRK {
                 string tileset = m_Map.Tileset;
                 MRKTileFetcher fetcher = ms_FileFetcher.Exists(tileset, TextureID, low) ? (MRKTileFetcher)ms_FileFetcher : ms_RemoteFetcher;
 
-                m_WebRequest = ObjectPool<Reference<UnityWebRequest>>.Default.Rent();
+                m_WebRequest = ReferencePool<UnityWebRequest>.Default.Rent();
                 MRKTileFetcherContext context = new MRKTileFetcherContext();
                 yield return fetcher.Fetch(context, tileset, TextureID, m_WebRequest, low);
 
@@ -276,7 +284,7 @@ namespace MRK {
                     }
                 }
 
-                ObjectPool<Reference<UnityWebRequest>>.Default.Free(m_WebRequest);
+                ReferencePool<UnityWebRequest>.Default.Free(m_WebRequest);
                 m_WebRequest = null;
             }
 
@@ -339,20 +347,10 @@ namespace MRK {
                     tex = reference.Value;
                 }
                 else {
-                    int count = m_Map.PreviousTilesCount;
-                    int index = m_SiblingIndex;
-                    while (count-- > 0) {
-                        previous = m_Map.GetPreviousTileID(index++);
-                        if (previous == null)
-                            break;
-
-                        if (HasTexture(previous, true, reference)) {
-                            tex = reference.Value;
-                            break;
-                        }
-
-                        if (index >= m_Map.PreviousTilesCount)
-                            index = 0;
+                    MRKMonitoredTexture topMost = m_Map.GetCurrentTopMostTile();
+                    if (topMost != null) {
+                        tex = topMost.Texture;
+                        previous = MRKTileID.TopMost;
                     }
                 }
 
@@ -447,7 +445,7 @@ namespace MRK {
 
             //elbt3 da 3amel 2l2, destroy!!
             if (m_MeshRenderer != null) {
-                if (m_SiblingIndex < 15 && m_Map.TileDestroyZoomUpdatedDirty && !ID.Stationary) {
+                if (/*m_SiblingIndex < 15 && */m_Map.TileDestroyZoomUpdatedDirty && !ID.Stationary) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
                     tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect.Value, ID.Z, () => {
                         MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);

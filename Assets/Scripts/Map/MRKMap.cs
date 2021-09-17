@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace MRK {
 	public class MRKMap : MRKBehaviour {
@@ -51,6 +52,8 @@ namespace MRK {
 		int m_ExE;
         string m_BackupTileset;
 		MRKTileID m_CenterTile;
+		readonly Dictionary<string, MRKMonitoredTexture> m_TopMostTiles;
+		bool m_FetchingTopMost;
 
 		public event Action OnMapUpdated;
 		public event Action<int, int> OnMapZoomUpdated;
@@ -83,6 +86,7 @@ namespace MRK {
 			m_PreviousTiles = new List<MRKTileID>();
 			m_ActivePlanes = new List<MRKTilePlane>();
 			m_VisibleTiles = new HashSet<int>();
+			m_TopMostTiles = new Dictionary<string, MRKMonitoredTexture>();
 
 			//default extents
 			m_ExN = EX_N;
@@ -154,7 +158,34 @@ namespace MRK {
 		}
 
 		public void UpdateTileset() {
-			m_Tileset = EGRSettings.GetCurrentTileset();
+			string newTileset = EGRSettings.GetCurrentTileset();
+			if (m_Tileset != newTileset) {
+				m_Tileset = newTileset;
+
+				if (!m_TopMostTiles.ContainsKey(newTileset)) {
+					Client.Runnable.Run(FetchAndStoreTopMostTile(newTileset));
+                }
+            }
+		}
+
+		IEnumerator FetchAndStoreTopMostTile(string tileset) {
+			m_FetchingTopMost = true;
+
+			MRKFileTileFetcher fileFetcher = MRKSelfContainedPtr<MRKFileTileFetcher>.Global;
+			MRKTileID tileID = MRKTileID.TopMost;
+			MRKTileFetcher fetcher = fileFetcher.Exists(tileset, tileID, false) ? (MRKTileFetcher)fileFetcher : MRKSelfContainedPtr<MRKRemoteTileFetcher>.Global;
+
+			Reference<UnityWebRequest> webReq = ReferencePool<UnityWebRequest>.Default.Rent();
+			MRKTileFetcherContext context = new MRKTileFetcherContext();
+			yield return fetcher.Fetch(context, tileset, tileID, webReq, false);
+
+			if (!context.Error && context.Texture != null) {
+				m_TopMostTiles[tileset] = new MRKMonitoredTexture(context.Texture, true);
+			}
+
+			ReferencePool<UnityWebRequest>.Default.Free(webReq);
+
+			m_FetchingTopMost = false;
 		}
 
 		public void SetNavigationTileset() {
@@ -450,5 +481,16 @@ namespace MRK {
 			float delta = m_MapController.MapRotation.y * Mathf.Deg2Rad;
 			return new Vector2d(v.x * Mathd.Cos(delta) - v.y * Mathd.Sin(delta), v.x * Mathd.Sin(delta) + v.y * Mathd.Cos(delta));
 		}
+
+		public MRKMonitoredTexture GetCurrentTopMostTile() {
+			MRKMonitoredTexture tex;
+			if (!m_TopMostTiles.TryGetValue(m_Tileset, out tex)) {
+				if (!m_FetchingTopMost) {
+					Client.Runnable.Run(FetchAndStoreTopMostTile(m_Tileset));
+                }
+            }
+
+			return tex;
+        }
     }
 }

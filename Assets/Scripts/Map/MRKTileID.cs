@@ -7,11 +7,15 @@ using UnityEngine;
 
 namespace MRK {
     public class MRKTileID {
+        static MRKTileID ms_TopMost;
+
         public int Z { get; private set; }
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Magnitude { get; private set; }
         public bool Stationary { get; private set; }
+
+        public static MRKTileID TopMost => ms_TopMost ??= new MRKTileID(0, 0, 0);
 
         public MRKTileID(int z, int x, int y, bool stationary = false) {
             Z = z;

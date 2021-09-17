@@ -10,6 +10,7 @@ using System.IO;
 using UnityEngine.Networking;
 using MRK.Networking;
 using MRK.Networking.Packets;
+using System.Threading;
 
 namespace MRK {
     public abstract class MRKTileFetcher {
@@ -65,7 +66,7 @@ namespace MRK {
             //req.downloadHandler.Dispose();
         }
 
-        public async Task SaveToDisk(string tileset, MRKTileID id, byte[] tex, bool low) {
+        public async Task SaveToDisk(string tileset, MRKTileID id, byte[] tex, bool low, CancellationToken cancellationToken = default) {
             string dir = GetFolderPath(tileset);
             if (!Directory.Exists(dir)) {
                 Directory.CreateDirectory(dir);
@@ -75,7 +76,7 @@ namespace MRK {
             string path = $"{dir}{Path.DirectorySeparatorChar}{lowPrefix}{id.GetHashCode()}.png";
 
             using (FileStream fs = File.OpenWrite(path)) {
-                await fs.WriteAsync(tex, 0, tex.Length);
+                await fs.WriteAsync(tex, 0, tex.Length, cancellationToken);
             }
         }
     }

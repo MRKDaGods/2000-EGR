@@ -9,12 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
-using MRK.GeoJson;
 
 namespace MRK {
     /// <summary>
@@ -278,7 +274,7 @@ namespace MRK {
         /// <summary>
         /// Currently active camera handler
         /// </summary>
-        public EGRCamera ActiveEGRCamera => m_MapMode == EGRMapMode.Flat ? (EGRCamera)m_FlatCamera 
+        public EGRCamera ActiveEGRCamera => m_MapMode == EGRMapMode.Flat ? (EGRCamera)m_FlatCamera
             : m_MapMode == EGRMapMode.Globe ? (EGRCamera)m_GlobeCamera : m_GeneralCamera;
 
         /// <summary>
@@ -364,8 +360,8 @@ namespace MRK {
         public EGRLocationManager LocationManager { get; private set; }
 
         public IEGRScreenFOVStabilizer FOVStabilizer { get; private set; }
-
         public MRKThreadPool GlobalThreadPool { get; private set; }
+        public EGRAuthenticationManager AuthenticationManager { get; private set; }
 
 
         /// <summary>
@@ -381,6 +377,7 @@ namespace MRK {
             IsRunning = true;
 
             GlobalThreadPool = new MRKThreadPool(EGRConstants.EGR_DEFAULT_THREAD_POOL_INTERVAL);
+            AuthenticationManager = new EGRAuthenticationManager();
         }
 
         /// <summary>
@@ -636,7 +633,7 @@ namespace MRK {
                     }
 
                     //rotate around the sun with axis being vertically upwards at 2 degrees per time proportional to distance from the sun
-                    trans.RotateAround(m_Sun.position, Vector3.up, m_PlanetRotationCache[trans] * 2f * Time.deltaTime 
+                    trans.RotateAround(m_Sun.position, Vector3.up, m_PlanetRotationCache[trans] * 2f * Time.deltaTime
                         * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 80000f)));
                 }
             }

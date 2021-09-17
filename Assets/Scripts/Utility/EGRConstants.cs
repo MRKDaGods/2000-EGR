@@ -36,5 +36,7 @@
         public const float EGR_CAMERA_DEFAULT_FOV = 65f;
 
         public const int EGR_DEFAULT_THREAD_POOL_INTERVAL = 10; //10ms
+
+        public const int EGR_AUTHENTICATION_TOKEN_LENGTH = 200;
     }
 }

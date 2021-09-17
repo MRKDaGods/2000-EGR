@@ -1,13 +1,8 @@
 ﻿using DG.Tweening;
-using MRK.Networking;
-using MRK.Networking.Packets;
 using System;
-using System.Collections;
-using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static MRK.EGRLanguageManager;
 using static MRK.UI.EGRUI_Main.EGRScreen_Login;
 
 namespace MRK.UI {
@@ -77,8 +72,6 @@ namespace MRK.UI {
             if (m_SkipAnims)
                 return false;
 
-            //m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-
             SetTweenCount(m_LastGraphicsBuf.Length);
 
             for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
@@ -90,35 +83,6 @@ namespace MRK.UI {
             return true;
         }
 
-        bool GetError(out string info, out string email, out string pwd) {
-            info = "";
-            pwd = "";
-
-            email = m_Email.text.Trim(' ', '\n', '\t', '\r');
-            if (string.IsNullOrEmpty(email) || string.IsNullOrWhiteSpace(email)) {
-                info = "Email cannot be empty";
-                return true;
-            }
-
-            if (!EGRUtils.ValidateEmail(email)) {
-                info = "Email is invalid";
-                return true;
-            }
-
-            pwd = m_Password.text.Trim(' ', '\n', '\t', '\r');
-            if (string.IsNullOrEmpty(pwd) || string.IsNullOrWhiteSpace(pwd)) {
-                info = "Password cannot be empty";
-                return true;
-            }
-
-            if (pwd.Length < 8) {
-                info = "Password must consist of atleast 8 characters";
-                return true;
-            }
-
-            return false;
-        }
-
         void OnRegisterClick() {
             HideScreen(() => Manager.GetScreen<EGRScreenRegister>().ShowScreen());
         }
@@ -126,123 +90,40 @@ namespace MRK.UI {
         void OnLoginClick() {
             if (m_Email.text == "x") {
                 Client.RegisterDevSettings<EGRDevSettingsServerInfo>();
-                MessageBox.ShowPopup("EGR DEV", "Enabled EGRDevSettingsServerInfo", null, this);
+                Client.RegisterDevSettings<EGRDevSettingsUsersInfo>();
+                MessageBox.ShowPopup("EGR DEV", "Enabled EGRDevSettings", null, this);
                 return;
             }
 
-            string info, email, pwd;
+            EGRAuthenticationData data = new EGRAuthenticationData {
+                Type = EGRAuthenticationType.Default,
+                Reserved0 = m_Email.text,
+                Reserved1 = m_Password.text,
+                Reserved3 = m_RememberMe.isOn
+            };
 
-            if (GetError(out info, out email, out pwd)) {
-                MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), info.ToUpper(), null, this);
-                return;
-            }
-
-            if (!NetworkingClient.MainNetworkExternal.LoginAccount(email, pwd, OnNetLogin)) {
-                MessageBox.HideScreen();
-                MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_NOTCONNECTED), null, this);
-                return;
-            }
-
-            MessageBox.ShowButton(false);
-            MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN___), null, this);
-
-            MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn);
-            if (m_RememberMe.isOn) {
-                MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_USERNAME, m_Email.text);
-                MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_PASSWORD, m_Password.text);
-            }
-
-            MRKPlayerPrefs.Save();
+            Client.AuthenticationManager.Login(ref data);
         }
 
         void LoginWithToken() {
-            /*
-                mxr 2
-                mxv 200 m0
-                mxv token.Length m1
-                mxcmp
-            */
             string token = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_TOKEN, "");
+            EGRAuthenticationData data = new EGRAuthenticationData {
+                Type = EGRAuthenticationType.Token,
+                Reserved0 = token,
+                Reserved3 = m_RememberMe.isOn
+            };
 
-            string shellcode = "mxr 2 \n" +
-                               "mxv 200 m0 \n" +
-                               $"mxv {token.Length} m1 \n" +
-                               "mxcmp m0 m1";
-
-#if UNITY_EDITOR && MRK_SUPPORTS_ASSEMBLY
-            bool res = MRKAssembly.Execute(shellcode).m2._1;
-            Debug.Log($"shellcode res={res}");
-
-            if (!res) {
-#else
-            if (token.Length != 200) {
-#endif
-                MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_INVALID_TOKEN), null, this);
-                return;
-            }
-
-            if (!NetworkingClient.MainNetworkExternal.LoginAccountToken(token, OnNetLogin)) {
-                //find local one?
-                EGRProxyUser user = JsonUtility.FromJson<EGRProxyUser>(MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_LOCALUSER, ""));
-                if (user.Token != token) {
-                    MessageBox.HideScreen();
-                    MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_NOTCONNECTED), null, this);
-                }
-
-                m_SkipAnims = true;
-                StartCoroutine(LoginWithLocalUser(user));
-                return;
-            }
-
-            MessageBox.ShowButton(false);
-            MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN___), null, this);
-        }
-
-        IEnumerator LoginWithLocalUser(EGRProxyUser user) {
-            MessageBox.ShowButton(false);
-            MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN_OFFLINE___), null, this);
-
-            yield return new WaitForSeconds(0.5f);
-            OnNetLogin(new PacketInLoginAccount(user));
-        }
-
-        void OnNetLogin(PacketInLoginAccount response) {
-            MessageBox.HideScreen(() => {
-                if (response.Response != EGRStandardResponse.SUCCESS) {
-                    MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0___1__),
-                        EGRConstants.EGR_ERROR_RESPONSE, (int)response.Response), null, this);
-
-                    return;
-                }
-
-                EGRLocalUser.Initialize(response.ProxyUser);
-                EGRLocalUser.PasswordHash = response.PasswordHash;
-                Debug.Log(EGRLocalUser.Instance.ToString());
-
-                if (m_RememberMe.isOn) {
-                    MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_TOKEN, response.ProxyUser.Token);
-                    MRKPlayerPrefs.Save();
-                }
-
-                HideScreen(() => {
-                    Manager.GetScreen<EGRScreenMain>().ShowScreen();
-                }, 0.1f, true);
-
-            }, 1.1f);
+            Client.AuthenticationManager.Login(ref data);
+            m_SkipAnims = data.Reserved4;
         }
 
         void OnLoginDevClick() {
-            if (!NetworkingClient.MainNetworkExternal.LoginAccountDev(OnNetLogin)) {
-                MessageBox.HideScreen();
-                MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_NOTCONNECTED), null, this);
-                return;
-            }
+            EGRAuthenticationData data = new EGRAuthenticationData {
+                Type = EGRAuthenticationType.Device,
+                Reserved3 = m_RememberMe.isOn
+            };
 
-            MessageBox.ShowButton(false);
-            MessageBox.ShowPopup(Localize(EGRLanguageData.LOGIN), Localize(EGRLanguageData.LOGGING_IN___), null, this);
-
-            MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, m_RememberMe.isOn);
-            MRKPlayerPrefs.Save();
+            Client.AuthenticationManager.Login(ref data);
         }
     }
 }

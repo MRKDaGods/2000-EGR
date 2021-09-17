@@ -156,6 +156,27 @@ namespace MRK {
 		//ENTER LOCATION NAME
 		ENTER_LOCATION_NAME = 51,
 
+		//ARE YOU SURE THAT YOU WANT TO DELETE THE OFFLINE MAP CACHE?
+		ARE_YOU_SURE_THAT_YOU_WANT_TO_DELETE_THE_OFFLINE_MAP_CACHE_ = 52,
+
+		//DELETING OFFLINE MAP CACHE...
+		DELETING_OFFLINE_MAP_CACHE___ = 53,
+
+		//OFFLINE MAP CACHE HAS BEEN DELETED
+		OFFLINE_MAP_CACHE_HAS_BEEN_DELETED = 54,
+
+		//Email cannot be empty
+		Email_cannot_be_empty = 100,
+
+		//Email is invalid
+		Email_is_invalid = 101,
+
+		//Password cannot be empty
+		Password_cannot_be_empty = 102,
+
+		//Password must consist of atleast 8 characters
+		Password_must_consist_of_atleast_8_characters = 103,
+
 		//SETTINGS_1
 		SETTINGS_1 = 1000,
 
