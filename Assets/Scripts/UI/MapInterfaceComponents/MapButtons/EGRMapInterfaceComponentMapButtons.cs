@@ -70,14 +70,14 @@ namespace MRK.UI.MapInterface {
             group.RemoveButton(id);
         }
 
-        public void AddButton(EGRUIMapButtonsGroupAlignment groupAlignment, EGRUIMapButtonID id, bool checkState = false) {
+        public void AddButton(EGRUIMapButtonsGroupAlignment groupAlignment, EGRUIMapButtonID id, bool checkState = false, bool expand = false) {
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
                 EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
                 return;
             }
 
-            group.AddButton(id, checkState: checkState);
+            group.AddButton(id, checkState: checkState, expand: expand);
         }
 
         public bool HasButton(EGRUIMapButtonsGroupAlignment groupAlignment, EGRUIMapButtonID id, out EGRUIMapButton button) {
@@ -108,6 +108,16 @@ namespace MRK.UI.MapInterface {
             foreach (EGRUIMapButtonsGroup group in m_Groups.Values) {
                 group.SetButtons(null);
             }
+        }
+
+        public void SetGroupExpansionState(EGRUIMapButtonsGroupAlignment groupAlignment, bool expanded) {
+            EGRUIMapButtonsGroup group;
+            if (!m_Groups.TryGetValue(groupAlignment, out group)) {
+                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                return;
+            }
+
+            group.SetExpanded(expanded);
         }
 
         void OnGroupExpansionStateChanged(EGREventUIMapButtonGroupExpansionStateChanged evt) {

@@ -233,7 +233,8 @@ namespace MRK.UI {
                     ids.Add(EGRUIMapButtonID.BackToEarth);
                 }
                 else {
-                    ids.Add(EGRUIMapButtonID.FieldOfView);
+                    //FOV hidden till further notice
+                    //ids.Add(EGRUIMapButtonID.FieldOfView);
                 }
 
                 Components.MapButtons.SetButtons(EGRUIMapButtonsGroupAlignment.BottomRight, ids);
@@ -242,6 +243,7 @@ namespace MRK.UI {
                     ids.Clear();
                     ids.Add(EGRUIMapButtonID.BackToEarth);
                     Components.MapButtons.SetButtons(EGRUIMapButtonsGroupAlignment.BottomCenter, ids);
+                    Components.MapButtons.SetGroupExpansionState(EGRUIMapButtonsGroupAlignment.BottomCenter, true);
                 }
 
                 HashSetPool<EGRUIMapButtonID>.Default.Free(ids);
@@ -338,14 +340,18 @@ namespace MRK.UI {
         }
 
         public void OnObservedTransformChanged() {
+            Components.MapButtons.ShrinkOtherGroups(null);
+
             if (IsObservedTransformEarth()) {
                 Components.MapButtons.RemoveButton(EGRUIMapButtonsGroupAlignment.BottomCenter, EGRUIMapButtonID.BackToEarth);
+
+                //eyad: hide all map buttons when not in earth
+                RegenerateMapButtons();
             }
             else {
-                Components.MapButtons.AddButton(EGRUIMapButtonsGroupAlignment.BottomCenter, EGRUIMapButtonID.BackToEarth);
+                Components.MapButtons.AddButton(EGRUIMapButtonsGroupAlignment.BottomCenter, EGRUIMapButtonID.BackToEarth, expand: true);
+                Components.MapButtons.SetButtons(EGRUIMapButtonsGroupAlignment.BottomRight, null);
             }
-
-            Components.MapButtons.ShrinkOtherGroups(null);
         }
 
         public void SetDistanceText(string txt, bool animated = false) {

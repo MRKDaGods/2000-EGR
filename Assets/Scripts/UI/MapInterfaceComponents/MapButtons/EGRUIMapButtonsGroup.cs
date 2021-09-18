@@ -115,7 +115,7 @@ namespace MRK.UI.MapInterface {
                 }
             }
 
-            if (Expanded || m_CustomLayout) {
+            if (Expanded /*|| m_CustomLayout*/) {
                 UpdateButtonTextActiveState();
             }
 
@@ -178,7 +178,7 @@ namespace MRK.UI.MapInterface {
             }
         }
 
-        public void AddButton(EGRUIMapButtonID id, bool noCheck = false, bool checkState = false) {
+        public void AddButton(EGRUIMapButtonID id, bool noCheck = false, bool checkState = false, bool expand = false) {
             //check if exists
             if (!noCheck && HasButton(id, out _)) {
                 return;
@@ -194,6 +194,10 @@ namespace MRK.UI.MapInterface {
 
             if (checkState) {
                 button.SetTextActive(Expanded);
+            }
+
+            if (expand) {
+                SetExpanded(true);
             }
         }
 

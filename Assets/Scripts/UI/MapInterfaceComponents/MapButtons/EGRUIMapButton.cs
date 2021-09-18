@@ -63,6 +63,11 @@ namespace MRK.UI.MapInterface {
             }
         }
 
+        public void SetTextOpacity(float alpha) {
+            m_Text.alpha = alpha;
+            m_Shadow.color = m_Shadow.color.AlterAlpha(alpha);
+        }
+
         public void SetSpriteSize(float w, float h) {
             m_Sprite.rectTransform.sizeDelta = new Vector2(w, h);
 
