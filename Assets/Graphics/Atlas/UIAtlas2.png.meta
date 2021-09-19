@@ -47,6 +47,9 @@ TextureImporter:
   - first:
       213: 8318566214976941844
     second: UIAtlas2_14
+  - first:
+      213: 4114720621885326250
+    second: UIAtlas2_15
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -114,7 +117,7 @@ TextureImporter:
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 2
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -126,7 +129,7 @@ TextureImporter:
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 2
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -138,7 +141,7 @@ TextureImporter:
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 2
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -458,6 +461,27 @@ TextureImporter:
       bones: []
       spriteID: 41f244c16eb717370800000000000000
       internalID: 8318566214976941844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas2_15
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 68
+        width: 216
+        height: 216
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa30379da9c6a1930800000000000000
+      internalID: 4114720621885326250
       vertices: []
       indices: 
       edges: []
