@@ -54,7 +54,7 @@ namespace MRK.UI {
             if ((EGRSettingsQuality)m_Quality.SelectedIndex != EGRSettings.Quality || (EGRSettingsFPS)m_FPS.SelectedIndex != EGRSettings.FPS) {
                 m_GraphicsModified = true;
 
-                EGRPopupConfirmation popup = Manager.GetPopup<EGRPopupConfirmation>();
+                EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
                 popup.SetYesButtonText(Localize(EGRLanguageData.APPLY));
                 popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
                 popup.ShowPopup(Localize(EGRLanguageData.SETTINGS), Localize(EGRLanguageData.GRAPHIC_SETTINGS_WERE_MODIFIED_nWOULD_YOU_LIKE_TO_APPLY_THEM_), OnUnsavedClose, null);

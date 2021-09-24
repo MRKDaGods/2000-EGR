@@ -134,11 +134,16 @@ namespace MRK.UI {
             }
 
             //confirm pwd
-            Manager.GetPopup(EGRUI_Main.EGRPopup_ConfirmPwd.SCREEN_NAME).ShowPopup(Localize(EGRLanguageData.REGISTER), null, OnConfirmPassword, this);
+            //Manager.GetPopup(EGRUI_Main.EGRPopup_ConfirmPwd.SCREEN_NAME).ShowPopup(Localize(EGRLanguageData.REGISTER), null, OnConfirmPassword, this);
+
+            //USE INPUT TEXT INSTEAD
+            EGRPopupInputText popup = ScreenManager.GetPopup<EGRPopupInputText>();
+            popup.SetPassword();
+            popup.ShowPopup(Localize(EGRLanguageData.REGISTER), Localize(EGRLanguageData.ENTER_YOUR_PASSWORD_AGAIN), OnConfirmPassword, this);
         }
 
         void OnConfirmPassword(EGRPopup popup, EGRPopupResult result) {
-            if (((EGRPopupConfirmPassword)popup).Password != m_PasswordRef) {
+            if (((EGRPopupInputText)popup).Input != m_PasswordRef) {
                 //incorrect pwd
                 MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.PASSWORDS_MISMATCH), null, this);
                 return;
@@ -169,7 +174,7 @@ namespace MRK.UI {
 
         void OnLoginClick() {
             HideScreen();
-            Manager.GetScreen(EGRUI_Main.EGRScreen_Login.SCREEN_NAME).ShowScreen();
+            ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Login.SCREEN_NAME).ShowScreen();
         }
     }
 }

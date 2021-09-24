@@ -165,6 +165,12 @@ namespace MRK {
 		//OFFLINE MAP CACHE HAS BEEN DELETED
 		OFFLINE_MAP_CACHE_HAS_BEEN_DELETED = 54,
 
+		//ENTER YOUR PASSWORD AGAIN
+		ENTER_YOUR_PASSWORD_AGAIN = 55,
+
+		//DELETE
+		DELETE = 56,
+
 		//Email cannot be empty
 		Email_cannot_be_empty = 100,
 
@@ -194,6 +200,27 @@ namespace MRK {
 
 		//FIELD OF VIEW
 		FIELD_OF_VIEW = 1005,
+
+		//{0} DAYS AGO
+		_0__DAYS_AGO = 2000,
+
+		//{0} HOURS AGO
+		_0__HOURS_AGO = 2001,
+
+		//{0} MINUTES AGO
+		_0__MINUTES_AGO = 2002,
+
+		//N/A
+		N_A = 2003,
+
+		//{0} M AWAY
+		_0__M_AWAY = 2004,
+
+		//{0} KM AWAY
+		_0__KM_AWAY = 2005,
+
+		//ARE YOU SURE THAT YOU WANT TO DELETE {0}?
+		ARE_YOU_SURE_THAT_YOU_WANT_TO_DELETE__0__ = 2006,
 
 		__LANG_DATA_MAX
 	}

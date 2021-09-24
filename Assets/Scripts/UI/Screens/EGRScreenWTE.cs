@@ -310,7 +310,7 @@ namespace MRK.UI {
             m_LinePrefab = m_ScreenSpaceWTE.transform.Find("LinePrefab").GetComponent<Image>();
             m_LinePrefab.gameObject.SetActive(false);
 
-            m_Canvas = Manager.GetScreenSpaceLayer(1);
+            m_Canvas = ScreenManager.GetScreenSpaceLayer(1);
 
             RectTransform canvasTransform = (RectTransform)m_Canvas.transform;
             //Debug.Log(canvasTransform.rect.width + " | " + m_LinePrefab.rectTransform.rect.width);
@@ -586,8 +586,8 @@ namespace MRK.UI {
 
                             if (m_BackIndicator.LastAlpha > 0.7f) {
                                 HideScreen(() => {
-                                    Manager.MapInterface.ForceHideScreen(true);
-                                    Manager.MainScreen.ShowScreen();
+                                    ScreenManager.MapInterface.ForceHideScreen(true);
+                                    ScreenManager.MainScreen.ShowScreen();
                                 });
                             }
 

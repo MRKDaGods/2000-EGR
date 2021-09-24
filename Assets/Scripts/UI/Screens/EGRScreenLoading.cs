@@ -82,7 +82,7 @@ namespace MRK.UI {
                     StartCoroutine(Load());
                     Client.InitializeMaps();
                     Client.SetPostProcessState(true);
-                    Manager.GetScreen<EGRScreenMapInterface>().Warmup();
+                    ScreenManager.GetScreen<EGRScreenMapInterface>().Warmup();
 
                     //SO MUCH TIME, USE WISELY
                     //Client.FixInvalidTiles();
@@ -97,7 +97,7 @@ namespace MRK.UI {
             EGRFadeManager.Fade(1f, 0.5f, () => {
                 Client.Initialize();
 
-                Manager.GetScreen<EGRScreenLogin>().ShowScreen();
+                ScreenManager.GetScreen<EGRScreenLogin>().ShowScreen();
                 HideScreen();
             });
         }

@@ -144,7 +144,7 @@ namespace MRK.UI {
 
         void OnBlurClicked() {
             HideScreen(() => {
-                Manager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen(null, true);
+                ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen(null, true);
             }, 0.1f, true);
         }
 
@@ -152,11 +152,11 @@ namespace MRK.UI {
             switch (idx) {
 
                 case 0:
-                    HideScreen(() => Manager.GetScreen<EGRScreenOptions>().ShowScreen(), 0.1f, true);
+                    HideScreen(() => ScreenManager.GetScreen<EGRScreenOptions>().ShowScreen(), 0.1f, true);
                     break;
 
                 case 1:
-                    HideScreen(() => Manager.GetScreen<EGRScreenOptionsAppSettings>().ShowScreen(), 0.1f, true);
+                    HideScreen(() => ScreenManager.GetScreen<EGRScreenOptionsAppSettings>().ShowScreen(), 0.1f, true);
                     break;
 
             }

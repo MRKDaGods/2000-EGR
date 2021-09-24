@@ -38,6 +38,9 @@ public class EGRUIUpdater : MonoBehaviour {
 
     [MenuItem("EGR/Update UI")]
     static void Main() {
+        Debug.LogError("DEPRECATED");
+        return;
+
         Scene activeScene = SceneManager.GetActiveScene();
         using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\UI\Gen\EGRUI_{activeScene.name}.cs", FileMode.Create)) {
             StringBuilder sb = new StringBuilder();

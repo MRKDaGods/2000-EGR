@@ -177,7 +177,7 @@ namespace MRK.UI {
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
 
-            Manager.MainScreen.ShowScreen();
+            ScreenManager.MainScreen.ShowScreen();
 
             Client.SetPostProcessState(false);
             m_ContextLabel.gameObject.SetActive(false);

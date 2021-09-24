@@ -48,11 +48,6 @@ namespace MRK.UI {
         [SerializeField]
         int m_Layer;
         /// <summary>
-        /// deprecated: transition of screen
-        /// </summary>
-        [SerializeField]
-        TransitionType m_DefaultTransition;
-        /// <summary>
         /// Indicates if the screen is visible
         /// </summary>
         bool m_Visible;
@@ -112,11 +107,6 @@ namespace MRK.UI {
         /// Maximum time length of a tween playing
         /// </summary>
         float m_MaxTweenLength;
-
-        /// <summary>
-        /// The screen manager
-        /// </summary>
-        protected EGRScreenManager Manager => EGRScreenManager.Instance;
         /// <summary>
         /// Layer of screen
         /// </summary>
@@ -160,7 +150,8 @@ namespace MRK.UI {
         /// <summary>
         /// The message box
         /// </summary>
-        public EGRPopupMessageBox MessageBox => Manager.GetPopup<EGRPopupMessageBox>();
+        public EGRPopupMessageBox MessageBox => ScreenManager.GetPopup<EGRPopupMessageBox>();
+        public RectTransform Body { get; private set; }
 
         /// <summary>
         /// Late initialization
@@ -173,14 +164,14 @@ namespace MRK.UI {
             m_GfxStates = new Dictionary<Gfx, GfxState>();
 
             //register our screen
-            Manager.AddScreen(m_ScreenName, this);
+            ScreenManager.AddScreen(m_ScreenName, this);
             //disable our screen
             gameObject.SetActive(false);
 
-            //notch/safe area fixups
-            RectTransform rectTransform = transform as RectTransform;
-            Rect safeArea = Screen.safeArea;
+            Body = (RectTransform)GetTransform("Body");
 
+            //notch/safe area fixups
+            Rect safeArea = Screen.safeArea;
             Vector2 anchorMin = safeArea.position;
             Vector2 anchorMax = safeArea.position + safeArea.size;
             anchorMin.x /= Screen.width;
@@ -188,6 +179,7 @@ namespace MRK.UI {
             anchorMax.x /= Screen.width;
             anchorMax.y /= Screen.height;
 
+            RectTransform rectTransform = Body ?? base.rectTransform;
             rectTransform.anchorMin = anchorMin;
             rectTransform.anchorMax = anchorMax;
 

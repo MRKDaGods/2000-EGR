@@ -308,5 +308,44 @@ namespace MRK {
                 .ChangeStartValue(startValue ?? lens.intensity.value)
                 .SetEase(Ease.OutBack);
         }
+
+        public void TeleportToLocationTweened(Vector2d target) {
+            //zoom from z to 4
+            DOTween.To(
+                () => m_CurrentZoom,
+                x => m_CurrentZoom = x,
+                4f, 
+                1f
+            ).SetEase(Ease.OutSine)
+            .OnComplete(() => {
+                m_TargetZoom = m_CurrentZoom;
+
+                //center to target
+                DOTween.To(
+                    () => m_CurrentLatLong.x,
+                    x => m_CurrentLatLong.x = x,
+                    target.x,
+                    1f
+                );
+
+                DOTween.To(
+                    () => m_CurrentLatLong.y,
+                    x => m_CurrentLatLong.y = x,
+                    target.y,
+                    1f
+                ).OnComplete(() => {
+                    m_TargetLatLong = m_CurrentLatLong;
+
+                    //zoom to 17
+                    DOTween.To(() => m_CurrentZoom,
+                        x => m_CurrentZoom = x,
+                        17f,
+                        1f
+                    ).OnComplete(() => {
+                        m_TargetZoom = m_CurrentZoom;
+                    });
+                });
+            });
+        }
     }
 }

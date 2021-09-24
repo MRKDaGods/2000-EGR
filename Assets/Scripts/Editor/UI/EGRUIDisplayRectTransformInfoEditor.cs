@@ -63,6 +63,7 @@ public class EGRUIDisplayRectTransformInfoEditor : Editor {
             DrawProperty("offsetMin", DisplayInfo.rectTransform.offsetMin);
             DrawProperty("offsetMax", DisplayInfo.rectTransform.offsetMax);
             DrawProperty("sizeDelta", DisplayInfo.rectTransform.sizeDelta);
+            DrawProperty("anchoredPosition", DisplayInfo.rectTransform.anchoredPosition);
         }
         EndGroup();
 

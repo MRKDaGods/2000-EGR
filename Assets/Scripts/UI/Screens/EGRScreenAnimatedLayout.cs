@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DG.Tweening;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
 
 namespace MRK.UI {
     public class EGRScreenAnimatedLayout : EGRScreen {
         Transform m_Layout;
 
-        protected virtual string m_LayoutPath => "Layout";
-        protected virtual bool m_IsRTL => true;
+        protected virtual string LayoutPath => "Layout";
+        protected virtual bool IsRTL => true;
 
         protected override void OnScreenInit() {
-            m_Layout = GetTransform(m_LayoutPath);
+            m_Layout = GetTransform(LayoutPath);
         }
 
         protected virtual bool CanAnimate(Graphic gfx, bool moving) {
@@ -51,7 +47,7 @@ namespace MRK.UI {
                     continue;
 
                 gfx.transform.DOMoveX(gfx.transform.position.x, TweenMonitored(0.2f + i * 0.03f))
-                    .ChangeStartValue((m_IsRTL ? 2f : -2f) * gfx.transform.position)
+                    .ChangeStartValue((IsRTL ? 2f : -2f) * gfx.transform.position)
                     .SetEase(Ease.OutSine);
 
                 SetGfxStateMask(gfx, EGRGfxState.Color | EGRGfxState.Position);

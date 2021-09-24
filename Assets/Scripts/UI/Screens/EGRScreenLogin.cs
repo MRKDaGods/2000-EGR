@@ -84,7 +84,7 @@ namespace MRK.UI {
         }
 
         void OnRegisterClick() {
-            HideScreen(() => Manager.GetScreen<EGRScreenRegister>().ShowScreen());
+            HideScreen(() => ScreenManager.GetScreen<EGRScreenRegister>().ShowScreen());
         }
 
         void OnLoginClick() {

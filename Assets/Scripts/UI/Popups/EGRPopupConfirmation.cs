@@ -1,30 +1,33 @@
-﻿using DG.Tweening;
-using System;
-using TMPro;
-using UnityEngine;
+﻿using TMPro;
 using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
-using static MRK.UI.EGRUI_Main.EGRPopup_Confirmation;
 
 namespace MRK.UI {
-    public class EGRPopupConfirmation : EGRPopup {
+    public class EGRPopupConfirmation : EGRPopupAnimatedLayout {
         Button m_Yes;
         Button m_No;
         TextMeshProUGUI m_Title;
         TextMeshProUGUI m_Body;
 
+        protected override string LayoutPath => "Body/Layout";
         public override bool CanChangeBar => true;
         public override uint BarColor => 0xB4000000;
 
         protected override void OnScreenInit() {
-            m_Yes = GetElement<Button>(Buttons.Yes);
-            m_No = GetElement<Button>(Buttons.No);
+            base.OnScreenInit();
+
+            m_Yes = GetElement<Button>("Body/Layout/Yes/Button");
+            m_No = GetElement<Button>("Body/Layout/No/Button");
 
             m_Yes.onClick.AddListener(() => OnButtonClick(EGRPopupResult.YES));
             m_No.onClick.AddListener(() => OnButtonClick(EGRPopupResult.NO));
 
-            m_Title = GetElement<TextMeshProUGUI>(Labels.zTitle);
-            m_Body = GetElement<TextMeshProUGUI>(Labels.Body);
+            m_Title = GetElement<TextMeshProUGUI>("Body/Layout/Title");
+            m_Body = GetElement<TextMeshProUGUI>("Body/Layout/Body");
+        }
+
+        protected override bool CanAnimate(Graphic gfx, bool moving) {
+            return !moving;
         }
 
         protected override void SetText(string text) {
@@ -53,38 +56,6 @@ namespace MRK.UI {
 
             SetYesButtonText(Localize(EGRLanguageData.YES));
             SetNoButtonText(Localize(EGRLanguageData.NO));
-        }
-
-        protected override void OnScreenShowAnim() {
-            base.OnScreenShowAnim();
-
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-
-            PushGfxState(EGRGfxState.Color);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                Graphic gfx = m_LastGraphicsBuf[i];
-
-                gfx.DOColor(gfx.color, 0.1f + i * 0.03f + (i > 10 ? 0.3f : 0f))
-                    .ChangeStartValue(Color.clear)
-                    .SetEase(Ease.OutSine);
-            }
-        }
-
-        protected override bool OnScreenHideAnim(Action callback) {
-            base.OnScreenHideAnim(callback);
-
-            m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-
-            SetTweenCount(m_LastGraphicsBuf.Length);
-
-            for (int i = 0; i < m_LastGraphicsBuf.Length; i++) {
-                m_LastGraphicsBuf[i].DOColor(Color.clear, 0.1f + i * 0.03f + (i > 10 ? 0.1f : 0f))
-                    .SetEase(Ease.OutSine)
-                    .OnComplete(OnTweenFinished);
-            }
-
-            return true;
         }
     }
 }
