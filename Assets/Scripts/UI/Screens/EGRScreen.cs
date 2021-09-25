@@ -107,6 +107,7 @@ namespace MRK.UI {
         /// Maximum time length of a tween playing
         /// </summary>
         float m_MaxTweenLength;
+
         /// <summary>
         /// Layer of screen
         /// </summary>
@@ -179,7 +180,8 @@ namespace MRK.UI {
             anchorMax.x /= Screen.width;
             anchorMax.y /= Screen.height;
 
-            RectTransform rectTransform = Body ?? base.rectTransform;
+            //RectTransform doesnt support ??
+            RectTransform rectTransform = Body != null ? Body : base.rectTransform;
             rectTransform.anchorMin = anchorMin;
             rectTransform.anchorMax = anchorMax;
 

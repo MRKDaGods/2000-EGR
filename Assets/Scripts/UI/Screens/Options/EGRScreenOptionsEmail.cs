@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsEmail : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsEmail : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         TMP_InputField m_NewEmail;
         TMP_InputField m_ConfEmail;
         TMP_InputField m_Password;
@@ -113,6 +113,10 @@ namespace MRK.UI {
             }
 
             HideScreen();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

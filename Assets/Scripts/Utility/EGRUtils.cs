@@ -91,5 +91,20 @@ namespace MRK {
 
             set(txt);
         }
+
+        public static void ReverseIterator(int count, Action<int, Reference<bool>> iter) {
+            if (iter == null)
+                return;
+
+            Reference<bool> exit = ReferencePool<bool>.Default.Rent();
+            for (int i = count - 1; i > -1; i--) {
+                iter(i, exit);
+
+                if (exit.Value)
+                    break;
+            }
+
+            ReferencePool<bool>.Default.Free(exit);
+        }
     }
 }

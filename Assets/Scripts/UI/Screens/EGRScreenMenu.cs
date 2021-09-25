@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_Menu;
 
 namespace MRK.UI {
-    public class EGRScreenMenu : EGRScreen {
+    public class EGRScreenMenu : EGRScreen, IEGRScreenSupportsBackKey {
         [SerializeField]
         string[] m_Buttons;
         TextMeshProUGUI[] m_Texts;
@@ -112,11 +112,6 @@ namespace MRK.UI {
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
 
-            /*m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>();
-            Array.Sort(m_LastGraphicsBuf, (x, y) => {
-                return y.transform.position.y.CompareTo(x.transform.position.y);
-            }); */
-
             //colors + xpos - blur
             SetTweenCount(m_LastGraphicsBuf.Length * 2 - 1);
 
@@ -137,11 +132,6 @@ namespace MRK.UI {
             return true;
         }
 
-        protected override void OnScreenHide() {
-            //restore base bg mat
-            //(Manager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME) as EGRScreenMain).BaseBackground.material = m_Blur.GetComponent<Image>().material;
-        }
-
         void OnBlurClicked() {
             HideScreen(() => {
                 ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen(null, true);
@@ -160,6 +150,10 @@ namespace MRK.UI {
                     break;
 
             }
+        }
+
+        public void OnBackKeyDown() {
+            OnBlurClicked();
         }
     }
 }

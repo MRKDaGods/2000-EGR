@@ -1,7 +1,7 @@
 ﻿using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsAppSettings : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsAppSettings : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         Image m_Background;
 
         protected override bool IsRTL => false;
@@ -11,9 +11,7 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             base.OnScreenInit();
 
-            GetElement<Button>("bTopLeftMenu").onClick.AddListener(() => {
-                HideScreen(() => ScreenManager.GetScreen<EGRScreenMenu>().ShowScreen(), 0.1f, false);
-            });
+            GetElement<Button>("bTopLeftMenu").onClick.AddListener(OnBackClick);
 
             GetElement<Button>("Layout/Display").onClick.AddListener(() => {
                 ScreenManager.GetScreen<EGRScreenOptionsDisplaySettings>().ShowScreen();
@@ -40,6 +38,14 @@ namespace MRK.UI {
 
         protected override bool CanAnimate(Graphic gfx, bool moving) {
             return !(moving && gfx == m_Background);
+        }
+
+        void OnBackClick() {
+            HideScreen(() => ScreenManager.GetScreen<EGRScreenMenu>().ShowScreen(), 0.1f, false);
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

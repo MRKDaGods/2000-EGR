@@ -2,7 +2,7 @@
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsMapSettings : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsMapSettings : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         EGRUIMultiSelectorSettings m_SensitivitySelector;
         EGRUIMultiSelectorSettings m_StyleSelector;
         EGRUIMultiSelectorSettings m_AngleSelector;
@@ -14,7 +14,7 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             base.OnScreenInit();
 
-            GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
+            GetElement<Button>("bBack").onClick.AddListener(OnBackClick);
             GetElement<Button>($"{LayoutPath}/Preview").onClick.AddListener(OnPreviewClick);
 
             m_SensitivitySelector = GetElement<EGRUIMultiSelectorSettings>("SensitivitySelector");
@@ -101,6 +101,14 @@ namespace MRK.UI {
                     }, 1.1f);
                 });
             });
+        }
+
+        void OnBackClick() {
+            HideScreen();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

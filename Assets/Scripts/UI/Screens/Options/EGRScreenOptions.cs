@@ -4,7 +4,7 @@ using static MRK.EGRLanguageManager;
 using static MRK.UI.EGRUI_Main.EGRScreen_Options;
 
 namespace MRK.UI {
-    public class EGRScreenOptions : EGRScreenAnimatedLayout {
+    public class EGRScreenOptions : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         Image m_Background;
         TextMeshProUGUI m_Name;
 
@@ -15,9 +15,7 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             base.OnScreenInit();
 
-            GetElement<Button>(Buttons.TopLeftMenu).onClick.AddListener(() => {
-                HideScreen(() => ScreenManager.GetScreen<EGRScreenMenu>().ShowScreen(), 0.1f, false);
-            });
+            GetElement<Button>(Buttons.TopLeftMenu).onClick.AddListener(OnBackClicked);
 
             GetElement<Button>("Layout/Account").onClick.AddListener(() => {
                 ScreenManager.GetScreen<EGRScreenOptionsAccInfo>().ShowScreen();
@@ -25,7 +23,12 @@ namespace MRK.UI {
 
             GetElement<Button>("Layout/ChngEmail").onClick.AddListener(() => {
                 if (EGRLocalUser.Instance.IsDeviceID()) {
-                    MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.ACCOUNTS_LINKED_WITH_A_DEVICE_ID_CAN_NOT_HAVE_THEIR_EMAILS_CHANGED), null, this);
+                    MessageBox.ShowPopup(
+                        Localize(EGRLanguageData.ERROR),
+                        Localize(EGRLanguageData.ACCOUNTS_LINKED_WITH_A_DEVICE_ID_CAN_NOT_HAVE_THEIR_EMAILS_CHANGED),
+                        null,
+                        this
+                    );
                     return;
                 }
 
@@ -34,7 +37,12 @@ namespace MRK.UI {
 
             GetElement<Button>("Layout/ChngPwd").onClick.AddListener(() => {
                 if (EGRLocalUser.Instance.IsDeviceID()) {
-                    MessageBox.ShowPopup(Localize(EGRLanguageData.ERROR), Localize(EGRLanguageData.ACCOUNTS_LINKED_WITH_A_DEVICE_ID_CAN_NOT_HAVE_THEIR_PASSWORDS_CHANGED), null, this);
+                    MessageBox.ShowPopup(
+                        Localize(EGRLanguageData.ERROR),
+                        Localize(EGRLanguageData.ACCOUNTS_LINKED_WITH_A_DEVICE_ID_CAN_NOT_HAVE_THEIR_PASSWORDS_CHANGED),
+                        null,
+                        this
+                    );
                     return;
                 }
 
@@ -66,13 +74,26 @@ namespace MRK.UI {
             EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
             popup.SetYesButtonText(Localize(EGRLanguageData.LOGOUT));
             popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
-            popup.ShowPopup(Localize(EGRLanguageData.ACCOUNT_INFO), Localize(EGRLanguageData.ARE_YOU_SURE_THAT_YOU_WANT_TO_LOGOUT_OF_EGR_), OnLogoutClosed, null);
+            popup.ShowPopup(
+                Localize(EGRLanguageData.ACCOUNT_INFO),
+                Localize(EGRLanguageData.ARE_YOU_SURE_THAT_YOU_WANT_TO_LOGOUT_OF_EGR_),
+                OnLogoutClosed,
+                null
+            );
         }
 
         void OnLogoutClosed(EGRPopup popup, EGRPopupResult res) {
             if (res == EGRPopupResult.YES) {
                 Client.Logout();
             }
+        }
+
+        void OnBackClicked() {
+            HideScreen(() => ScreenManager.GetScreen<EGRScreenMenu>().ShowScreen(), 0.1f, false);
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClicked();
         }
     }
 }

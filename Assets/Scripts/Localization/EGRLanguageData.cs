@@ -171,6 +171,12 @@ namespace MRK {
 		//DELETE
 		DELETE = 56,
 
+		//EXIT
+		EXIT = 57,
+
+		//YOU ARE EXITING <b>EGR</b>...
+		YOU_ARE_EXITING__b_EGR__b____ = 58,
+
 		//Email cannot be empty
 		Email_cannot_be_empty = 100,
 

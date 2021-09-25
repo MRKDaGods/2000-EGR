@@ -1,15 +1,8 @@
-﻿using DG.Tweening;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using TMPro;
 using UnityEngine.UI;
-using TMPro;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsAdvancedSettings : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsAdvancedSettings : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         EGRUIMultiSelectorSettings m_InputModelSelector;
         TextMeshProUGUI m_Latitude;
         TextMeshProUGUI m_Longitude;
@@ -22,7 +15,7 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             base.OnScreenInit();
 
-            GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
+            GetElement<Button>("bBack").onClick.AddListener(OnBackClick);
 
             m_InputModelSelector = GetElement<EGRUIMultiSelectorSettings>("InputModelSelector");
 
@@ -52,6 +45,14 @@ namespace MRK.UI {
             m_Longitude.text = success ? coord.Value.y.ToString() : "-";
             m_Bearing.text = success ? bearing.Value.ToString() : "-";
             m_LastError.text = Client.LocationService.LastError.ToString();
+        }
+
+        void OnBackClick() {
+            HideScreen();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

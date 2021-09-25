@@ -10,14 +10,15 @@ namespace MRK.UI {
         Canvas m_DefaultScreen;
         [SerializeField]
         int m_MaxLayerCount;
-        Dictionary<string, EGRScreen> m_Screens;
-        List<Canvas> m_Layers;
+        readonly Dictionary<string, EGRScreen> m_Screens;
+        readonly List<Canvas> m_Layers;
         static EGRScreenManager ms_Instance;
         EGRScreen m_TopScreen;
         int m_TargetScreenCount;
         List<EGRProxyScreen> m_ProxiedScreens;
-        Dictionary<Type, EGRScreen> m_ScreensTypes;
-        static List<EGRProxyScreen> m_ProxyPipe;
+        readonly Dictionary<Type, EGRScreen> m_ScreensTypes;
+        readonly Dictionary<int, HashSet<EGRScreen>> m_LayerToScreens;
+        static readonly List<EGRProxyScreen> m_ProxyPipe;
         [SerializeField]
         Canvas[] m_ScreenSpaceLayers;
         readonly MRKSelfContainedPtr<EGRScreenMapInterface> m_MapInterface;
@@ -51,6 +52,11 @@ namespace MRK.UI {
         }
 
         public EGRScreenManager() {
+            m_Screens = new Dictionary<string, EGRScreen>();
+            m_ScreensTypes = new Dictionary<Type, EGRScreen>();
+            m_Layers = new List<Canvas>();
+            m_LayerToScreens = new Dictionary<int, HashSet<EGRScreen>>();
+
             m_MapInterface = new MRKSelfContainedPtr<EGRScreenMapInterface>(() => GetScreen<EGRScreenMapInterface>());
             m_MessageBox = new MRKSelfContainedPtr<EGRPopupMessageBox>(() => GetPopup<EGRPopupMessageBox>());
             m_MainScreen = new MRKSelfContainedPtr<EGRScreenMain>(() => GetScreen<EGRScreenMain>());
@@ -59,13 +65,10 @@ namespace MRK.UI {
         void Awake() {
             ms_Instance = this;
             m_TargetScreenCount = GameObject.Find("EGRDefaultCanvas").transform.childCount;
-            m_Screens = new Dictionary<string, EGRScreen>();
-            m_ScreensTypes = new Dictionary<Type, EGRScreen>();
-            m_Layers = new List<Canvas>();
             GameObject container = new GameObject("Screens Container");
 
             for (int i = 0; i < m_MaxLayerCount; i++) {
-                Canvas canv = Instantiate<Canvas>(m_DefaultScreen);
+                Canvas canv = Instantiate(m_DefaultScreen);
                 canv.transform.SetParent(container.transform);
 
                 while (canv.transform.childCount > 0) {
@@ -77,6 +80,8 @@ namespace MRK.UI {
                 canv.sortingOrder = i;
                 canv.name = "Canvas-" + (i + 1);
                 m_Layers.Add(canv);
+
+                m_LayerToScreens[i] = new HashSet<EGRScreen>();
             }
 
             m_ProxiedScreens = new List<EGRProxyScreen>();
@@ -138,8 +143,13 @@ namespace MRK.UI {
             SceneChangeIndex++;
         }
 
-        void LateUpdate() {
-            //EGRTransitionFactory.Update();
+        void Update() {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                EGRScreen topMost = GetTopMostVisibleScreen((screen) => screen is IEGRScreenSupportsBackKey);
+                if (topMost != null) {
+                    ((IEGRScreenSupportsBackKey)topMost).OnBackKeyDown();
+                }
+            }
         }
 
         public void AddScreen(string name, EGRScreen screen) {
@@ -147,6 +157,9 @@ namespace MRK.UI {
                 MoveScreenToLayer(screen, screen.Layer);
                 m_Screens[name] = screen;
                 m_ScreensTypes[screen.GetType()] = screen;
+
+                //Layer isnt an idx
+                m_LayerToScreens[screen.Layer - 1].Add(screen);
             }
         }
 
@@ -175,6 +188,25 @@ namespace MRK.UI {
 
         public T GetPopup<T>() where T : EGRPopup {
             return GetScreen<T>();
+        }
+
+        public EGRScreen GetTopMostVisibleScreen(Predicate<EGRScreen> filter = null) {
+            EGRScreen topMost = null;
+
+            EGRUtils.ReverseIterator(m_MaxLayerCount, (idx, exit) => {
+                foreach (EGRScreen screen in m_LayerToScreens[idx]) {
+                    if (screen.Visible) {
+                        if (filter != null && !filter(screen))
+                            continue;
+
+                        exit.Value = true;
+                        topMost = screen;
+                        break;
+                    }
+                }
+            });
+
+            return topMost;
         }
 
         public void MoveScreenToLayer(EGRScreen screen, int layer) {

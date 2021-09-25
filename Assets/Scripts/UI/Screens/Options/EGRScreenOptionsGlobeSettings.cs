@@ -1,14 +1,7 @@
-﻿using DG.Tweening;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsGlobeSettings : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsGlobeSettings : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         EGRUIMultiSelectorSettings m_SensitivitySelector;
         EGRUIMultiSelectorSettings m_DistanceSelector;
         EGRUIMultiSelectorSettings m_TimeSelector;
@@ -19,7 +12,7 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             base.OnScreenInit();
 
-            GetElement<Button>("bBack").onClick.AddListener(() => HideScreen());
+            GetElement<Button>("bBack").onClick.AddListener(OnBackClick);
 
             m_SensitivitySelector = GetElement<EGRUIMultiSelectorSettings>("SensitivitySelector");
             m_DistanceSelector = GetElement<EGRUIMultiSelectorSettings>("DistanceSelector");
@@ -41,6 +34,14 @@ namespace MRK.UI {
             if (Client.ActiveEGRCamera.InterfaceActive) {
                 Client.ActiveEGRCamera.ResetStates();
             }
+        }
+
+        void OnBackClick() {
+            HideScreen();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

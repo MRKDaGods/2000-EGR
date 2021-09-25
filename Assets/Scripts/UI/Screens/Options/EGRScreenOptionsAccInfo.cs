@@ -10,7 +10,7 @@ using static MRK.EGRLanguageManager;
 using static MRK.UI.EGRUI_Main.EGRScreen_OptionsAccInfo;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsAccInfo : EGRScreen {
+    public class EGRScreenOptionsAccInfo : EGRScreen, IEGRScreenSupportsBackKey {
         TMP_InputField m_FirstName;
         TMP_InputField m_LastName;
         SegmentedControl m_Gender;
@@ -101,13 +101,19 @@ namespace MRK.UI {
         void OnBackClick() {
             //unsaved changes
             if (m_Save.interactable) {
-                EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>(EGRUI_Main.EGRPopup_Confirmation.SCREEN_NAME);
+                EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
                 popup.SetYesButtonText(Localize(EGRLanguageData.SAVE));
                 popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
-                popup.ShowPopup(Localize(EGRLanguageData.ACCOUNT_INFO), Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_), OnUnsavedClose, null);
+                popup.ShowPopup(
+                    Localize(EGRLanguageData.ACCOUNT_INFO),
+                    Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_),
+                    OnUnsavedClose,
+                    null
+                );
             }
-            else
+            else {
                 HideScreen();
+            }
         }
 
         void OnUnsavedClose(EGRPopup popup, EGRPopupResult result) {
@@ -178,6 +184,10 @@ namespace MRK.UI {
             m_ListeningToChanges = false;
 
             ScreenManager.GetScreen<EGRScreenOptions>().UpdateProfile();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

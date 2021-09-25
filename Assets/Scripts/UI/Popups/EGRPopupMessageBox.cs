@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRPopupMessageBox : EGRPopupAnimatedLayout {
+    public class EGRPopupMessageBox : EGRPopupAnimatedLayout, IEGRScreenSupportsBackKey {
         TextMeshProUGUI m_Title;
         TextMeshProUGUI m_Body;
         Button m_Ok;
@@ -50,6 +50,12 @@ namespace MRK.UI {
 
         public void SetOkButtonText(string txt) {
             m_Ok.GetComponentInChildren<TextMeshProUGUI>().text = txt;
+        }
+
+        public void OnBackKeyDown() {
+            if (m_Ok.gameObject.activeInHierarchy) {
+                HideScreen();
+            }
         }
     }
 }

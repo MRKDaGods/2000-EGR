@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRPopupConfirmation : EGRPopupAnimatedLayout {
+    public class EGRPopupConfirmation : EGRPopupAnimatedLayout, IEGRScreenSupportsBackKey {
         Button m_Yes;
         Button m_No;
         TextMeshProUGUI m_Title;
@@ -56,6 +56,10 @@ namespace MRK.UI {
 
             SetYesButtonText(Localize(EGRLanguageData.YES));
             SetNoButtonText(Localize(EGRLanguageData.NO));
+        }
+
+        public void OnBackKeyDown() {
+            OnButtonClick(EGRPopupResult.NO);
         }
     }
 }

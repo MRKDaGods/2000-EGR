@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public partial class EGRScreenQuickLocations : EGRScreen {
+    public partial class EGRScreenQuickLocations : EGRScreen, IEGRScreenSupportsBackKey {
         RectTransform m_TopTransform;
         Button m_DragButton;
         Vector2 m_InitialOffsetMin;
@@ -211,6 +211,21 @@ namespace MRK.UI {
 
         void UpdateFinishButtonVisibility() {
             m_FinishButton.gameObject.SetActive(m_IsChoosingLocation);
+        }
+
+        public void OnBackKeyDown() {
+            if (m_DetailedView.IsActive) {
+                m_DetailedView.Close();
+                return;
+            }
+
+            if (m_Expanded) {
+                UpdateMainView(false);
+                return;
+            }
+
+            //TODO: hide map interface as well?
+            HideScreen();
         }
     }
 }

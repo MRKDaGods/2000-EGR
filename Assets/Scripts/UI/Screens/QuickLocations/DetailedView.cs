@@ -18,6 +18,8 @@ namespace MRK.UI {
             EGRQuickLocation m_Location;
             CanvasGroup m_CanvasGroup;
 
+            public bool IsActive => m_Transform.gameObject.activeInHierarchy;
+
             public DetailedView(RectTransform transform) {
                 m_Transform = transform;
                 m_Name = transform.GetElement<TMP_InputField>("Layout/Name/Input");
@@ -30,7 +32,7 @@ namespace MRK.UI {
                 m_Distance = transform.GetElement<TextMeshProUGUI>("Layout/Dist/Val");
 
                 m_Save = transform.GetElement<Button>("Layout/Save/Button");
-                m_Save.onClick.AddListener(OnSaveClick);
+                m_Save.onClick.AddListener(() => OnSaveClick());
 
                 m_Delete = transform.GetElement<Button>("Layout/Delete/Button");
                 m_Delete.onClick.AddListener(OnDeleteClick);
@@ -87,10 +89,32 @@ namespace MRK.UI {
             }
 
             void OnCloseClick() {
+                if (m_Save.interactable) {
+                    EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
+                    popup.SetYesButtonText(Localize(EGRLanguageData.SAVE));
+                    popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+                    popup.ShowPopup(
+                        Localize(EGRLanguageData.QUICK_LOCATIONS),
+                        Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_),
+                        OnUnsavedClose,
+                        null
+                    );
+                }
+                else {
+                    ms_Instance.CloseDetailedView();
+                }
+            }
+
+            void OnUnsavedClose(EGRPopup popup, EGRPopupResult result) {
+                if (result == EGRPopupResult.YES) {
+                    OnSaveClick(true);
+                    return;
+                }
+
                 ms_Instance.CloseDetailedView();
             }
 
-            void OnSaveClick() {
+            void OnSaveClick(bool hideAfter = false) {
                 m_Location.Name = m_Name.text;
                 m_Location.Type = (EGRQuickLocationType)m_Type.value;
 
@@ -101,6 +125,10 @@ namespace MRK.UI {
                         null,
                         ms_Instance
                     );
+
+                    if (hideAfter) {
+                        ms_Instance.CloseDetailedView();
+                    }
 
                     ms_Instance.UpdateLocationListFromLocal();
                 });
@@ -160,6 +188,10 @@ namespace MRK.UI {
                 )
                 .SetEase(Ease.OutSine)
                 .OnComplete(() => callback());
+            }
+
+            public void Close() {
+                OnCloseClick();
             }
         }
     }

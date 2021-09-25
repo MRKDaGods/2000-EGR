@@ -4,9 +4,10 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_Main;
+using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRScreenMain : EGRScreen {
+    public class EGRScreenMain : EGRScreen, IEGRScreenSupportsBackKey {
         class NavButton {
             Button m_Button;
             float m_LastAlpha;
@@ -49,14 +50,7 @@ namespace MRK.UI {
             }
 
             set {
-                if (m_ActiveScroll != null) {
-                    m_ActiveScroll.onValueChanged.RemoveListener(OnScrollValueChanged);
-                }
-
                 m_ActiveScroll = value;
-                if (m_ActiveScroll != null) {
-                    m_ActiveScroll.onValueChanged.AddListener(OnScrollValueChanged);
-                }
             }
         }
         public bool LastAction { get; private set; }
@@ -213,7 +207,7 @@ namespace MRK.UI {
             if (m_CurrentPage == m_PageCount)
                 m_CurrentPage = 0;
 
-            LastAction = idx == 0 ? false : true;
+            LastAction = idx != 0;
 
             UpdateTemplates(old);
             UpdateNavButtonsVisibility();
@@ -290,20 +284,25 @@ namespace MRK.UI {
             Debug.Log($"DOWN {s} - {idx} - {txt}");
         }
 
-        void OnScrollValueChanged(float newVal) {
-            /*int idx = GetDesiredTitleIdx(newVal);
-            if (idx != m_CurrentTitleIdx) {
-                m_CurrentTitleIdx = idx;
-                UpdateTitleVisibility();
-            }*/
-
-            //UpdateNavButtonsVisibility();
-
-            //Debug.Log("NEW VAL " + newVal);
-        }
-
         public bool ShouldShowSubScreen(int idx) {
             return Visible && m_CurrentPage == idx;
+        }
+
+        public void OnBackKeyDown() {
+            //exit?
+            EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
+            popup.SetYesButtonText(Localize(EGRLanguageData.EXIT));
+            popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+            popup.ShowPopup(
+                Localize(EGRLanguageData.EGR),
+                Localize(EGRLanguageData.YOU_ARE_EXITING__b_EGR__b____),
+                (_, res) => {
+                    if (res == EGRPopupResult.YES) {
+                        Application.Quit();
+                    }
+                },
+                this
+            );
         }
     }
 }

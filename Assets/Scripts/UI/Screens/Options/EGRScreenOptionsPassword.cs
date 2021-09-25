@@ -1,16 +1,11 @@
 ﻿using MRK.Networking;
 using MRK.Networking.Packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public class EGRScreenOptionsPassword : EGRScreenAnimatedLayout {
+    public class EGRScreenOptionsPassword : EGRScreenAnimatedLayout, IEGRScreenSupportsBackKey {
         TMP_InputField m_CurrentPassword;
         TMP_InputField m_NewPassword;
         TMP_InputField m_ConfirmPassword;
@@ -102,7 +97,12 @@ namespace MRK.UI {
                 EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
                 popup.SetYesButtonText(Localize(EGRLanguageData.SAVE));
                 popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
-                popup.ShowPopup(Localize(EGRLanguageData.ACCOUNT_INFO), Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_), OnUnsavedClose, null);
+                popup.ShowPopup(
+                    Localize(EGRLanguageData.ACCOUNT_INFO),
+                    Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_),
+                    OnUnsavedClose,
+                    null
+                );
             }
             else
                 HideScreen();
@@ -115,6 +115,10 @@ namespace MRK.UI {
             }
 
             HideScreen();
+        }
+
+        public void OnBackKeyDown() {
+            OnBackClick();
         }
     }
 }

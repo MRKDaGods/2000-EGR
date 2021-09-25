@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 
 namespace MRK.UI {
-    public class EGRPopupInputText : EGRPopupAnimatedLayout {
+    public class EGRPopupInputText : EGRPopupAnimatedLayout, IEGRScreenSupportsBackKey {
         TextMeshProUGUI m_Title;
         TextMeshProUGUI m_Body;
         TMP_InputField m_Input;
@@ -53,6 +53,10 @@ namespace MRK.UI {
 
         public void SetPassword() {
             m_Input.contentType = TMP_InputField.ContentType.Password;
+        }
+
+        public void OnBackKeyDown() {
+            //prevent lower-z screens from exeing
         }
     }
 }
