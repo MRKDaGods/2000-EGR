@@ -1,4 +1,5 @@
 using DG.Tweening;
+using MRK.UI.Attributes;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -107,6 +108,8 @@ namespace MRK.UI {
         /// Maximum time length of a tween playing
         /// </summary>
         float m_MaxTweenLength;
+        [SerializeField]
+        List<EGRUIAttribute> m_Attributes;
 
         /// <summary>
         /// Layer of screen
@@ -169,7 +172,16 @@ namespace MRK.UI {
             //disable our screen
             gameObject.SetActive(false);
 
-            Body = (RectTransform)GetTransform("Body");
+            //find body if exists
+            foreach (EGRUIAttribute attr in m_Attributes) {
+                var _attr = attr.Get(EGRUIAttributes.ContentType);
+                if (_attr != null) {
+                    if (_attr.Value == EGRUIContentType.Body) {
+                        Body = attr.rectTransform;
+                        break;
+                    }
+                }
+            }
 
             //notch/safe area fixups
             Rect safeArea = Screen.safeArea;

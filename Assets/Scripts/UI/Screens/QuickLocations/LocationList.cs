@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MRK.UI {
-    public partial class EGRScreenQuickLocations : EGRScreen {
+    public partial class EGRScreenQuickLocations {
         class LocationList {
             class Item {
                 RectTransform m_Transform;

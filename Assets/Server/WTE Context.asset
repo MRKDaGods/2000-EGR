@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dda9dc86e08e064895cb2a8fcbf5756, type: 3}
+  m_Name: WTE Context
+  m_EditorClassIdentifier: 
+  Version: 10
+  ContextName: WTE MAIN
+  Places:
+  - Name: McDonald's
+    CID: 0
+    Tags:
+    - Type: 1
+      Custom: 
+    - Type: 2
+      Custom: Chicken Burger
+    Pricing:
+    - Type: 1
+      CustomType: 
+      Value: 9999
+      PeopleCount: 4

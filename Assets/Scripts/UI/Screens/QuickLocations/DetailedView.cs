@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public partial class EGRScreenQuickLocations : EGRScreen {
+    public partial class EGRScreenQuickLocations {
         class DetailedView : MRKBehaviourPlain {
             RectTransform m_Transform;
             TMP_InputField m_Name;
