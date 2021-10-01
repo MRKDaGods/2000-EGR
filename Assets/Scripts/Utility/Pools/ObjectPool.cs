@@ -85,5 +85,15 @@ namespace MRK {
 
             m_ActiveObjects.Clear();
         }
+
+        public int GetIndex(T obj) {
+            if (m_PoolIndex == null) {
+                return -1;
+            }
+
+            int idx;
+            m_PoolIndex.TryGetValue(obj, out idx);
+            return idx;
+        }
     }
 }

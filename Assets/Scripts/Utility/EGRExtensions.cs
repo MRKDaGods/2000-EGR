@@ -177,7 +177,7 @@ namespace MRK {
             return i != -999;
         }
 
-        public static string StringifyArray<T>(this T[] arr, char sep = ',') {
+        public static string StringifyArray<T>(this T[] arr, string sep = ",") {
             if (arr.Length == 0)
                 return string.Empty;
 
@@ -185,7 +185,7 @@ namespace MRK {
             foreach (T t in arr)
                 str += t.ToString() + sep;
 
-            return str.Substring(0, str.Length - 1);
+            return str.Substring(0, str.Length - sep.Length);
         }
 
         public static string StringifyList<T>(this List<T> list, string sep = ",") {
@@ -196,7 +196,7 @@ namespace MRK {
             foreach (T t in list)
                 str += t.ToString() + sep;
 
-            return str.Substring(0, str.Length - 1);
+            return str.Substring(0, str.Length - sep.Length);
         }
 
         public static T GetElement<T>(this Transform transform, string name) where T : MonoBehaviour {

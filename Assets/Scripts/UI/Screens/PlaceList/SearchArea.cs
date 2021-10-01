@@ -1,58 +1,35 @@
-﻿using DG.Tweening;
+﻿using FuzzySharp;
+using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MRK.UI {
     public partial class EGRScreenPlaceList {
         class SearchArea {
             TMP_InputField m_Input;
-            bool m_InputVisible;
-            RectTransform m_InputRectTransform;
-            float m_InputTweenProgress;
-            float m_InputHiddenOffsetMin;
+            PlaceItem m_StationaryItem;
 
             public SearchArea(Transform transform) {
-                return;
-                transform.GetElement<Button>("Button").onClick.AddListener(OnButtonClick);
+                m_Input = transform.GetElement<TMP_InputField>("Textbox");
+                m_Input.onValueChanged.AddListener(OnInputTextChanged);
 
-                m_Input = transform.GetElement<TMP_InputField>("Input");
-                m_InputRectTransform = (RectTransform)m_Input.transform;
-                m_InputHiddenOffsetMin = m_InputRectTransform.rect.width;
+                m_StationaryItem = new PlaceItem(null, true);
             }
 
-            void OnButtonClick() {
-                m_InputVisible = !m_InputVisible;
+            void OnInputTextChanged(string str) {
+                if (string.IsNullOrEmpty(str)) {
+                    Instance.ClearFocusedItems();
+                    return;
+                }
 
-                if (m_InputVisible)
-                    Show();
-                else
-                    Hide();
+                m_StationaryItem.SetInfo(str, null);
+                Instance.SetFocusedItems(Process.ExtractSorted<PlaceItem>(m_StationaryItem, Instance.m_Items, item => item.Name)
+                    .Select(res => res.Value)
+                    .ToList());
             }
 
-            public void Hide() {
-                return;
-                m_InputVisible = false;
-                //upon diagnosis of the current input anchors, I concluded the following:
-                //sizeDelta_HIDDEN = sizeDelta_INITIAL.x - rect_INITIAL.width
-                //sizeDelta_SHOWN = sizeDelta_INITIAL.x
-
-                DOTween.To(() => m_InputTweenProgress, x => m_InputTweenProgress = x, 1f, 0.3f)
-                    .SetEase(Ease.OutSine)
-                    .OnUpdate(OnInputTweenUpdate);
-            }
-
-            public void Show() {
-                return;
-                m_InputVisible = true;
-
-                DOTween.To(() => m_InputTweenProgress, x => m_InputTweenProgress = x, 0f, 0.3f)
-                    .SetEase(Ease.OutSine)
-                    .OnUpdate(OnInputTweenUpdate);
-            }
-
-            void OnInputTweenUpdate() {
-                m_InputRectTransform.offsetMin = new Vector2(Mathf.Lerp(0f, m_InputHiddenOffsetMin, m_InputTweenProgress), m_InputRectTransform.offsetMin.y);
+            public void Clear() {
+                m_Input.SetTextWithoutNotify(string.Empty);
             }
         }
     }

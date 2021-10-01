@@ -1,17 +1,13 @@
 ﻿using Coffee.UIEffects;
 using DG.Tweening;
+using MRK.UI.MapInterface;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
-using System.Linq;
-using MRK.GeoJson;
-using MRK.UI.MapInterface;
 
 namespace MRK.UI {
     [Serializable]
@@ -56,8 +52,6 @@ namespace MRK.UI {
         [SerializeField]
         AnimationCurve m_MarkerOpacityCurve;
         RawImage m_TransitionImg;
-        readonly List<Tuple<GameObject, TextMeshProUGUI>> m_MapButtonsPool;
-        bool m_PositionersDirty;
         [SerializeField]
         MarkerSprite[] m_MarkerSprites;
         bool m_MouseDown;
@@ -83,7 +77,7 @@ namespace MRK.UI {
         public EGRMapInterfacePlaceMarkersResources PlaceMarkersResources => m_PlaceMarkersResources;
         public EGRMapInterfaceResources MapInterfaceResources => m_MapInterfaceResources;
         public bool MapButtonsEnabled {
-            get {  return m_MapButtonsEnabled; }
+            get { return m_MapButtonsEnabled; }
             set {
                 if (m_MapButtonsEnabled != value) {
                     m_MapButtonsEnabled = value;
@@ -96,8 +90,6 @@ namespace MRK.UI {
         public EGRMapInterfaceComponentCollection Components { get; private set; }
 
         public EGRScreenMapInterface() {
-            m_MapButtonsPool = new List<Tuple<GameObject, TextMeshProUGUI>>();
-
             MapButtonsMask = MapButtonIDs.ALL_MASK;
             MapButtonsInteractivityMask = MapButtonIDs.ALL_MASK;
 

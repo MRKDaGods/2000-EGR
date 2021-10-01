@@ -17,8 +17,32 @@ namespace MRK {
         public EGREventManager EventManager => EGREventManager.Instance;
 
         //cached properties
-        public new Transform transform => m_Transform ??= base.transform;
-        public RectTransform rectTransform => m_RectTransform ??= (RectTransform)transform;
-        public new GameObject gameObject => m_GameObject ??= base.gameObject;
+        public new Transform transform { 
+            get {
+                if (m_Transform == null) {
+                    m_Transform = base.transform;
+                }
+
+                return m_Transform;
+            }
+        }
+        public RectTransform rectTransform {
+            get {
+                if (m_RectTransform == null) {
+                    m_RectTransform = (RectTransform)transform;
+                }
+
+                return m_RectTransform;
+            }
+        }
+        public new GameObject gameObject {
+            get {
+                if (m_GameObject == null) {
+                    m_GameObject = base.gameObject;
+                }
+
+                return m_GameObject;
+            }
+        }
     }
 }

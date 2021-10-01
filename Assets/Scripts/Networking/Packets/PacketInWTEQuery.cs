@@ -14,11 +14,13 @@ namespace MRK.Networking.Packets {
 
             for (int i = 0; i < pCount; i++) {
                 string name = stream.ReadString();
+                ulong cid = stream.ReadUInt64();
                 List<string> tags = stream.ReadList((stream) => stream.ReadString());
                 float genMin = stream.ReadSingle();
                 float genMax = stream.ReadSingle();
                 Places.Add(new EGRWTEProxyPlace {
                     Name = name,
+                    CID = cid,
                     Tags = tags,
                     GeneralMinimum = genMin,
                     GeneralMaximum = genMax
