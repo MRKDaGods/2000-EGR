@@ -1,16 +1,11 @@
 ﻿#define MRK_PROFILE
 
-using System;
 using System.Collections;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using System.IO;
 using UnityEngine.Networking;
-using MRK.Networking;
-using MRK.Networking.Packets;
-using System.Threading;
 
 namespace MRK {
     public abstract class MRKTileFetcher {
@@ -89,7 +84,7 @@ namespace MRK {
             if (low) {
                 //lower res
                 path = path.Replace("@2x", "");
-                    //.Replace("/512/", "/256/");
+                //.Replace("/512/", "/256/");
             }
 
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(path, false);
@@ -111,76 +106,5 @@ namespace MRK {
 
             if (context.Texture == null) goto __start;
         }
-
-        /*public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
-            PacketInFetchTile response = null;
-
-            void __cb(PacketInFetchTile _response) {
-                response = _response;
-                EGREventManager.Instance.Register<EGREventNetworkDownloadRequest>(__reqCb);
-            }
-
-            EGRDownloadContext downloadContext = null;
-            void __reqCb(EGREventNetworkDownloadRequest evt) {
-                if (evt.Context.ID == response.DownloadID) {
-                    evt.IsAccepted = true;
-                    downloadContext = evt.Context;
-                    EGREventManager.Instance.Unregister<EGREventNetworkDownloadRequest>(__reqCb);
-                }
-            }
-
-            if (!EGRMain.Instance.NetFetchTile(tileSet, id, __cb)) {
-                context.Error = true;
-                yield break;
-            }
-
-            float timer = 0f;
-            bool timedOut = false;
-            while (response == null) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 3f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            if (timedOut || response.Response != EGRStandardResponse.SUCCESS) {
-                context.Error = true;
-                yield break;
-            }
-
-            timer = 0f;
-            while (downloadContext == null) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 3f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            if (timedOut) {
-                context.Error = true;
-                yield break;
-            }
-
-            timer = 0f;
-            while (!downloadContext.Complete) {
-                timer += 0.2f;
-                yield return new WaitForSeconds(0.2f);
-
-                if (timer > 5f) {
-                    timedOut = true;
-                    break;
-                }
-            }
-
-            Texture2D tex = new Texture2D(0, 0);
-            tex.LoadImage(downloadContext.Data, false); //upload to gpu
-            context.Texture = tex;
-        }*/
     }
 }

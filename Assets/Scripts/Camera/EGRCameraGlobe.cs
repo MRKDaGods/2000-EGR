@@ -20,7 +20,6 @@ namespace MRK {
         Material m_EarthMat;
         [SerializeField]
         AnimationCurve m_CloudTransparencyCurve;
-        EGRScreenMapInterface m_MapInterface;
         bool m_IsSwitching;
         GameObject m_DummyRaycastObject;
         float m_TimeOfDayRotation;
@@ -78,16 +77,12 @@ namespace MRK {
                 EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
 
                 switch (kind) {
-
                     case EGRControllerMouseEventKind.Down:
-
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
-
                         break;
 
                     case EGRControllerMouseEventKind.Drag:
-
                         //store delta for zoom
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
 
@@ -119,15 +114,11 @@ namespace MRK {
                                 break;
 
                         }
-
                         break;
 
                     case EGRControllerMouseEventKind.Up:
-
                         m_Down[data.Index] = false;
-
                         break;
-
                 }
             }
         }
@@ -204,7 +195,7 @@ namespace MRK {
 
                             m_TargetDistance = 5000f;
 
-                            m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
+                            ScreenManager.MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
 
                             SwitchToFlatMap();
 
@@ -230,7 +221,7 @@ namespace MRK {
 
             m_TargetDistance -= rawDelta * Time.deltaTime * 400f * EGRSettings.GetGlobeSensitivity();
 
-            if (m_TargetDistance < 3500f && m_MapInterface.ObservedTransform == transform) {
+            if (m_TargetDistance < 3500f && ScreenManager.MapInterface.ObservedTransform == transform) {
                 StartTransitionToFlat();
                 return;
             }
@@ -318,24 +309,17 @@ namespace MRK {
         }
 
         public void UpdateTransform() {
-            if (m_MapInterface == null) {
-                m_MapInterface = EGRScreenManager.Instance.GetScreen<EGRScreenMapInterface>();
-
-                if (m_MapInterface == null)
-                    return;
-            }
-
-            if (m_MapInterface.ObservedTransformDirty) {
-                m_CurrentDistance = m_TargetDistance = m_MapInterface.ObservedTransform.localScale.x * 6.5f;
+            if (ScreenManager.MapInterface.ObservedTransformDirty) {
+                m_CurrentDistance = m_TargetDistance = ScreenManager.MapInterface.ObservedTransform.localScale.x * 6.5f;
             }
 
             Quaternion rotation = Quaternion.Euler(m_CurrentRotation.y, m_CurrentRotation.x, 0);
 
             Vector3 negDistance = new Vector3(0f, 0f, -m_CurrentDistance);
-            Vector3 position = rotation * negDistance + m_MapInterface.ObservedTransform.position;
+            Vector3 position = rotation * negDistance + ScreenManager.MapInterface.ObservedTransform.position;
 
-            if (m_MapInterface.ObservedTransformDirty) {
-                m_MapInterface.ObservedTransformDirty = false;
+            if (ScreenManager.MapInterface.ObservedTransformDirty) {
+                ScreenManager.MapInterface.ObservedTransformDirty = false;
                 m_PositionLocked = m_RotationLocked = true;
 
                 m_Camera.transform.DOMove(position, 1f).SetEase(Ease.OutQuad).OnComplete(() => {
@@ -347,14 +331,14 @@ namespace MRK {
                 });
 
                 m_Camera.transform.DORotate(rotation.eulerAngles, 0.3f).SetEase(Ease.OutSine).OnComplete(() => m_RotationLocked = false);
-                m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m", true);
+                ScreenManager.MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - ScreenManager.MapInterface.ObservedTransform.localScale.x)}m", true);
 
                 //light
                 Vector3 targetRot;
-                if (m_MapInterface.ObservedTransform == this)
+                if (ScreenManager.MapInterface.ObservedTransform == this)
                     targetRot = m_OriginalLightRotation;
                 else
-                    targetRot = Quaternion.LookRotation(m_MapInterface.ObservedTransform.position - m_Light.position).eulerAngles;
+                    targetRot = Quaternion.LookRotation(ScreenManager.MapInterface.ObservedTransform.position - m_Light.position).eulerAngles;
 
                 m_Light.DORotate(targetRot, 0.3f).SetEase(Ease.OutSine);
             }
@@ -365,8 +349,8 @@ namespace MRK {
             m_Camera.transform.rotation = rotation;
             m_Camera.transform.position = position;
 
-            if (m_MapInterface.Visible) {
-                m_MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - m_MapInterface.ObservedTransform.localScale.x)}m");
+            if (ScreenManager.MapInterface.Visible) {
+                ScreenManager.MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - ScreenManager.MapInterface.ObservedTransform.localScale.x)}m");
             }
 
             float transparency = Mathf.Clamp01((Mathf.Min(4200f, m_CurrentDistance) - 3300f) / 3300f);
@@ -378,7 +362,10 @@ namespace MRK {
             Quaternion rotation = Quaternion.Euler(m_CurrentRotation.y, m_CurrentRotation.x, 0);
 
             Vector3 negDistance = new Vector3(0f, 0f, -m_CurrentDistance);
-            Vector3 position = rotation * negDistance + m_MapInterface.ObservedTransform.position;
+            if (ScreenManager.MapInterface is null) {
+                Debug.Log("N");
+            }
+            Vector3 position = rotation * negDistance + ScreenManager.MapInterface.ObservedTransform.position;
 
             return (position, rotation.eulerAngles);
         }

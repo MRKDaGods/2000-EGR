@@ -11,7 +11,7 @@ namespace MRK.Networking {
         public EGRClientSideCDNNetwork ClientSideCDNNetwork { get; private set; }
 
         public void Initialize() {
-            EGRMain.Log("Initializing networking client");
+            MRKLogger.Log("Initializing networking client");
 
             //we need to manually get all packets and register them in our packet registry
             //get all types in the current assembly
@@ -83,7 +83,7 @@ namespace MRK.Networking {
         }
 
         void OnNetLogin(PacketInLoginAccount packet) {
-            EGRMain.Log($"Late login result = {packet.Response}");
+            MRKLogger.Log($"Late login result = {packet.Response}");
             if (packet.Response == EGRStandardResponse.SUCCESS) {
                 //request cdn
                 EGRMain.Instance.Runnable.RunLater(() => MainNetworkExternal.RetrieveNetInfo(OnNetRetrieveNetInfo), 1f);

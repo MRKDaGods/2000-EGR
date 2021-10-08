@@ -59,7 +59,7 @@ namespace MRK.UI {
                 Client.FlatCamera.SetRotation(new Vector3(35f, 0f, 0f));
             }), 0.4f);
 
-            EventManager.Register<EGREventScreenHidden>(OnScreenHidden);
+            EventManager.Register<EGREventScreenHideRequest>(OnScreenHideRequest);
 
             UpdateBodyVisibility();
             m_DetailedView.SetActive(false); //hide initially
@@ -82,10 +82,10 @@ namespace MRK.UI {
 
         protected override void OnScreenHide() {
             Client.FlatCamera.SetRotation(Vector3.zero);
-            EventManager.Unregister<EGREventScreenHidden>(OnScreenHidden);
+            EventManager.Unregister<EGREventScreenHideRequest>(OnScreenHideRequest);
         }
 
-        void OnScreenHidden(EGREventScreenHidden evt) {
+        void OnScreenHideRequest(EGREventScreenHideRequest evt) {
             if (evt.Screen == ScreenManager.MapInterface) {
                 HideScreen();
             }

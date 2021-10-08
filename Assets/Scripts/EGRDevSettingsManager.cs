@@ -169,7 +169,7 @@ namespace MRK {
 
             EGRDevSettingsType type = typeof(T).GetCustomAttribute<EGRDevSettingsInfo>().SettingsType;
             if (m_RegisteredSettings.Find(x => x.GetType().GetCustomAttribute<EGRDevSettingsInfo>().SettingsType == type) != null) {
-                EGRMain.Log($"Cant register dev setting of type {type}");
+                MRKLogger.Log($"Cant register dev setting of type {type}");
                 return;
             }
 
@@ -179,7 +179,7 @@ namespace MRK {
 
             UpdateToolbar();
 
-            EGRMain.Log($"Registered dev settings - {typeof(T).FullName}");
+            MRKLogger.Log($"Registered dev settings - {typeof(T).FullName}");
         }
 
         void ToggleGUI() {

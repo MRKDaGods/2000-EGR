@@ -7,13 +7,12 @@ using UnityEngine.UI;
 using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
-    public partial class EGRScreenPlaceList : EGRScreen {
+    public partial class EGRScreenPlaceList : EGRScreenAnimatedAlpha {
         SearchArea m_SearchArea;
         readonly ObjectPool<PlaceItem> m_PlaceItemPool;
         GameObject m_PlaceItemPrefab;
         TextMeshProUGUI m_ResultLabel;
         readonly List<PlaceItem> m_Items;
-        CanvasGroup m_CanvasGroup;
 
         static EGRScreenPlaceList Instance { get; set; }
 
@@ -28,6 +27,8 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenInit() {
+            base.OnScreenInit();
+
             Instance = this;
 
             m_SearchArea = new SearchArea(Body.Find("Search"));
@@ -37,8 +38,6 @@ namespace MRK.UI {
             m_ResultLabel = Body.GetElement<TextMeshProUGUI>("Results");
 
             Body.GetElement<Button>("Top/Back").onClick.AddListener(OnBackClick);
-
-            m_CanvasGroup = GetComponent<CanvasGroup>();
         }
 
         protected override void OnScreenShow() {
@@ -48,33 +47,6 @@ namespace MRK.UI {
 
         protected override void OnScreenHide() {
             SetPlaces(null);
-        }
-
-        protected override void OnScreenShowAnim() {
-            base.OnScreenShowAnim();
-
-            DOTween.To(
-                () => m_CanvasGroup.alpha,
-                x => m_CanvasGroup.alpha = x,
-                1f,
-                TweenMonitored(0.3f)
-            ).ChangeStartValue(0f);
-        }
-
-        protected override bool OnScreenHideAnim(Action callback) {
-            base.OnScreenHideAnim(callback);
-
-            SetTweenCount(1);
-
-            DOTween.To(
-                () => m_CanvasGroup.alpha,
-                x => m_CanvasGroup.alpha = x,
-                0f,
-                TweenMonitored(0.3f)
-            ).SetEase(Ease.OutSine)
-            .OnComplete(OnTweenFinished);
-
-            return true;
         }
 
         void SetResultsText(int n) {

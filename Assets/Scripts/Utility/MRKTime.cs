@@ -4,9 +4,10 @@ namespace MRK {
     public class MRKTime {
         static DateTime ms_StartTime;
 
-        public static float Time => (float)(DateTime.Now - ms_StartTime).TotalSeconds;
+        public static TimeSpan RelativeTime => DateTime.Now - ms_StartTime;
+        public static float Time => (float)RelativeTime.TotalSeconds;
 
-        public static void Initialize() {
+        static MRKTime() {
             ms_StartTime = DateTime.Now;
         }
     }

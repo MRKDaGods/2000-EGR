@@ -22,7 +22,7 @@ namespace MRK.UI {
 
         void InternalRender(string txt, float time, int curveIdx) {
             if (curveIdx >= m_Curves.Length) {
-                EGRMain.Log("Curve does not exist");
+                MRKLogger.Log("Curve does not exist");
                 return;
             }
 

@@ -1,23 +1,20 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MRK {
-    public class UnityLogger : IEGRLogger {
-        public void Log(DateTime timestamp, LogType type, string msg) {
+    public class UnityLogger : IMRKLogger {
+        public void Log(MRKLogType type, string msg) {
             switch (type) {
-
-                case LogType.Info:
+                case MRKLogType.Info:
                     Debug.Log(msg);
                     break;
 
-                case LogType.Warning:
+                case MRKLogType.Warning:
                     Debug.LogWarning(msg);
                     break;
 
-                case LogType.Error:
+                case MRKLogType.Error:
                     Debug.LogError(msg);
                     break;
-
             }
         }
     }

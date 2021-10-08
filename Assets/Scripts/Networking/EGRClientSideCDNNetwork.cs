@@ -13,10 +13,10 @@ namespace MRK.Networking {
         }
 
         public void StartLocalCDN(int port, string key) {
-            EGRMain.Log($"Started local cdn, port={port} key={key}");
+            MRKLogger.Log($"Started local cdn, port={port} key={key}");
 
             if (m_Network != null) {
-                EGRMain.Log("Destroying old cdn network");
+                MRKLogger.Log("Destroying old cdn network");
 
                 m_Network.Stop();
                 m_IsLocalCDNRunning = false;
@@ -42,14 +42,14 @@ namespace MRK.Networking {
 
         void CDNThread() {
             int threadInterval = EGRConstants.EGR_CDN_NETWORK_THREAD_INTERVAL;
-            EGRMain.Log($"Starting local cdn thread, threadInterval={threadInterval}");
+            MRKLogger.Log($"Starting local cdn thread, threadInterval={threadInterval}");
 
             while (IsRunning) {
                 m_Network.UpdateNetwork();
                 Thread.Sleep(threadInterval);
             }
 
-            EGRMain.Log("Exiting local cdn thread");
+            MRKLogger.Log("Exiting local cdn thread");
         }
 
         public bool RequestCDNResource(string resource, byte[] sig, EGRPacketReceivedCallback<PacketInRequestCDNResource> callback) {

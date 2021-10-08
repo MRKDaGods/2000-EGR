@@ -9,6 +9,7 @@ namespace MRK {
         PacketReceived,
         ScreenShown,
         ScreenHidden,
+        ScreenHideRequest,
         GraphicsApplied,
         NetworkDownloadRequest,
         TileDestroyed,

@@ -382,7 +382,7 @@ namespace MRK.UI {
             m_TweenCallbackCalled = false;
 
             //send a universal event notifying that our screen has been hidden
-            EGREventManager.Instance.BroadcastEvent<EGREventScreenHidden>(new EGREventScreenHidden(this));
+            EGREventManager.Instance.BroadcastEvent(new EGREventScreenHidden(this));
         }
 
         /// <summary>
@@ -391,10 +391,17 @@ namespace MRK.UI {
         /// <param name="callback">Hidden callback</param>
         /// <param name="sensitivity">Tween sensitivity</param>
         /// <param name="killTweens">Should tweens get killed?</param>
-        public void HideScreen(Action callback = null, float sensitivity = 0.1f, bool killTweens = false) {
+        public void HideScreen(Action callback = null, float sensitivity = 0.1f, bool killTweens = false, bool immediateSensitivtyCheck = false) {
             //skip if screen is already hidden
             if (!m_Visible)
                 return;
+
+            //notify of hide request
+            EGREventScreenHideRequest req = new EGREventScreenHideRequest(this);
+            EGREventManager.Instance.BroadcastEvent(req);
+            if (req.Cancelled) {
+                return;
+            }
 
             //mark as hidden
             m_Visible = false;
@@ -413,6 +420,10 @@ namespace MRK.UI {
             //if does not exist, screen is hidden immediately
             if (!OnScreenHideAnim(callback)) {
                 InternalHideScreen();
+                m_HiddenCallback?.Invoke();
+            }
+            else if (sensitivity == 0f && immediateSensitivtyCheck) {
+                m_TweenCallbackCalled = true;
                 m_HiddenCallback?.Invoke();
             }
 

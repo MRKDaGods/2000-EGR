@@ -67,10 +67,8 @@ namespace MRK {
             public Vector3 EulerRotation;
         }
 
-        /// <summary>
-        /// Logging interfaces available, for example: Android Logger, Unity Editor Logger, etc
-        /// </summary>
-        readonly List<IEGRLogger> m_Loggers;
+        [SerializeField]
+        EGRRuntimeConfiguration m_RuntimeConfiguration;
 
         /// <summary>
         /// Available camera configurations
@@ -221,7 +219,6 @@ namespace MRK {
         /// <summary>
         /// A particle emitter to simulate some space dust around the globe
         /// </summary>
-        [SerializeField]
         ParticleSystem m_EnvironmentEmitter;
 
         /// <summary>
@@ -239,7 +236,6 @@ namespace MRK {
         /// Current skybox rotation along the Y-axis, 0 to 360
         /// </summary>
         float m_SkyboxRotation;
-
 
         /// <summary>
         /// EGRMain's singleton instance
@@ -358,17 +354,14 @@ namespace MRK {
         /// The location manager
         /// </summary>
         public EGRLocationManager LocationManager { get; private set; }
-
         public IEGRScreenFOVStabilizer FOVStabilizer { get; private set; }
         public MRKThreadPool GlobalThreadPool { get; private set; }
         public EGRAuthenticationManager AuthenticationManager { get; private set; }
-
 
         /// <summary>
         /// Constructor
         /// </summary>
         public EGRMain() {
-            m_Loggers = new List<IEGRLogger>();
             m_ActiveScreens = new List<EGRScreen>();
             m_Controllers = new List<EGRController>();
             m_PlanetRotationCache = new Dictionary<Transform, float>();
@@ -395,36 +388,30 @@ namespace MRK {
             //we will only simulate physics manually to save performance
             Physics.autoSimulation = false;
 
-            MRKTime.Initialize();
             MRKSysUtils.Initialize();
+
+            //add logger
+            MRKLogger.AddLogger<UnityLogger>();
 
             MRKCryptography.CookSalt();
             MRKPlayerPrefs.Init();
 
-            //add UnityLogger to our list of available loggers
-            m_Loggers.Add(new UnityLogger());
-
-            //the globe in the scene is named 'EGRGlobeMap'
-            m_GlobalMap = GameObject.Find("EGRGlobeMap");
-            //the flat/geographical map in the scane is named 'EGRMap'
-            m_FlatMap = GameObject.Find("EGRMap").GetComponent<MRKMap>();
-
-            //globe camera handler is in the globe object
+            m_GlobalMap = m_RuntimeConfiguration.EarthGlobe;
             m_GlobeCamera = m_GlobalMap.GetComponent<EGRCameraGlobe>();
-            //flat camera handler is in the flat object
+
+            m_FlatMap = m_RuntimeConfiguration.FlatMap;
             m_FlatCamera = m_FlatMap.GetComponent<EGRCameraFlat>();
-            //assign the flat map controller to the flat camera handler
             m_FlatMap.SetMapController(m_FlatCamera);
 
-            //the general camera in the scene is named 'EGRGeneralCamera'
-            m_GeneralCamera = GameObject.Find("EGRGeneralCamera").GetComponent<EGRCameraGeneral>();
+            m_GeneralCamera = m_RuntimeConfiguration.GeneralCamera;
 
             //manually add EGRPlaceManager to our main object
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();
-            //the navigation manager in the scene is named 'EGRNavigationManager'
-            NavigationManager = GameObject.Find("EGRNavigationManager").GetComponent<EGRNavigationManager>();
-            //manually create a new object and add the EGRLocationService to it
-            LocationService = new GameObject("EGRLocationService").AddComponent<EGRLocationService>();
+
+            NavigationManager = m_RuntimeConfiguration.NavigationManager;
+            LocationService = m_RuntimeConfiguration.LocationService;
+
+            m_EnvironmentEmitter = m_RuntimeConfiguration.EnvironmentEmitter;
 
             //add a virtual controller if the current device supports touch input
             if (Input.touchSupported)
@@ -459,12 +446,12 @@ namespace MRK {
         /// </summary>
         /// <returns></returns>
         IEnumerator Start() {
-            Log($"2000-EGR started v{EGRVersion.VersionString()} - {EGRVersion.VersionSignature()}");
+            MRKLogger.Log($"2000-EGR started v{EGRVersion.VersionString()} - {EGRVersion.VersionSignature()}");
 
             //keep waiting until all screens have initialized
             yield return ScreenManager.WaitForInitialization();
 
-            Log("EGRScreenManager initialized");
+            MRKLogger.Log("EGRScreenManager initialized");
 
 #if UNITY_ANDROID
             //set native status bar and navigation bar to transparent in android
@@ -493,7 +480,7 @@ namespace MRK {
             //show loading screen
             ScreenManager.GetScreen<EGRScreenLoading>().ShowScreen();
 #else
-            Debug.Log("Skipping loading screen");
+            MRKLogger.Log("Skipping loading screen");
             ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Main.SCREEN_NAME).ShowScreen();
 #endif
 
@@ -1015,41 +1002,6 @@ namespace MRK {
             //save unsaved changes
             MRKPlayerPrefs.Save();
             NetworkingClient.Shutdown();
-        }
-
-        /// <summary>
-        /// Sends a message of a specific type and timestamp to all loggers
-        /// </summary>
-        /// <param name="timestamp">Time of message</param>
-        /// <param name="type">Type of message</param>
-        /// <param name="msg">Content of message</param>
-        void _Log(DateTime timestamp, LogType type, string msg) {
-            foreach (IEGRLogger logger in m_Loggers)
-                logger.Log(timestamp, type, msg);
-        }
-
-        /// <summary>
-        /// Sends a message to all loggers
-        /// </summary>
-        /// <param name="msg">Content of message</param>
-        public static void Log(string msg) {
-            Log(LogType.Info, msg);
-        }
-
-        /// <summary>
-        /// Sends a message of a specific type to all loggers
-        /// </summary>
-        /// <param name="type">Type of message</param>
-        /// <param name="msg">Content of message</param>
-        public static void Log(LogType type, string msg) {
-            if (Instance != null)
-                Instance._Log(DateTime.Now, type, msg);
-            else
-                Debug.Log(msg);
-        }
-
-        public static void LogSingle(float val) {
-            Log($"{val}");
         }
 
         /// <summary>

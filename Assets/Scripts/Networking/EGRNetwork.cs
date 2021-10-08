@@ -92,7 +92,7 @@ namespace MRK.Networking {
 
             Packet packet = Packet.CreatePacketInstance(nature, type);
             if (packet == null) {
-                EGRMain.Log(LogType.Error, $"Cannot create packet, n={nature}, t={type}");
+                MRKLogger.LogError($"Cannot create packet, n={nature}, t={type}");
                 return;
             }
 
@@ -105,7 +105,7 @@ namespace MRK.Networking {
 
             if (bufferedReq != INVALID_BUFFERED_REQUEST) {
                 if (!m_BufferedRequests.ContainsKey(bufferedReq)) {
-                    EGRMain.Log(LogType.Error, $"Unknown buffered request, req={bufferedReq}");
+                    MRKLogger.LogError($"Unknown buffered request, req={bufferedReq}");
                 }
                 else {
                     m_BufferedRequests[bufferedReq].Callback(packet);
@@ -123,13 +123,13 @@ namespace MRK.Networking {
             switch (evt.Packet.PacketType) {
                 case PacketType.TEST: {
                         PacketInTestPacket packet = (PacketInTestPacket)evt.Packet;
-                        EGRMain.Log($"{packet.ByteLength} - {packet.ReadStr}");
+                        MRKLogger.Log($"{packet.ByteLength} - {packet.ReadStr}");
                     }
                     break;
 
                 case PacketType.XKEY: {
                         m_XorKey = ((PacketInXorKey)evt.Packet).XorKey;
-                        EGRMain.Log($"[{m_Key}] Set xor key to {m_XorKey}");
+                        MRKLogger.Log($"[{m_Key}] Set xor key to {m_XorKey}");
                     }
                     break;
 
@@ -271,7 +271,7 @@ namespace MRK.Networking {
                 int req = GetEmptyBufferRequest();
                 m_BufferedRequests[req] = new BufferedRequest(x => receivedCallback((T)x), typeof(T), m_GetTime());
                 dataStream.WriteInt32(req);
-                //EGRMain.Log($"BUF={req}");
+                //MRKLogger.Log($"BUF={req}");
             }
             else
                 dataStream.WriteInt32(INVALID_BUFFERED_REQUEST);

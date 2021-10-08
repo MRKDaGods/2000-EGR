@@ -13,6 +13,7 @@ namespace MRK.UI {
         readonly string[] m_StringTable;
 
         public ScrollRect Scroll { get; private set; }
+        //protected override float AlphaFadeSpeed => 0.4f;
 
         public EGRScreenMainSub0() {
             m_StringTable = new string[] {
@@ -23,6 +24,8 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenInit() {
+            base.OnScreenInit();
+
             m_Index = int.Parse(ScreenName.Replace("MainSub", ""));
 
             for (int i = 0; i < 3; i++) {
@@ -41,6 +44,9 @@ namespace MRK.UI {
         protected override void OnScreenShowAnim() {
             base.OnScreenShowAnim();
 
+            //TODO: Add canvas bounds
+            //rectTransform.DOAnchorPosX(0f, TweenMonitored(0.7f))
+            //    .ChangeStartValue((ScreenManager.MainScreen.LastAction ? 1f : -1f) * Screen.width);
 
             if (m_LastGraphicsBuf == null)
                 m_LastGraphicsBuf = transform.GetComponentsInChildren<Graphic>(); //.Where(gfx => gfx.GetComponent<ScrollRect>() != null).ToArray();
@@ -67,6 +73,9 @@ namespace MRK.UI {
 
         protected override bool OnScreenHideAnim(Action callback) {
             base.OnScreenHideAnim(callback);
+
+            //SetTweenCount(1);
+            //rectTransform.DOAnchorPosX((ScreenManager.MainScreen.LastAction ? -1f : 1f) * Screen.width, TweenMonitored(0.7f));
 
             //colors + xpos - blur
             SetTweenCount(m_LastGraphicsBuf.Length + 1);

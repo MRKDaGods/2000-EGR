@@ -17,13 +17,14 @@ namespace MRK.UI {
         public Image LocationPinSprite;
     }
 
-    public class EGRScreenMapInterface : EGRScreen {
+    public class EGRScreenMapInterface : EGRScreenAnimatedAlpha {
         [Serializable]
         struct MarkerSprite {
             public EGRPlaceType Type;
             public Sprite Sprite;
         }
 
+        //deprecated
         public static class MapButtonIDs {
             public static int CURRENT_LOCATION = 0;
             public static int HOTTEST_TRENDS = 1;
@@ -38,6 +39,8 @@ namespace MRK.UI {
 
         MRKMap m_Map;
         TextMeshProUGUI m_CamDistLabel;
+        [SerializeField]
+        GameObject m_SpaceLabelsRoot;
         [SerializeField]
         TextMeshPro m_ContextLabel;
         [SerializeField]
@@ -97,6 +100,8 @@ namespace MRK.UI {
         }
 
         protected override void OnScreenInit() {
+            base.OnScreenInit();
+
             m_Map = Client.FlatMap;
             m_Map.gameObject.SetActive(false);
 
@@ -121,6 +126,7 @@ namespace MRK.UI {
         public void OnInterfaceEarlyShow() {
             m_EGRCamera.SetInterfaceState(true);
 
+            m_SpaceLabelsRoot.SetActive(true);
             m_ContextLabel.gameObject.SetActive(true);
             m_TimeLabel.gameObject.SetActive(EGRSettings.ShowTime);
             m_DistLabel.gameObject.SetActive(EGRSettings.ShowDistance);
@@ -156,8 +162,6 @@ namespace MRK.UI {
 
             Client.DisableAllScreensExcept<EGRScreenMapInterface>();
 
-            //SetMapButtons(m_ButtonInfos);
-
             Components.OnComponentsShow();
         }
 
@@ -169,12 +173,10 @@ namespace MRK.UI {
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
 
-            ScreenManager.MainScreen.ShowScreen();
+            //copied to direct hidescreen
+            //ScreenManager.MainScreen.ShowScreen();
 
             Client.SetPostProcessState(false);
-            m_ContextLabel.gameObject.SetActive(false);
-            m_TimeLabel.gameObject.SetActive(false);
-            m_DistLabel.gameObject.SetActive(false);
 
             Components.OnComponentsHide();
 
@@ -204,6 +206,10 @@ namespace MRK.UI {
             //from globe to flat
             if (mode == EGRMapMode.Flat && Client.PreviousMapMode == EGRMapMode.Globe) {
                 Client.FlatCamera.UpdateMapViewingAngles(null, 0f);
+            }
+
+            if (Visible) {
+                m_SpaceLabelsRoot.SetActive(mode == EGRMapMode.Globe);
             }
 
             RegenerateMapButtons();
@@ -253,7 +259,6 @@ namespace MRK.UI {
                 EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
 
                 switch (kind) {
-
                     case EGRControllerMouseEventKind.Down:
                         m_MouseDown = true;
                         m_MouseDownPos = (Vector3)msg.Payload[3];
@@ -268,7 +273,6 @@ namespace MRK.UI {
                                 ChangeObservedTransform((Vector3)msg.Payload[1]);
                         }
                         break;
-
                 }
             }
         }
@@ -386,6 +390,9 @@ namespace MRK.UI {
             m_EGRCamera.SetInterfaceState(false);
             SetObservedTransformToEarth();
             HideScreen();
+
+            m_SpaceLabelsRoot.SetActive(false);
+            ScreenManager.MainScreen.ShowScreen();
         }
 
         void OnMapUpdated() {

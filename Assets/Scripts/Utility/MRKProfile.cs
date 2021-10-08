@@ -24,7 +24,7 @@ namespace MRK {
         public static void Pop() {
             long now = DateTime.Now.Ticks;
             Profile profile = ms_ProfileStack.Pop();
-            EGRMain.Log($"PROFILE: {profile.Tag} - {new TimeSpan(now - profile.Start).TotalMilliseconds}ms");
+            MRKLogger.Log($"PROFILE: {profile.Tag} - {new TimeSpan(now - profile.Start).TotalMilliseconds}ms");
             ObjectPool<Profile>.Default.Free(profile);
         }
     }

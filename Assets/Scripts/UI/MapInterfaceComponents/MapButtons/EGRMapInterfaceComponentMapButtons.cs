@@ -53,7 +53,7 @@ namespace MRK.UI.MapInterface {
         public void SetButtons(EGRUIMapButtonsGroupAlignment groupAlignment, HashSet<EGRUIMapButtonID> ids) {
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
-                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                MRKLogger.LogError($"Group with alignment {groupAlignment} does not exist !!");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace MRK.UI.MapInterface {
         public void RemoveButton(EGRUIMapButtonsGroupAlignment groupAlignment, EGRUIMapButtonID id) {
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
-                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                MRKLogger.LogError($"Group with alignment {groupAlignment} does not exist !!");
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace MRK.UI.MapInterface {
         public void AddButton(EGRUIMapButtonsGroupAlignment groupAlignment, EGRUIMapButtonID id, bool checkState = false, bool expand = false) {
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
-                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                MRKLogger.LogError($"Group with alignment {groupAlignment} does not exist !!");
                 return;
             }
 
@@ -85,7 +85,7 @@ namespace MRK.UI.MapInterface {
 
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
-                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                MRKLogger.LogError($"Group with alignment {groupAlignment} does not exist !!");
                 return false;
             }
 
@@ -113,7 +113,7 @@ namespace MRK.UI.MapInterface {
         public void SetGroupExpansionState(EGRUIMapButtonsGroupAlignment groupAlignment, bool expanded) {
             EGRUIMapButtonsGroup group;
             if (!m_Groups.TryGetValue(groupAlignment, out group)) {
-                EGRMain.Log(LogType.Error, $"Group with alignment {groupAlignment} does not exist !!");
+                MRKLogger.LogError($"Group with alignment {groupAlignment} does not exist !!");
                 return;
             }
 

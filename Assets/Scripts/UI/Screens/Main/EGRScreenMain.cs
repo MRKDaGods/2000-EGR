@@ -171,7 +171,6 @@ namespace MRK.UI {
                 EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
 
                 switch (kind) {
-
                     case EGRControllerMouseEventKind.Down:
                         m_Down = true;
                         break;
@@ -183,7 +182,6 @@ namespace MRK.UI {
 
                         m_Down = false;
                         break;
-
                 }
             }
         }
@@ -218,7 +216,7 @@ namespace MRK.UI {
                 m_RegionScreens[old].HideScreen(() => {
                     if (!ScreenManager.GetScreen(EGRUI_Main.EGRScreen_Menu.SCREEN_NAME).Visible)
                         m_RegionScreens[m_CurrentPage].ShowScreen(null, true);
-                }, 0f, true);
+                }, 0f, true, false);
             }
             else
                 m_RegionScreens[m_CurrentPage].ShowScreen(null, true);

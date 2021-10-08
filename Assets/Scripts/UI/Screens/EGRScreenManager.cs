@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 namespace MRK.UI {
     public class EGRScreenManager : MonoBehaviour {
         [SerializeField]
-        Canvas m_DefaultScreen;
+        Canvas m_ScreensCanvas;
         [SerializeField]
         int m_MaxLayerCount;
         readonly Dictionary<string, EGRScreen> m_Screens;
@@ -64,11 +64,14 @@ namespace MRK.UI {
 
         void Awake() {
             ms_Instance = this;
-            m_TargetScreenCount = GameObject.Find("EGRDefaultCanvas").transform.childCount;
-            GameObject container = new GameObject("Screens Container");
+
+            m_TargetScreenCount = m_ScreensCanvas.GetComponentsInChildren<EGRScreen>().Length;
+            
+
+            GameObject container = new GameObject("Screens");
 
             for (int i = 0; i < m_MaxLayerCount; i++) {
-                Canvas canv = Instantiate(m_DefaultScreen);
+                Canvas canv = Instantiate(m_ScreensCanvas);
                 canv.transform.SetParent(container.transform);
 
                 while (canv.transform.childCount > 0) {
