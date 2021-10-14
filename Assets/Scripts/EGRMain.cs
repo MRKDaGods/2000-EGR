@@ -242,6 +242,7 @@ namespace MRK {
         /// </summary>
         public static EGRMain Instance { get; private set; }
 
+        public EGRRuntimeConfiguration RuntimeConfiguration => m_RuntimeConfiguration;
         /// <summary>
         /// The screen manager
         /// </summary>

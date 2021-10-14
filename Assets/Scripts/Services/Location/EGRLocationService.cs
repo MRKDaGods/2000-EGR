@@ -162,7 +162,8 @@ namespace MRK {
                                             AndroidRuntimePermissions.OpenSettings();
                                         }
                                     },
-                                    Client.ActiveScreens[0]);
+                                    Client.ActiveScreens[0]
+                                );
                             }
                             else {
                                 LastError = EGRLocationError.Denied;
@@ -195,7 +196,8 @@ namespace MRK {
                                 (p, res) => {
                                     result.Value = res;
                                 },
-                                Client.ActiveScreens[0]);
+                                Client.ActiveScreens[0]
+                            );
 
                             while (!result.Value.HasValue)
                                 yield return new WaitForSeconds(0.2f);
@@ -221,7 +223,9 @@ namespace MRK {
                     Client.ScreenManager.GetPopup<EGRPopupMessageBox>().ShowPopup(
                         Localize(EGRLanguageData.EGR), 
                         Localize(EGRLanguageData.LOCATION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION), 
-                        null, Client.ActiveScreens[0]);
+                        null,
+                        Client.ActiveScreens[0]
+                    );
                 }
 
                 goto __exit;
@@ -297,6 +301,7 @@ namespace MRK {
 #if UNITY_EDITOR
             if (m_Simulator == null) {
                 m_Simulator = gameObject.AddComponent<EGRLocationServiceSimulator>();
+                m_Simulator.Coords = Client.RuntimeConfiguration.LocationSimulatorCenter;
             }
 
             callback(m_Simulator.LocationEnabled, m_Simulator.Coords, m_Simulator.Bearing);

@@ -242,7 +242,7 @@ namespace MRK {
             m_NavSprite.gameObject.SetActive(false);
 
             //try and show the current location sprite again
-            Client.LocationManager.RequestCurrentLocation(true, true, true);
+            //Client.LocationManager.RequestCurrentLocation(true, true, true);
         }
 
         void OnGUI() {

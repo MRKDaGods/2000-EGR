@@ -279,7 +279,7 @@ namespace MRK {
 
                 //m_Camera.transform.DORotate(new Vector3(50f, 0f), 1f).SetEase(Ease.OutSine).OnUpdate(() => ProcessPan(new Vector3(0f, 100f) * Time.deltaTime));
 
-                UpdateMapViewingAngles(40f);
+                //UpdateMapViewingAngles(40f);
             }
         }
 

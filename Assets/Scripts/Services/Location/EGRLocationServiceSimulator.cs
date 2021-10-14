@@ -16,7 +16,7 @@ namespace MRK {
         float m_Speed = 1f;
 
         public bool LocationEnabled => m_LocationEnabled;
-        public Vector2d Coords => m_Coords;
+        public Vector2d Coords { get => m_Coords; set => m_Coords = value; }
         public float Bearing => m_Bearing;
 
         void Update() {

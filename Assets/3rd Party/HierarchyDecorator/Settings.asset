@@ -799,8 +799,6 @@ MonoBehaviour:
       shown: 0
     - name: EGRUITextRenderer
       shown: 0
-    - name: EGRUIWTESearchConfirmation
-      shown: 0
     - name: EGRPopup
       shown: 0
     - name: EGRPopupAnimatedLayout
@@ -816,6 +814,8 @@ MonoBehaviour:
     - name: EGRPopupPlaceGroup
       shown: 0
     - name: EGRScreen
+      shown: 0
+    - name: EGRScreenAnimatedAlpha
       shown: 0
     - name: EGRScreenAnimatedLayout
       shown: 0
@@ -874,6 +874,8 @@ MonoBehaviour:
     - name: EGRScreenQuickLocations
       shown: 0
     - name: EGRScreenWTE
+      shown: 0
+    - name: EGRUIWTESearchConfirmation
       shown: 0
     - name: EGRUIMapButtonsGroup
       shown: 0
