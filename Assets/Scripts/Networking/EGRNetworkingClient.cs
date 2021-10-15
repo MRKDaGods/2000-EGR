@@ -1,4 +1,5 @@
 ﻿#define MRK_LOCAL_SERVER
+#define MRK_DISABLE_CDN
 
 using MRK.Networking.Packets;
 using System;
@@ -41,7 +42,9 @@ namespace MRK.Networking {
 
             //connect to the server
             MainNetwork.Connect();
+#if !MRK_DISABLE_CDN
             MainNetwork.PacketWatchdog.Register<PacketInLoginAccount>(OnNetLogin);
+#endif
 
             //assign cdn
             ClientSideCDNNetwork = new EGRClientSideCDNNetwork();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace MRK.Navigation {
-    public class EGRNavigationLive : EGRNavigation {
+    public class EGRNavigationLive : EGRNavigator {
         const double TOLERANCE = 8d;
         const float REROUTE_WAIT_TIME = 3f;
 
@@ -14,14 +14,17 @@ namespace MRK.Navigation {
         }
 
         int m_FailCount;
+        int m_LastStepIndex;
         int m_StepIndex;
         Vector2d? m_LastKnownCoords;
         float? m_LastKnownBearing;
         bool m_IsRerouting;
+        EGRNavigationStep? m_LastStep;
 
         protected override void Prepare() {
             m_FailCount = 0;
             m_StepIndex = 0;
+            m_LastStepIndex = -1;
             m_LastKnownCoords = null;
             m_LastKnownBearing = null;
         }
@@ -132,7 +135,7 @@ namespace MRK.Navigation {
         }
 
         int GetNeighbouringStep(int idx, Vector2d p) {
-            List<EGRNavigationStep> steps = m_Route.Legs[0].Steps;
+            List<EGRNavigationStep> steps = Route.Legs[0].Steps;
 
             for (int i = 0; i < 2; i++) {
                 int realIdx = idx + (i == 0 ? 1 : -1);
@@ -157,43 +160,51 @@ namespace MRK.Navigation {
                 return;
             }
 
-            if (m_StepIndex >= m_Route.Legs[0].Steps.Count) {
+            if (m_StepIndex >= Route.Legs[0].Steps.Count) {
                 Debug.Log("Live NAV ended");
                 return;
             }
 
-            if (m_StepIndex == -1) {
-                //increment reroute
-                if (!m_IsRerouting) {
-                    Client.Runnable.Run(StartRerouting());
-                }
+            //current step
+            EGRNavigationStep step = m_StepIndex == -1 ? m_LastStep.Value : Route.Legs[0].Steps[m_StepIndex];
+            if (m_StepIndex != -1) {
+                m_LastStep = step;
+                m_LastStepIndex = m_StepIndex;
 
-                return;
+                NavigationUI.NavigationInterface.CurrentStep.SetInstruction(step.Maneuver.Instruction, null);
             }
 
-            //current step
-            EGRNavigationStep step = m_Route.Legs[0].Steps[m_StepIndex];
             ObjectPool<Reference<Vector2d>> refPool = ObjectPool<Reference<Vector2d>>.Default;
             Reference<Vector2d> intersection = refPool.Rent();
 
             m_LastKnownBearing = bearing.Value;
+            m_LastKnownCoords = coords.Value;
 
-            int subIdx = IsPointOnLine(coords.Value, step.Geometry.Coordinates, TOLERANCE, intersection, true);
+            int subIdx = IsPointOnLine(coords.Value, step.Geometry.Coordinates, TOLERANCE, intersection, false);
             if (subIdx == -1) {
-                m_LastKnownCoords = coords.Value;
+                //m_LastKnownCoords = coords.Value;
 
                 //backup purposes to ignore rerouting
                 //int b = m_StepIndex;
                 m_StepIndex = GetNeighbouringStep(m_StepIndex, coords.Value);
                 if (m_StepIndex == -1) {
-                    //m_StepIndex = b;
+                    if (!m_IsRerouting) {
+                        Client.Runnable.Run(StartRerouting());
+                    }
+
                     Debug.Log("RE ROUTE REQUIRED");
                     goto __exit;
                 }
+
+                m_LastStepIndex = m_StepIndex;
             }
             else {
                 //snap nav sprite to route
-                m_LastKnownCoords = intersection.Value;
+                //m_LastKnownCoords = intersection.Value;
+                m_StepIndex = m_LastStepIndex;
+
+                //no need to re-route if an existing re-route queue has been initiated
+                m_IsRerouting = false;
             }
 
             Debug.Log(m_StepIndex + step.Maneuver.Instruction);
@@ -208,7 +219,12 @@ namespace MRK.Navigation {
             //so I guess lets say we should we for 2-3 secs (about 6 location updates) before we re route
             float totalWaitTime = 0f;
             while (totalWaitTime < REROUTE_WAIT_TIME) {
+                yield return new WaitForSeconds(0.2f);
+                totalWaitTime += 0.2f;
+            }
 
+            if (m_IsRerouting) {
+                //ASK FOR RE-ROUTE
             }
 
             yield break;

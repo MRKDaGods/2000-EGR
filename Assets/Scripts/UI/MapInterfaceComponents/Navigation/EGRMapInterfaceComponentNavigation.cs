@@ -8,9 +8,11 @@ namespace MRK.UI.MapInterface {
         Top m_Top;
         Bottom m_Bottom;
         AutoComplete m_AutoComplete;
-        static EGRMapInterfaceComponentNavigation ms_Instance;
+        NavInterface m_NavInterface;
         bool m_QueryCancelled;
         bool m_IsManualLocating;
+
+        static EGRMapInterfaceComponentNavigation ms_Instance;
 
         public override EGRMapInterfaceComponentType ComponentType => EGRMapInterfaceComponentType.Navigation;
         public bool IsActive { get; private set; }
@@ -18,6 +20,7 @@ namespace MRK.UI.MapInterface {
         Vector2d? ToCoords { get; set; }
         bool IsFromCurrentLocation { get; set; }
         bool IsPreviewStartMode { get; set; }
+        public NavInterface NavigationInterface => m_NavInterface;
 
         public override void OnComponentInit(EGRScreenMapInterface mapInterface) {
             base.OnComponentInit(mapInterface);
@@ -32,6 +35,9 @@ namespace MRK.UI.MapInterface {
 
             m_AutoComplete = new AutoComplete((RectTransform)m_NavigationTransform.Find("Top/AutoComplete"));
             m_AutoComplete.SetAutoCompleteState(false);
+
+            m_NavInterface = new NavInterface((RectTransform)m_NavigationTransform.Find("NavInterface"));
+            m_NavInterface.SetActive(false); //hide by def
         }
 
         public override void OnComponentUpdate() {
@@ -47,6 +53,7 @@ namespace MRK.UI.MapInterface {
             m_Top.Show();
 
             Client.Runnable.RunLater(m_Bottom.ShowBackButton, 0.5f);
+            MapInterface.Components.MapButtons.RemoveAllButtons();
 
             IsActive = true;
             FromCoords = ToCoords = null;
@@ -56,6 +63,7 @@ namespace MRK.UI.MapInterface {
         public bool Hide() {
             m_Top.Hide();
             m_Bottom.Hide();
+            m_NavInterface.SetActive(false);
 
             if (!m_IsManualLocating) {
                 Client.Runnable.RunLater(() => {
@@ -67,6 +75,8 @@ namespace MRK.UI.MapInterface {
 
                     IsActive = false;
                 }, 0.3f);
+
+                MapInterface.RegenerateMapButtons();
 
                 return true;
             }
@@ -195,6 +205,12 @@ namespace MRK.UI.MapInterface {
 
         void Start() {
             Client.NavigationManager.StartNavigation(IsPreviewStartMode);
+
+            m_Top.Hide();
+            m_Bottom.Hide();
+
+            //show UI?
+            m_NavInterface.SetActive(true);
         }
     }
 }

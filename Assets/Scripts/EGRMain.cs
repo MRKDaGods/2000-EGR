@@ -2,6 +2,7 @@
 #define MRK_LOCAL_SERVER
 
 using DG.Tweening;
+using MRK.Navigation;
 using MRK.Networking;
 using MRK.Networking.Packets;
 using MRK.UI;

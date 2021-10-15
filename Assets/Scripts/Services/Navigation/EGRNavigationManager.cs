@@ -1,5 +1,4 @@
-﻿using MRK.Navigation;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,28 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Vectrosity;
 
-namespace MRK {
-    public abstract class EGRNavigation {
-        protected EGRNavigationRoute m_Route { get; private set; }
-        protected EGRMain Client => EGRMain.Instance;
-        protected EGRNavigationManager NavigationManager => Client.NavigationManager;
-
-        protected virtual void Prepare() {
-        }
-
-        public void SetRoute(EGRNavigationRoute route) {
-            m_Route = route;
-
-            Prepare();
-        }
-
-        public abstract void Update();
-    }
-
+namespace MRK.Navigation {
     public class EGRNavigationManager : MRKBehaviour {
-        [SerializeField]
-        bool m_DrawEditorUI;
-        EGRNavigationDirections m_Directions;
         readonly ObjectPool<VectorLine> m_LinePool;
         [SerializeField]
         Material m_LineMaterial;
@@ -52,14 +31,9 @@ namespace MRK {
         Image m_NavSprite;
         bool m_IsPreview;
         bool m_IsNavigating;
-        EGRNavigation m_CurrentNavigator;
+        EGRNavigator m_CurrentNavigator;
         readonly EGRNavigationLive m_LiveNavigator;
         readonly EGRNavigationSimulator m_SimulationNavigator;
-
-        //temp styles
-        GUIStyle m_VerticalStyle;
-        GUIStyle m_LabelStyle;
-        GUIStyle m_ButtonStyle;
 
         public EGRNavigationDirections? CurrentDirections { get; private set; }
         public EGRNavigationRoute CurrentRoute => CurrentDirections.Value.Routes[m_SelectedRoute];
@@ -89,12 +63,6 @@ namespace MRK {
         }
 
         void Start() {
-            /* string json = Resources.Load<TextAsset>("Map/sampleDirs").text;
-            Task.Run(async () => {
-                await Task.Delay(5000);
-                m_Directions = JsonConvert.DeserializeObject<EGRNavigationDirections>(json);
-            }); */
-
             Client.FlatMap.OnMapUpdated += OnMapUpdated;
             m_NavSprite.gameObject.SetActive(false);
         }
@@ -208,8 +176,9 @@ namespace MRK {
                 vL.SetWidth(active ? m_ActiveLineWidth : m_IdleLineWidth);
                 vL.texture = active ? m_ActiveLineTexture : m_IdleLineTexture;
 
-                if (active)
+                if (active) {
                     vL.rectTransform.SetAsLastSibling();
+                }
             }
         }
 
@@ -221,7 +190,7 @@ namespace MRK {
             m_IsNavigating = true;
             m_IsPreview = isPreview;
 
-            m_CurrentNavigator = isPreview ? m_SimulationNavigator : (EGRNavigation)m_LiveNavigator;
+            m_CurrentNavigator = isPreview ? m_SimulationNavigator : (EGRNavigator)m_LiveNavigator;
             m_CurrentNavigator.SetRoute(CurrentRoute);
 
             m_NavSprite.gameObject.SetActive(true);
@@ -240,69 +209,6 @@ namespace MRK {
 
             m_IsNavigating = false;
             m_NavSprite.gameObject.SetActive(false);
-
-            //try and show the current location sprite again
-            //Client.LocationManager.RequestCurrentLocation(true, true, true);
-        }
-
-        void OnGUI() {
-            if (!m_DrawEditorUI)
-                return;
-
-            /*if (m_VerticalStyle == null) {
-                m_VerticalStyle = new GUIStyle {
-                    normal = {
-                        background = EGRUIUtilities.GetPlainTexture(Color.black)
-                    }
-                };
-
-                m_LabelStyle = new GUIStyle(GUI.skin.label) {
-                    fontSize = 42,
-                    fontStyle = FontStyle.Bold
-                };
-
-                m_ButtonStyle = new GUIStyle(GUI.skin.button) {
-                    fontSize = 42,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter,
-                    richText = true,
-                };
-            }
-
-            if (m_IsActive) {
-                GUILayout.BeginArea(new Rect(Screen.width - 600f, 0f, 600f, 700f));
-                GUILayout.BeginVertical(m_VerticalStyle);
-                {
-                    GUILayout.Label("Navigation", m_LabelStyle);
-                    GUILayout.Label($"Routes: {CurrentDirections.Value.Routes.Count}", m_LabelStyle);
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        if (GUILayout.Button("<", m_ButtonStyle)) {
-                            m_SelectedRoute--;
-                            OnRouteUpdated();
-                        }
-
-                        GUILayout.Label($"<color=yellow>{m_SelectedRoute}</color>", m_ButtonStyle);
-
-                        if (GUILayout.Button(">", m_ButtonStyle)) {
-                            m_SelectedRoute++;
-                            OnRouteUpdated();
-                        }
-                    }
-                    GUILayout.EndHorizontal();
-                }
-
-                if (GUILayout.Button("Start", m_ButtonStyle)) {
-                    StartNavigation();
-                }
-
-                GUILayout.Label($"Current point: {m_CurrentPointIdx}", m_LabelStyle);
-                m_SimulatedTripPercentage = GUILayout.HorizontalSlider(m_SimulatedTripPercentage, 0f, 1f, GUILayout.Height(100f));
-
-                GUILayout.EndVertical();
-                GUILayout.EndArea();
-            } */
         }
     }
 }

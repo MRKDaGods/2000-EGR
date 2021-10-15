@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using MRK.Navigation;
+using UnityEngine;
 
 namespace MRK {
     public class EGRRuntimeConfiguration : MonoBehaviour {

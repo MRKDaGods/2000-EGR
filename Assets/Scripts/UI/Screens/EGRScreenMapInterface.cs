@@ -215,7 +215,7 @@ namespace MRK.UI {
             RegenerateMapButtons();
         }
 
-        void RegenerateMapButtons() {
+        public void RegenerateMapButtons() {
             //remove all buttons anyway
             Components.MapButtons.RemoveAllButtons();
 
