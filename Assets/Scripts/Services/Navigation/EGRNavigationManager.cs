@@ -160,6 +160,10 @@ namespace MRK.Navigation {
                 return;
 
             m_CurrentNavigator.Update();
+
+            //camera
+            Client.FlatCamera.SetCenterAndZoom(m_CurrentNavigator.LastKnownCenter, 19f);
+            Client.FlatCamera.SetRotation(new Vector3(0f, m_CurrentNavigator.LastKnownBearing));
         }
 
         void UpdateSelectedLine() {
@@ -180,10 +184,6 @@ namespace MRK.Navigation {
                     vL.rectTransform.SetAsLastSibling();
                 }
             }
-        }
-
-        void OnRouteUpdated() {
-            UpdateSelectedLine();
         }
 
         public void StartNavigation(bool isPreview = true) {

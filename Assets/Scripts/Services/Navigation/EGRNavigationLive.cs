@@ -21,6 +21,9 @@ namespace MRK.Navigation {
         bool m_IsRerouting;
         EGRNavigationStep? m_LastStep;
 
+        public override Vector2d LastKnownCenter => m_LastKnownCoords ?? default;
+        public override float LastKnownBearing => m_LastKnownBearing ?? default;
+
         protected override void Prepare() {
             m_FailCount = 0;
             m_StepIndex = 0;

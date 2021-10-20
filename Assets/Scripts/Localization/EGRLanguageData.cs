@@ -177,6 +177,9 @@ namespace MRK {
 		//YOU ARE EXITING <b>EGR</b>...
 		YOU_ARE_EXITING__b_EGR__b____ = 58,
 
+		//FETCHING PLACE DATA...
+		FETCHING_PLACE_DATA___ = 59,
+
 		//Email cannot be empty
 		Email_cannot_be_empty = 100,
 

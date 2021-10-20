@@ -1,4 +1,5 @@
 ﻿using MRK.Networking.Packets;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,11 +8,6 @@ namespace MRK {
     public delegate void EGRFetchPlacesV2Callback(HashSet<EGRPlace> places, int tileHash);
 
     public class EGRPlaceManager : MRKBehaviour {
-        struct ContextInfo {
-            public ulong Context;
-            public ulong CID;
-        }
-
         class TileInfo {
             public int Hash;
             public MRKTileID ID;
@@ -22,41 +18,12 @@ namespace MRK {
             public Vector2d Maximum;
         }
 
-        readonly Dictionary<ulong, Rectd> m_CachedRects;
-        readonly Dictionary<ulong, List<ContextInfo>> m_CachedIDs;
-        readonly Dictionary<ulong, EGRPlace> m_CachedPlaces;
-        readonly Dictionary<ulong, EGRFetchPlacesCallback> m_ActiveCallbacks;
-        readonly Dictionary<ulong, ContextInfo> m_CIDCtxIndex;
-        readonly System.Random m_Rand;
-
         readonly Dictionary<int, TileInfo> m_TileInfos;
+        readonly Dictionary<ulong, EGRPlace> m_PlaceCache;
 
         public EGRPlaceManager() {
             m_TileInfos = new Dictionary<int, TileInfo>();
-
-            m_CachedRects = new Dictionary<ulong, Rectd>();
-            m_CachedIDs = new Dictionary<ulong, List<ContextInfo>>();
-            m_CachedPlaces = new Dictionary<ulong, EGRPlace>();
-            m_ActiveCallbacks = new Dictionary<ulong, EGRFetchPlacesCallback>();
-            m_CIDCtxIndex = new Dictionary<ulong, ContextInfo>();
-            m_Rand = new System.Random();
-        }
-
-        public void FetchPlacesInRegion(double minLat, double minLng, double maxLat, double maxLng, EGRFetchPlacesCallback callback) {
-            Rectd rect = new Rectd(new Vector2d(minLat, minLng), new Vector2d(maxLat - minLat, maxLng - minLng));
-            foreach (KeyValuePair<ulong, Rectd> cachedRect in m_CachedRects) {
-                if (cachedRect.Value.Contains(rect.Min) && cachedRect.Value.Contains(rect.Max)) {
-                    OnRegionPlacesFetched(m_CachedIDs[cachedRect.Key], callback);
-                    return;
-                }
-            }
-
-            if (NetworkingClient.MainNetwork.IsConnected) {
-                ulong ctx = m_Rand.NextULong();
-                m_CachedRects[ctx] = rect;
-                m_ActiveCallbacks[ctx] = callback;
-                NetworkingClient.MainNetworkExternal.FetchPlacesIDs(ctx, minLat, minLng, maxLat, maxLng, Client.FlatMap.AbsoluteZoom, OnFetchPlacesIDs);
-            }
+            m_PlaceCache = new Dictionary<ulong, EGRPlace>();
         }
 
         TileInfo GetTileInfo(MRKTileID id) {
@@ -147,46 +114,6 @@ namespace MRK {
                 return null;
 
             return tileInfo.Places;
-        }
-
-        void OnFetchPlacesIDs(PacketInFetchPlacesIDs response) {
-            List<ContextInfo> cInfo = new List<ContextInfo>(response.IDs.Count);
-            int idx = 0;
-            foreach (ulong cid in response.IDs) {
-                ContextInfo info = new ContextInfo {
-                    Context = response.Ctx,
-                    CID = response.IDs[idx++]
-                };
-
-                cInfo.Add(info);
-                m_CIDCtxIndex[cid] = info;
-            }
-
-            m_CachedIDs[response.Ctx] = cInfo;
-
-            foreach (ulong cid in response.IDs) {
-                NetworkingClient.MainNetworkExternal.FetchPlace(cid, OnFetchPlace);
-            }
-        }
-
-        void OnFetchPlace(PacketInFetchPlaces response) {
-            m_CachedPlaces[response.Place.CIDNum] = response.Place;
-
-            ulong ctx = m_CIDCtxIndex[response.Place.CIDNum].Context;
-            if (m_ActiveCallbacks.ContainsKey(ctx)) {
-                m_ActiveCallbacks[ctx](response.Place);
-                m_ActiveCallbacks.Remove(ctx);
-            }
-        }
-
-        void OnRegionPlacesFetched(List<ContextInfo> ids, EGRFetchPlacesCallback callback) {
-            if (callback == null)
-                return;
-
-            //brought from cache
-            foreach (ContextInfo info in ids) {
-                callback(m_CachedPlaces[info.CID]);
-            }
         }
 
         public (int, int) GetPlaceZoomBoundaries(EGRPlace place) {
@@ -374,6 +301,29 @@ namespace MRK {
             }
 
             return avgPos / (master.Overlappers.Count + 1);
+        }
+
+        public EGRPlace GetPlaceCached(ulong cid) {
+            EGRPlace place;
+            m_PlaceCache.TryGetValue(cid, out place);
+            return place;
+        }
+
+        public void FetchPlace(ulong cid, Action<EGRPlace> callback) {
+            if (callback == null)
+                return;
+
+            if (!NetworkingClient.MainNetworkExternal.FetchPlace(cid, (response) => OnFetchPlace(response, callback))) {
+                callback(null);
+            }
+        }
+
+        void OnFetchPlace(PacketInFetchPlaces response, Action<EGRPlace> callback) {
+            if (response.Place != null) {
+                m_PlaceCache[response.Place.CIDNum] = response.Place;
+            }
+
+            callback(response.Place);
         }
     }
 }

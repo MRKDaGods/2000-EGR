@@ -8,6 +8,8 @@ namespace MRK.Navigation {
         protected EGRNavigationRoute Route { get; private set; }
         protected EGRNavigationManager NavigationManager => Client.NavigationManager;
         protected EGRMapInterfaceComponentNavigation NavigationUI => m_NavigationUI;
+        public virtual Vector2d LastKnownCenter { get; }
+        public virtual float LastKnownBearing { get; }
 
         public EGRNavigator() {
             m_NavigationUI = new MRKSelfContainedPtr<EGRMapInterfaceComponentNavigation>(() => Client.ScreenManager.MapInterface.Components.Navigation);

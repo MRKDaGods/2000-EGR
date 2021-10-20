@@ -57,7 +57,8 @@ namespace MRK {
                     Localize(EGRLanguageData.ERROR),
                     string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_NOTCONNECTED),
                     null,
-                    m_LoginScreen);
+                    m_LoginScreen
+                );
 
                 return;
             }
@@ -67,7 +68,8 @@ namespace MRK {
                 Localize(EGRLanguageData.LOGIN),
                 Localize(EGRLanguageData.LOGGING_IN___),
                 null,
-                m_LoginScreen);
+                m_LoginScreen
+            );
 
             MRKPlayerPrefs.Set<bool>(EGRConstants.EGR_LOCALPREFS_REMEMBERME, data.Reserved3);
             if (data.Reserved3) {

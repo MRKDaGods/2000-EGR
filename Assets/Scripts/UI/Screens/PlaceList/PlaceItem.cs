@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static MRK.EGRLanguageManager;
 
 namespace MRK.UI {
     public partial class EGRScreenPlaceList {
@@ -10,6 +11,7 @@ namespace MRK.UI {
             TextMeshProUGUI m_Name;
             TextMeshProUGUI m_Tags;
             bool m_Stationary;
+            ulong? m_PlaceCID;
 
             public Transform Transform => m_Transform;
             public string Name { get; private set; }
@@ -27,8 +29,10 @@ namespace MRK.UI {
                 transform.GetComponent<Button>().onClick.AddListener(OnButtonClick);
             }
 
-            public void SetInfo(string name, string tags, Texture2D img = null) {
+            public void SetInfo(string name, string tags, ulong? placeCID = null, Texture2D img = null) {
                 Name = name;
+                m_PlaceCID = placeCID;
+
                 if (m_Stationary)
                     return;
 
@@ -42,7 +46,54 @@ namespace MRK.UI {
             }
 
             void OnButtonClick() {
+                if (!m_PlaceCID.HasValue) {
+                    MRKLogger.LogError($"{Name} has no CID");
+                    return;
+                }
+
+                EGRPlace place = Client.PlaceManager.GetPlaceCached(m_PlaceCID.Value);
+                if (place != null) {
+                    OpenPlaceView(place);
+                    return;
+                }
+
+                EGRPopupMessageBox msgBox = ScreenManager.MessageBox;
+                msgBox.ShowButton(false);
+                msgBox.ShowPopup(
+                    Localize(EGRLanguageData.EGR),
+                    Localize(EGRLanguageData.FETCHING_PLACE_DATA___),
+                    null,
+                    null
+                );
+
+                Client.PlaceManager.FetchPlace(m_PlaceCID.Value, (place) => {
+                    msgBox.HideScreen(() => {
+                        //an error has occured
+                        if (place == null) {
+                            msgBox.ShowPopup(
+                                Localize(EGRLanguageData.ERROR),
+                                string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_RESPONSE),
+                                null,
+                                null
+                            );
+
+                            return;
+                        }
+
+                        OpenPlaceView(place);
+                    }, 1.1f);
+                });
+            }
+
+            void OpenPlaceView(EGRPlace place) {
+                if (place == null) {
+                    MRKLogger.LogError("Opening place view with null place !!");
+                    return;
+                }
+
                 EGRScreenPlaceView placeView = ScreenManager.GetScreen<EGRScreenPlaceView>();
+                placeView.SetPlace(place);
+                placeView.ShowScreen();
             }
         }
     }

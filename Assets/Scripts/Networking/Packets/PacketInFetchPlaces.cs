@@ -7,6 +7,12 @@
         }
 
         public override void Read(PacketDataStream stream) {
+            bool exists = stream.ReadBool();
+            if (!exists) {
+                Place = null;
+                return;
+            }
+
             string name = stream.ReadString();
             string type = stream.ReadString();
             ulong cid = stream.ReadUInt64();

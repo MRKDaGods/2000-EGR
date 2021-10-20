@@ -81,7 +81,6 @@ namespace MRK {
                 EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
 
                 switch (kind) {
-
                     case EGRControllerMouseEventKind.Down:
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
@@ -144,7 +143,6 @@ namespace MRK {
 
                         m_Down[data.Index] = false;
                         break;
-
                 }
             }
         }
@@ -290,11 +288,16 @@ namespace MRK {
             }
         }
 
-        public void SetCenterAndZoom(Vector2d targetCenter, float targetZoom) {
-            m_TargetLatLong = targetCenter;
-            m_TargetZoom = targetZoom;
-            Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
-            Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
+        public void SetCenterAndZoom(Vector2d? targetCenter = null, float? targetZoom = null) {
+            if (targetCenter.HasValue) {
+                m_TargetLatLong = targetCenter.Value;
+                Client.InputModel.ProcessPan(ref m_CurrentLatLong, ref m_TargetLatLong, () => m_CurrentLatLong, x => m_CurrentLatLong = x);
+            }
+
+            if (targetZoom.HasValue) {
+                m_TargetZoom = targetZoom.Value;
+                Client.InputModel.ProcessZoom(ref m_CurrentZoom, ref m_TargetZoom, () => m_CurrentZoom, x => m_CurrentZoom = x);
+            }
         }
 
         public void SetRotation(Vector3 rotation) {

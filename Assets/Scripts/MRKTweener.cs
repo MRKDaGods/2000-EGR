@@ -6,8 +6,8 @@ namespace MRK {
     public class MRKTweener {
         class LocalTween {
             float m_Progress;
-            Action<float> m_ProgressCallback;
-            Action m_CompletionCallback;
+            readonly Action<float> m_ProgressCallback;
+            readonly Action m_CompletionCallback;
 
             public LocalTween(Action<float> progressCallback, Action completionCallback) {
                 m_ProgressCallback = progressCallback;

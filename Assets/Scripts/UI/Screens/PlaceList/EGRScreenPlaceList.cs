@@ -60,7 +60,7 @@ namespace MRK.UI {
             if (places != null) {
                 foreach (EGRWTEProxyPlace place in places) {
                     PlaceItem item = m_PlaceItemPool.Rent();
-                    item.SetInfo(place.Name, place.Tags.StringifyList(", "));
+                    item.SetInfo(place.Name, place.Tags.StringifyList(", "), place.CID);
                     item.SetActive(true);
                     m_Items.Add(item);
 

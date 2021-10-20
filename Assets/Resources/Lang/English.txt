@@ -61,6 +61,7 @@
 56- DELETE
 57- EXIT
 58- YOU ARE EXITING <b>EGR</b>...
+59- FETCHING PLACE DATA...
 #
 # Login Feedback
 #

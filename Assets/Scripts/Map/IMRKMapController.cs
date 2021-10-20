@@ -5,6 +5,6 @@ namespace MRK {
         public Vector3 MapRotation { get; }
 
         public Vector3 GetMapVelocity();
-        public void SetCenterAndZoom(Vector2d targetCenter, float targetZoom);
+        public void SetCenterAndZoom(Vector2d? targetCenter, float? targetZoom);
     }
 }

@@ -6,8 +6,8 @@ namespace MRK.UI.MapInterface {
     public partial class EGRMapInterfaceComponentNavigation {
         partial class NavInterface {
             public class NavCurrentStep : EGRUINestedElement {
-                Image m_Sprite;
-                TextMeshProUGUI m_Text;
+                readonly Image m_Sprite;
+                readonly TextMeshProUGUI m_Text;
 
                 public NavCurrentStep(RectTransform transform) : base(transform) {
                     m_Sprite = transform.GetElement<Image>("Sprite");
