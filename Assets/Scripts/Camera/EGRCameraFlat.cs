@@ -199,7 +199,7 @@ namespace MRK {
 
         public void SwitchToGlobe() {
             m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer(), null);
-            Client.GlobeCamera.SetDistance(7000f);
+            Client.GlobeCamera.SetDistance(500f);
             Client.SetMapMode(EGRMapMode.Globe);
         }
 

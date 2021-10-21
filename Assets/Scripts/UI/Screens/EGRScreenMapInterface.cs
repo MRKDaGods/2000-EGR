@@ -150,7 +150,7 @@ namespace MRK.UI {
             //map mode might've changed when visible=false
             OnMapModeChanged(Client.MapMode);
 
-            if (m_PlanetNames == null) {
+            /*if (m_PlanetNames == null) {
                 m_PlanetNames = new Dictionary<Transform, TextMeshPro>();
 
                 foreach (Transform planet in Client.Planets) {
@@ -158,7 +158,7 @@ namespace MRK.UI {
                     txt.gameObject.SetActive(false);
                     m_PlanetNames[planet] = txt;
                 }
-            }
+            }*/
 
             Client.DisableAllScreensExcept<EGRScreenMapInterface>();
 
@@ -279,11 +279,11 @@ namespace MRK.UI {
 
         public void SetObservedTransformNameState(bool active) {
             if (ObservedTransform != Client.GlobalMap.transform) {
-                TextMeshPro txt = m_PlanetNames[ObservedTransform];
-                txt.gameObject.SetActive(active);
+                //TextMeshPro txt = m_PlanetNames[ObservedTransform];
+                //txt.gameObject.SetActive(active);
 
                 if (active) {
-                    StartCoroutine(EGRUtils.SetTextEnumerator(x => txt.text = x, txt.text, 0.3f, ""));
+                    //StartCoroutine(EGRUtils.SetTextEnumerator(x => txt.text = x, txt.text, 0.3f, ""));
                 }
             }
         }

@@ -60,8 +60,13 @@ namespace MRK.Networking {
         }
 
         public void Shutdown() {
-            MainNetwork.Stop();
-            ClientSideCDNNetwork.StopLocalCDN();
+            if (MainNetwork != null) {
+                MainNetwork.Stop();
+            }
+
+            if (ClientSideCDNNetwork != null) {
+                ClientSideCDNNetwork.StopLocalCDN();
+            }
 
             EGREventManager.Instance.Unregister<EGREventNetworkConnected>(OnNetworkConnected);
             EGREventManager.Instance.Unregister<EGREventNetworkDisconnected>(OnNetworkDisconnected);

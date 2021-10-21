@@ -1423,6 +1423,284 @@ MonoBehaviour:
       shown: 0
     - name: DefaultCellGroup
       shown: 0
+    - name: SgtAccretion
+      shown: 0
+    - name: SgtAccretionMesh
+      shown: 0
+    - name: SgtAccretionNearTex
+      shown: 0
+    - name: SgtAtmosphere
+      shown: 0
+    - name: SgtAtmosphereDepthTex
+      shown: 0
+    - name: SgtAtmosphereHeight
+      shown: 0
+    - name: SgtAtmosphereLightingTex
+      shown: 0
+    - name: SgtAtmosphereScatteringTex
+      shown: 0
+    - name: SgtAurora
+      shown: 0
+    - name: SgtAuroraMainTex
+      shown: 0
+    - name: SgtAuroraNearTex
+      shown: 0
+    - name: SgtBackdrop
+      shown: 0
+    - name: SgtBelt
+      shown: 0
+    - name: SgtBeltCustom
+      shown: 0
+    - name: SgtBeltLightingTex
+      shown: 0
+    - name: SgtBeltSimple
+      shown: 0
+    - name: SgtBillboard
+      shown: 0
+    - name: SgtFastBillboard
+      shown: 0
+    - name: SgtFastBillboardManager
+      shown: 0
+    - name: SgtCloudsphere
+      shown: 0
+    - name: SgtCloudsphereDepthTex
+      shown: 0
+    - name: SgtCloudsphereLightingTex
+      shown: 0
+    - name: SgtCloudsphereNearTex
+      shown: 0
+    - name: SgtCorona
+      shown: 0
+    - name: SgtCoronaDepthTex
+      shown: 0
+    - name: SgtDebris
+      shown: 0
+    - name: SgtDebrisGrid
+      shown: 0
+    - name: SgtDebrisSpawner
+      shown: 0
+    - name: SgtFlare
+      shown: 0
+    - name: SgtFlareMaterial
+      shown: 0
+    - name: SgtFlareMesh
+      shown: 0
+    - name: SgtJovian
+      shown: 0
+    - name: SgtJovianDepthTex
+      shown: 0
+    - name: SgtJovianLightingTex
+      shown: 0
+    - name: SgtJovianScatteringTex
+      shown: 0
+    - name: SgtLightning
+      shown: 0
+    - name: SgtLightningSpawner
+      shown: 0
+    - name: SgtPlanet
+      shown: 0
+    - name: SgtProminence
+      shown: 0
+    - name: SgtRing
+      shown: 0
+    - name: SgtRingLightingTex
+      shown: 0
+    - name: SgtRingMainTexFilter
+      shown: 0
+    - name: SgtRingMesh
+      shown: 0
+    - name: SgtRingNearTex
+      shown: 0
+    - name: SgtCameraLook
+      shown: 0
+    - name: SgtCameraMove
+      shown: 0
+    - name: SgtCameraPath
+      shown: 0
+    - name: SgtFollow
+      shown: 0
+    - name: SgtFollowCamera
+      shown: 0
+    - name: SgtGravityReceiver
+      shown: 0
+    - name: SgtGravitySource
+      shown: 0
+    - name: SgtLightFlicker
+      shown: 0
+    - name: SgtLinkTo
+      shown: 0
+    - name: SgtPrefabSwitcher
+      shown: 0
+    - name: SgtProceduralForce
+      shown: 0
+    - name: SgtProceduralScale
+      shown: 0
+    - name: SgtProceduralSpin
+      shown: 0
+    - name: SgtProceduralTint
+      shown: 0
+    - name: SgtProceduralTorque
+      shown: 0
+    - name: SgtProximityDrag
+      shown: 0
+    - name: SgtRaycastTranslate
+      shown: 0
+    - name: SgtRotate
+      shown: 0
+    - name: SgtSimpleOrbit
+      shown: 0
+    - name: SgtSimpleScaler
+      shown: 0
+    - name: SgtCamera
+      shown: 0
+    - name: SgtDelay
+      shown: 0
+    - name: SgtDepthTextureMode
+      shown: 0
+    - name: SgtLight
+      shown: 0
+    - name: SgtLightPointer
+      shown: 0
+    - name: SgtLinkedBehaviour`1
+      shown: 0
+    - name: SgtOcclusionScaler
+      shown: 0
+    - name: SgtPoolComponent
+      shown: 0
+    - name: SgtPoolObject
+      shown: 0
+    - name: SgtProcedural
+      shown: 0
+    - name: SgtQuads
+      shown: 0
+    - name: SgtShadow
+      shown: 0
+    - name: SgtShadowLayer
+      shown: 0
+    - name: SgtShadowRing
+      shown: 0
+    - name: SgtShadowRingFilter
+      shown: 0
+    - name: SgtShadowSphere
+      shown: 0
+    - name: SgtShape
+      shown: 0
+    - name: SgtShapeBox
+      shown: 0
+    - name: SgtShapeGroup
+      shown: 0
+    - name: SgtShapeSphere
+      shown: 0
+    - name: SgtShapeTorus
+      shown: 0
+    - name: SgtSharedMaterial
+      shown: 0
+    - name: SgtLens
+      shown: 0
+    - name: SgtSingularity
+      shown: 0
+    - name: SgtSpacetime
+      shown: 0
+    - name: SgtSpacetimeGrid
+      shown: 0
+    - name: SgtSpacetimeMesh
+      shown: 0
+    - name: SgtSpacetimeModifier
+      shown: 0
+    - name: SgtSpacetimeWell
+      shown: 0
+    - name: SgtStarfield
+      shown: 0
+    - name: SgtStarfieldBox
+      shown: 0
+    - name: SgtStarfieldCustom
+      shown: 0
+    - name: SgtStarfieldElliptical
+      shown: 0
+    - name: SgtStarfieldInfinite
+      shown: 0
+    - name: SgtStarfieldInfiniteFarTex
+      shown: 0
+    - name: SgtStarfieldNearTex
+      shown: 0
+    - name: SgtStarfieldNebula
+      shown: 0
+    - name: SgtStarfieldSpiral
+      shown: 0
+    - name: SgtTerrain
+      shown: 0
+    - name: SgtTerrainCollider
+      shown: 0
+    - name: SgtTerrainHeightmap
+      shown: 0
+    - name: SgtTerrainObject
+      shown: 0
+    - name: SgtTerrainPlanet
+      shown: 0
+    - name: SgtTerrainPlanetMaterial
+      shown: 0
+    - name: SgtTerrainPrefabSpawner
+      shown: 0
+    - name: SgtTerrainSharedMaterial
+      shown: 0
+    - name: SgtTerrainSimplex
+      shown: 0
+    - name: SgtTerrainSine
+      shown: 0
+    - name: SgtThrusterControls
+      shown: 0
+    - name: SgtThruster
+      shown: 0
+    - name: SgtThrusterRoll
+      shown: 0
+    - name: SgtThrusterScale
+      shown: 0
+    - name: SgtFloatingCamera
+      shown: 0
+    - name: SgtFloatingFollow
+      shown: 0
+    - name: SgtFloatingLight
+      shown: 0
+    - name: SgtFloatingLod
+      shown: 0
+    - name: SgtFloatingObject
+      shown: 0
+    - name: SgtFloatingOrbit
+      shown: 0
+    - name: SgtFloatingOrbitVisual
+      shown: 0
+    - name: SgtFloatingParticleSystem
+      shown: 0
+    - name: SgtFloatingPoint
+      shown: 0
+    - name: SgtFloatingRigidbody
+      shown: 0
+    - name: SgtFloatingRoot
+      shown: 0
+    - name: SgtFloatingScaler
+      shown: 0
+    - name: SgtFloatingSpawner
+      shown: 0
+    - name: SgtFloatingSpawnerOrbit
+      shown: 0
+    - name: SgtFloatingSpawnerRing
+      shown: 0
+    - name: SgtFloatingSpawnerSphere
+      shown: 0
+    - name: SgtFloatingSpeedometer
+      shown: 0
+    - name: SgtFloatingTarget
+      shown: 0
+    - name: SgtFloatingWarp
+      shown: 0
+    - name: SgtFloatingWarpButton
+      shown: 0
+    - name: SgtFloatingWarpPin
+      shown: 0
+    - name: SgtFloatingWarpSmoothstep
+      shown: 0
+    - name: SgtSpawnList
+      shown: 0
     - name: DOTweenComponent
       shown: 0
     customComponents: []

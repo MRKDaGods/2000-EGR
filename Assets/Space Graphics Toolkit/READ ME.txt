@@ -1,0 +1,13 @@
+For Space Graphics Toolkit to run, you must first install the "Burst" and "Mathematics" packages.
+
+To install them:
+
+1 - Open the menu: Window / Package Manager
+2 - Wait for the package list to download.
+3 - Select the "Burst" package, and click Install.
+4 - Select the "Mathematics" package, and click Install.
+5 - DONE!
+
+You should now be able to read the "GUIDE", run the example scenes, etc.
+
+Sorry for any inconvenience!

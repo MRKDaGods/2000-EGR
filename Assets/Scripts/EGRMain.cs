@@ -400,6 +400,7 @@ namespace MRK {
 
             m_GlobalMap = m_RuntimeConfiguration.EarthGlobe;
             m_GlobeCamera = m_GlobalMap.GetComponent<EGRCameraGlobe>();
+            m_GlobeCamera.SetDistance(500f);
 
             m_FlatMap = m_RuntimeConfiguration.FlatMap;
             m_FlatCamera = m_FlatMap.GetComponent<EGRCameraFlat>();
@@ -609,7 +610,7 @@ namespace MRK {
             }
 
             //if mode is globe and we are not moving to another planet
-            if (m_MapMode == EGRMapMode.Globe && !m_GlobeCamera.IsLocked) {
+            /*if (m_MapMode == EGRMapMode.Globe && !m_GlobeCamera.IsLocked) {
                 //store all planet rotation coefficients if none has been stored
                 bool storeRotations = m_PlanetRotationCache.Count == 0;
 
@@ -625,7 +626,7 @@ namespace MRK {
                     trans.RotateAround(m_Sun.position, Vector3.up, m_PlanetRotationCache[trans] * 2f * Time.deltaTime
                         * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 80000f)));
                 }
-            }
+            }*/
 
             //is map interface active?
             if (ActiveEGRCamera.InterfaceActive) {
@@ -644,7 +645,7 @@ namespace MRK {
                     if (m_SkyboxRotation > 360f)
                         m_SkyboxRotation -= 360f;
 
-                    RenderSettings.skybox.SetFloat("_Rotation", m_SkyboxRotation);
+                    //RenderSettings.skybox.SetFloat("_Rotation", m_SkyboxRotation);
                 }
             }
 
@@ -895,7 +896,7 @@ namespace MRK {
         /// <param name="evt"></param>
         void OnGraphicsApplied(EGREventGraphicsApplied evt) {
             //apply planet specific graphic settings
-            foreach (Transform trans in m_Planets) {
+            /*foreach (Transform trans in m_Planets) {
                 //enable planet halos only in Ultra
                 trans.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
                 //enable planet objects only when quality is greater than Medium
@@ -905,14 +906,14 @@ namespace MRK {
                 if (trans.gameObject.activeInHierarchy) {
                     trans.RotateAround(m_Sun.position, Vector3.up, UnityEngine.Random.value * 360f);
                 }
-            }
+            }*/
 
             //enable space dust particle emitter when quality is greater than Medium
-            m_EnvironmentEmitter.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Medium);
+            //m_EnvironmentEmitter.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Medium);
             //enable sun when quality is greater than Low
-            m_Sun.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Low);
+            //m_Sun.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Low);
             //enable Earth's halo only in Ultra
-            m_GlobalMap.transform.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
+            //m_GlobalMap.transform.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
 
             //Adjust the bloom post-processing effect's strength depending on quality, strongest when quality is Ultra
             m_GlobeCamera.GetComponent<PostProcessVolume>().profile.GetSetting<Bloom>().threshold.value = evt.Quality == EGRSettingsQuality.Ultra ? 0.9f : 1f;
