@@ -248,23 +248,23 @@ namespace MRK.UI {
             }
         }
 
-        void OnControllerMessageReceived(EGRControllerMessage msg) {
+        void OnControllerMessageReceived(MRKInputControllerMessage msg) {
             if (Client.MapMode != EGRMapMode.Globe)
                 return;
 
             if (!m_EGRCamera.ShouldProcessControllerMessage(msg))
                 return;
 
-            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
-                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
+            if (msg.ContextualKind == MRKInputControllerMessageContextualKind.Mouse) {
+                MRKInputControllerMouseEventKind kind = (MRKInputControllerMouseEventKind)msg.Payload[0];
 
                 switch (kind) {
-                    case EGRControllerMouseEventKind.Down:
+                    case MRKInputControllerMouseEventKind.Down:
                         m_MouseDown = true;
                         m_MouseDownPos = (Vector3)msg.Payload[3];
                         break;
 
-                    case EGRControllerMouseEventKind.Up:
+                    case MRKInputControllerMouseEventKind.Up:
                         if (m_MouseDown) {
                             m_MouseDown = false;
 
@@ -390,6 +390,15 @@ namespace MRK.UI {
             m_EGRCamera.SetInterfaceState(false);
             SetObservedTransformToEarth();
             HideScreen();
+
+            m_SpaceLabelsRoot.SetActive(false);
+            ScreenManager.MainScreen.ShowScreen();
+        }
+
+        public void ExternalForceHide() {
+            m_EGRCamera.SetInterfaceState(false);
+            SetObservedTransformToEarth();
+            ForceHideScreen(true);
 
             m_SpaceLabelsRoot.SetActive(false);
             ScreenManager.MainScreen.ShowScreen();

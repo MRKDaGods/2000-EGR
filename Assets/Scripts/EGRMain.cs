@@ -157,13 +157,13 @@ namespace MRK {
         /// <summary>
         /// Active input controllers
         /// </summary>
-        readonly List<EGRController> m_Controllers;
+        readonly List<MRKInputController> m_Controllers;
 
         /// <summary>
         /// The planets' transform, does not include Earth
         /// </summary>
         [SerializeField]
-        Transform[] m_Planets;
+        EGRPlanet[] m_Planets;
 
         /// <summary>
         /// The sun's transform
@@ -318,11 +318,6 @@ namespace MRK {
         public EGRMapMode PreviousMapMode => m_PreviousMapMode;
 
         /// <summary>
-        /// The planets' transform, does not include Earth
-        /// </summary>
-        public Transform[] Planets => m_Planets;
-
-        /// <summary>
         /// The sun's transform
         /// </summary>
         public Transform Sun => m_Sun;
@@ -335,7 +330,7 @@ namespace MRK {
         /// <summary>
         /// Currently active input model
         /// </summary>
-        public EGRInputModel InputModel { get; private set; }
+        public MRKInputModel InputModel { get; private set; }
 
         /// <summary>
         /// The navigation manager
@@ -365,7 +360,7 @@ namespace MRK {
         /// </summary>
         public EGRMain() {
             m_ActiveScreens = new List<EGRScreen>();
-            m_Controllers = new List<EGRController>();
+            m_Controllers = new List<MRKInputController>();
             m_PlanetRotationCache = new Dictionary<Transform, float>();
 
             //application has started running
@@ -400,7 +395,7 @@ namespace MRK {
 
             m_GlobalMap = m_RuntimeConfiguration.EarthGlobe;
             m_GlobeCamera = m_GlobalMap.GetComponent<EGRCameraGlobe>();
-            m_GlobeCamera.SetDistance(500f);
+            m_GlobeCamera.SetDistance(m_RuntimeConfiguration.GlobeSettings.UnfocusedOffset);
 
             m_FlatMap = m_RuntimeConfiguration.FlatMap;
             m_FlatCamera = m_FlatMap.GetComponent<EGRCameraFlat>();
@@ -412,20 +407,22 @@ namespace MRK {
             PlaceManager = gameObject.AddComponent<EGRPlaceManager>();
 
             NavigationManager = m_RuntimeConfiguration.NavigationManager;
-            LocationService = m_RuntimeConfiguration.LocationService;
+
+            //crash if in scene
+            LocationService = new GameObject("Location Service").AddComponent<EGRLocationService>();
 
             m_EnvironmentEmitter = m_RuntimeConfiguration.EnvironmentEmitter;
 
             //add a virtual controller if the current device supports touch input
             if (Input.touchSupported)
-                m_Controllers.Add(new EGRVirtualController());
+                m_Controllers.Add(new MRKInputVirtualController());
 
             //add a physical controller if we do not have any controllers (no touch support) or a stylus is supported
             if (m_Controllers.Count == 0 || Input.stylusTouchSupported)
-                m_Controllers.Add(new EGRPhysicalController());
+                m_Controllers.Add(new MRKInputPhysicalController());
 
             //initialize all controllers
-            foreach (EGRController ctrl in m_Controllers)
+            foreach (MRKInputController ctrl in m_Controllers)
                 ctrl.InitController();
 
             //initialize language manager
@@ -591,7 +588,7 @@ namespace MRK {
             }
 
             //update and handle all controller messages
-            foreach (EGRController ctrl in m_Controllers)
+            foreach (MRKInputController ctrl in m_Controllers)
                 ctrl.UpdateController();
 
             //update the active state of camera handlers
@@ -608,25 +605,6 @@ namespace MRK {
             if (m_DrawFPS) {
                 m_DeltaTime += (Time.unscaledDeltaTime - m_DeltaTime) * 0.1f;
             }
-
-            //if mode is globe and we are not moving to another planet
-            /*if (m_MapMode == EGRMapMode.Globe && !m_GlobeCamera.IsLocked) {
-                //store all planet rotation coefficients if none has been stored
-                bool storeRotations = m_PlanetRotationCache.Count == 0;
-
-                foreach (Transform trans in m_Planets) {
-                    if (storeRotations) {
-                        int sibIdx = trans.GetSiblingIndex();
-
-                        //-1 if planet is Venus or Uranus, they both rotate in the opposite direction
-                        m_PlanetRotationCache[trans] = sibIdx == 1 || sibIdx == 5 ? -1f : 1f;
-                    }
-
-                    //rotate around the sun with axis being vertically upwards at 2 degrees per time proportional to distance from the sun
-                    trans.RotateAround(m_Sun.position, Vector3.up, m_PlanetRotationCache[trans] * 2f * Time.deltaTime
-                        * (1f - (Vector3.Distance(trans.position, m_Sun.position) / 80000f)));
-                }
-            }*/
 
             //is map interface active?
             if (ActiveEGRCamera.InterfaceActive) {
@@ -645,7 +623,7 @@ namespace MRK {
                     if (m_SkyboxRotation > 360f)
                         m_SkyboxRotation -= 360f;
 
-                    //RenderSettings.skybox.SetFloat("_Rotation", m_SkyboxRotation);
+                    RenderSettings.skybox.SetFloat("_Rotation", m_SkyboxRotation);
                 }
             }
 
@@ -723,8 +701,8 @@ namespace MRK {
         /// Registers a new controller message handler
         /// </summary>
         /// <param name="receivedDelegate">The delegate</param>
-        public void RegisterControllerReceiver(EGRControllerMessageReceivedDelegate receivedDelegate) {
-            foreach (EGRController ctrl in m_Controllers)
+        public void RegisterControllerReceiver(MRKInputControllerMessageReceivedDelegate receivedDelegate) {
+            foreach (MRKInputController ctrl in m_Controllers)
                 ctrl.RegisterReceiver(receivedDelegate);
         }
 
@@ -732,8 +710,8 @@ namespace MRK {
         /// Registers a new controller message handler
         /// </summary>
         /// <param name="receivedDelegate">The delegate</param>
-        public void UnregisterControllerReceiver(EGRControllerMessageReceivedDelegate receivedDelegate) {
-            foreach (EGRController ctrl in m_Controllers)
+        public void UnregisterControllerReceiver(MRKInputControllerMessageReceivedDelegate receivedDelegate) {
+            foreach (MRKInputController ctrl in m_Controllers)
                 ctrl.UnregisterReceiver(receivedDelegate);
         }
 
@@ -741,7 +719,7 @@ namespace MRK {
         /// Gets the active input controller responsible for the provided message
         /// </summary>
         /// <param name="msg">A controller message</param>
-        public EGRController GetControllerFromMessage(EGRControllerMessage msg) {
+        public MRKInputController GetControllerFromMessage(MRKInputControllerMessage msg) {
             //find controller by comparing the message kind
             return m_Controllers.Find(x => x.MessageKind == msg.Kind);
         }
@@ -896,17 +874,14 @@ namespace MRK {
         /// <param name="evt"></param>
         void OnGraphicsApplied(EGREventGraphicsApplied evt) {
             //apply planet specific graphic settings
-            /*foreach (Transform trans in m_Planets) {
-                //enable planet halos only in Ultra
-                trans.Find("Halo").gameObject.SetActive(evt.Quality == EGRSettingsQuality.Ultra);
-                //enable planet objects only when quality is greater than Medium
-                trans.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Medium);
+            foreach (EGRPlanet planet in m_Planets) {
+                bool planetActive = planet.PlanetType == EGRPlanetType.Earth || evt.Quality > EGRSettingsQuality.Medium;
+                planet.gameObject.SetActive(planetActive);
 
-                //rotate each planet randomly around the sun if active, so planets are spread in space
-                if (trans.gameObject.activeInHierarchy) {
-                    trans.RotateAround(m_Sun.position, Vector3.up, UnityEngine.Random.value * 360f);
+                if (planetActive) {
+                    planet.SetHaloActiveState(evt.Quality == EGRSettingsQuality.Ultra);
                 }
-            }*/
+            }
 
             //enable space dust particle emitter when quality is greater than Medium
             //m_EnvironmentEmitter.gameObject.SetActive(evt.Quality > EGRSettingsQuality.Medium);
@@ -923,7 +898,7 @@ namespace MRK {
         /// Updates input model from settings
         /// </summary>
         void UpdateInputModel() {
-            InputModel = EGRInputModel.Get(EGRSettings.InputModel);
+            InputModel = MRKInputModel.Get(EGRSettings.InputModel);
         }
 
         /// <summary>

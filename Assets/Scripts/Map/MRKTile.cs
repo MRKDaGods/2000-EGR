@@ -447,13 +447,20 @@ namespace MRK {
             if (m_MeshRenderer != null) {
                 if (/*m_SiblingIndex < 15 && */m_Map.TileDestroyZoomUpdatedDirty && !ID.Stationary) {
                     MRKTilePlane tilePlane = ms_PlanePool.Rent();
-                    tilePlane.InitPlane((Texture2D)m_MeshRenderer.material.mainTexture, m_Map.TileSize, Rect.Value, ID.Z, () => {
-                        MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
-                        if (tile != null)
-                            return tile.HasAnyTexture;
-
-                        return false;
-                    }, m_SiblingIndex);
+                    tilePlane.InitPlane(
+                        m_Texture != null ? m_Texture.Texture : (Texture2D)m_MeshRenderer.material.mainTexture,
+                        m_Map.TileSize,
+                        Rect.Value,
+                        ID.Z,
+                        () => {
+                            MRKTile tile = m_Map.GetTileFromSiblingIndex(m_SiblingIndex);
+                            if (tile != null)
+                                return tile.HasAnyTexture;
+                                
+                            return false;
+                        },
+                        m_SiblingIndex
+                    );
 
                     m_Map.ActivePlanes.Add(tilePlane);
                 }

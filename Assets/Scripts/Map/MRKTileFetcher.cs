@@ -16,6 +16,11 @@ namespace MRK {
         public bool Error;
         public Texture2D Texture;
         public byte[] Data;
+        public readonly MRKSelfContainedPtr<MRKMonitoredTexture> MonitoredTexture;
+
+        public MRKTileFetcherContext() {
+            MonitoredTexture = new MRKSelfContainedPtr<MRKMonitoredTexture>(() => new MRKMonitoredTexture(Texture));
+        }
     }
 
     public class MRKFileTileFetcher : MRKTileFetcher {
@@ -79,7 +84,7 @@ namespace MRK {
     public class MRKRemoteTileFetcher : MRKTileFetcher {
         public override IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id, Reference<UnityWebRequest> request, bool low = false) {
         __start:
-            MRKTilesetProvider provider = MRKTileRequestor.Instance.GetCurrentTilesetProvider();
+            MRKTilesetProvider provider = MRKTileRequestor.Instance.GetTilesetProvider(tileSet);
             string path = string.Format(provider.API, id.Z, id.X, id.Y).Replace("-", "%2D");
             if (low) {
                 //lower res

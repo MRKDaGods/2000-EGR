@@ -22,6 +22,10 @@ namespace MRK {
         public bool IsActive { get; set; }
         public bool IsStatic { get; private set; }
 
+        public MRKMonitoredTexture() {
+            Texture = null;
+        }
+
         public MRKMonitoredTexture(Texture2D texture, bool _static = false) {
             Texture = texture;
             IsStatic = _static;

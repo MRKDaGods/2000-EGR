@@ -119,7 +119,7 @@ namespace MRK {
 
         __teleport:
             if (teleport && m_LastFetchedCoords.HasValue) {
-                Client.FlatCamera.SetCenterAndZoom(m_LastFetchedCoords.Value, 17f);
+                Client.FlatCamera.TeleportToLocationTweened(m_LastFetchedCoords.Value);
             }
         }
 

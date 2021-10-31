@@ -33,19 +33,21 @@ namespace MRK {
         float m_MaximumDistance = 10000f;
         [SerializeField]
         float m_ThresholdDistance = 110f;
+        [SerializeField]
+        float m_GestureSpeed = 400f;
 
         public bool IsLocked => m_PositionLocked || m_RotationLocked;
         public float TargetFOV { get; set; }
 
         public EGRCameraGlobe() : base() {
-            m_CurrentDistance = m_TargetDistance = m_BackupDistance = 500f;
             m_RotationSpeed = 8f;
             m_DistanceSpeed = 8f;
         }
 
         void Start() {
+            m_EarthMat = Client.GlobalMap.GetComponent<MeshRenderer>().material;
+
             Client.RegisterControllerReceiver(OnReceiveControllerMessage);
-            //m_EarthMat = Client.GlobalMap.GetComponent<MeshRenderer>().material;
 
             //update light pos
             //based on day
@@ -55,14 +57,13 @@ namespace MRK {
             DateTime time = DateTime.UtcNow.AddHours(2d); //convert to GMT+2 (CLT)
             float hrs = time.Hour;
             hrs += time.Minute / 60f;
-            //GameObject.Find("SunPivot/SunPlane/Directional Light").transform.rotation = Quaternion.Euler(0f, hrs * 15f + 50f, 0f);
 
             m_TimeOfDayRotation = hrs * -15f + 50f - 270f + 50f;
             transform.rotation = Quaternion.Euler(0f, m_TimeOfDayRotation + 270f, 0f);
             m_DummyRaycastObject = new GameObject("Dummy Raycast Object");
 
-            //m_Light = Client.Sun.parent.GetChild(0); //Directional Light
-            //m_OriginalLightRotation = m_Light.transform.rotation.eulerAngles; //0,180,0
+            m_Light = Client.Sun.GetChild(0); //Directional Light
+            m_OriginalLightRotation = m_Light.transform.rotation.eulerAngles; //0,180,0
 
             TargetFOV = m_Camera.fieldOfView; //init fov
         }
@@ -71,24 +72,24 @@ namespace MRK {
             Client.UnregisterControllerReceiver(OnReceiveControllerMessage);
         }
 
-        void OnReceiveControllerMessage(EGRControllerMessage msg) {
+        void OnReceiveControllerMessage(MRKInputControllerMessage msg) {
             if (!m_InterfaceActive || !gameObject.activeSelf)
                 return;
 
             if (!ShouldProcessControllerMessage(msg))
                 return;
 
-            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
-                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
-                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
+            if (msg.ContextualKind == MRKInputControllerMessageContextualKind.Mouse) {
+                MRKInputControllerMouseEventKind kind = (MRKInputControllerMouseEventKind)msg.Payload[0];
+                MRKInputControllerMouseData data = (MRKInputControllerMouseData)msg.Proposer;
 
                 switch (kind) {
-                    case EGRControllerMouseEventKind.Down:
+                    case MRKInputControllerMouseEventKind.Down:
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
                         break;
 
-                    case EGRControllerMouseEventKind.Drag:
+                    case MRKInputControllerMouseEventKind.Drag:
                         //store delta for zoom
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
 
@@ -114,7 +115,7 @@ namespace MRK {
                             case 2:
 
                                 if (data.Index == 1) { //handle 2nd touch
-                                    ProcessZoom((EGRControllerMouseData[])msg.Payload[3]);
+                                    ProcessZoom((MRKInputControllerMouseData[])msg.Payload[3]);
                                 }
 
                                 break;
@@ -122,7 +123,7 @@ namespace MRK {
                         }
                         break;
 
-                    case EGRControllerMouseEventKind.Up:
+                    case MRKInputControllerMouseEventKind.Up:
                         m_Down[data.Index] = false;
                         break;
                 }
@@ -175,11 +176,12 @@ namespace MRK {
 
                 ChromaticAberration aberration = Client.GetActivePostProcessEffect<ChromaticAberration>();
 
+                EGRRuntimeConfiguration.GlobeSetup setup = Client.RuntimeConfiguration.GlobeSettings;
                 Quaternion initialRot = transform.rotation;
-                transform.DORotate(new Vector3(0f, initialRot.eulerAngles.y + 720f), 1.8f, RotateMode.FastBeyond360);
+                transform.DORotate(new Vector3(0f, initialRot.eulerAngles.y + 720f), setup.TransitionRotationLength, RotateMode.FastBeyond360);
 
-                m_TargetDistance = 1000f;
-                m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.5f)
+                m_TargetDistance = m_MaximumDistance;
+                m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, setup.TransitionZoomInLength)
                     .SetEase(Ease.OutSine)
                     .OnUpdate(() => {
                         vig.intensity.value = m_DistTween.ElapsedPercentage() * 0.65f;
@@ -188,9 +190,9 @@ namespace MRK {
                         aberration.active = true;
                         aberration.intensity.value = 0f;
 
-                        m_TargetDistance = 200f;
+                        m_TargetDistance = m_MinimumDistance;
 
-                        m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 1.2f)
+                        m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, setup.TransitionZoomInLength)
                         .SetEase(Ease.InOutExpo)
                         .OnComplete(() => {
                             m_IsSwitching = false;
@@ -198,8 +200,6 @@ namespace MRK {
                             vig.active = false;
 
                             transform.rotation = initialRot;
-
-                            m_TargetDistance = 2000f;
 
                             ScreenManager.MapInterface.SetTransitionTex(Client.CaptureScreenBuffer());
 
@@ -225,7 +225,7 @@ namespace MRK {
             if (m_IsSwitching)
                 return;
 
-            m_TargetDistance -= rawDelta * Time.deltaTime * 50f * EGRSettings.GetGlobeSensitivity();
+            m_TargetDistance -= rawDelta * Time.deltaTime * m_GestureSpeed * EGRSettings.GetGlobeSensitivity();
 
             if (m_TargetDistance < m_ThresholdDistance && ScreenManager.MapInterface.ObservedTransform == transform) {
                 StartTransitionToFlat();
@@ -246,23 +246,13 @@ namespace MRK {
 
         public void SetDistanceEased(float dist) {
             m_TargetDistance = dist;
-            /*m_TargetDistance = Mathf.Clamp(dist, 3100f, 20000f);
-
-            if (m_DistTween != null) {
-                DOTween.Kill(m_DistTween.id);
-            }
-
-            m_DistTween = DOTween.To(() => m_CurrentDistance, x => m_CurrentDistance = x, m_TargetDistance, 0.6f).SetEase(Ease.OutSine);
-            m_DistTween.intId = EGRTweenIDs.IntId;
-
-            m_DistanceSpeed = 8f; */
         }
 
         void ProcessZoomScroll(float delta) {
             ProcessZoomInternal(delta);
         }
 
-        void ProcessZoom(EGRControllerMouseData[] data) {
+        void ProcessZoom(MRKInputControllerMouseData[] data) {
             Vector3 prevPos0 = data[0].LastPosition - m_Deltas[0];
             Vector3 prevPos1 = data[1].LastPosition - m_Deltas[1];
             float olddeltaMag = (prevPos0 - prevPos1).magnitude;
@@ -275,11 +265,10 @@ namespace MRK {
             if (m_LastController == null || IsLocked)
                 return;
 
-            float factor = Mathf.Clamp01(m_CurrentDistance / 10000f + 0.5f);
+            float factor = Mathf.Clamp01(m_CurrentDistance / m_MaximumDistance + 0.5f);
             m_TargetRotation.x += delta.x * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.x * EGRSettings.GetGlobeSensitivity() * factor;
             m_TargetRotation.y -= delta.y * (withDelta ? Time.deltaTime : 1f) * m_LastController.Sensitivity.y * EGRSettings.GetGlobeSensitivity() * factor;
 
-            //m_TargetRotation.x = ClampAngle(m_TargetRotation.x, float.NegativeInfinity, float.PositiveInfinity);
             m_TargetRotation.y = ClampAngle(m_TargetRotation.y, -80f, 80f);
 
             if (m_RotTween != null) {
@@ -303,7 +292,6 @@ namespace MRK {
             m_TargetRotation.x += delta.x * (withDelta ? Time.deltaTime : 1f);
             m_TargetRotation.y -= delta.y * (withDelta ? Time.deltaTime : 1f);
 
-            //m_TargetRotation.x = ClampAngle(m_TargetRotation.x, float.NegativeInfinity, float.PositiveInfinity);
             m_TargetRotation.y = ClampAngle(m_TargetRotation.y, -80f, 80f);
 
             m_CurrentRotation = m_TargetRotation;
@@ -340,13 +328,13 @@ namespace MRK {
                 ScreenManager.MapInterface.SetDistanceText($"{(int)(m_CurrentDistance - ScreenManager.MapInterface.ObservedTransform.localScale.x)}m", true);
 
                 //light
-                /*Vector3 targetRot;
+                Vector3 targetRot;
                 if (ScreenManager.MapInterface.ObservedTransform == this)
                     targetRot = m_OriginalLightRotation;
                 else
-                    targetRot = Quaternion.LookRotation(ScreenManager.MapInterface.ObservedTransform.position - m_Light.position).eulerAngles; */
+                    targetRot = Quaternion.LookRotation(ScreenManager.MapInterface.ObservedTransform.position - m_Light.position).eulerAngles;
 
-                //m_Light.DORotate(targetRot, 0.3f).SetEase(Ease.OutSine);
+                m_Light.DORotate(targetRot, 0.3f).SetEase(Ease.OutSine);
             }
 
             if (m_PositionLocked || m_RotationLocked)
@@ -361,7 +349,7 @@ namespace MRK {
 
             float transparency = Mathf.Clamp01((Mathf.Min(4200f, m_CurrentDistance) - 3300f) / 3300f);
             float val = m_CloudTransparencyCurve.Evaluate(transparency);
-            //m_EarthMat.SetColor("_CloudColor", new Color(val, val, val));
+            m_EarthMat.SetColor("_CloudColor", new Color(val, val, val));
         }
 
         public (Vector3, Vector3) GetSamplePosRot() {
@@ -454,7 +442,7 @@ namespace MRK {
                 m_RotationSpeed = 5f;
                 m_Delta[0] = 1f;
                 m_Delta[1] = 0f;
-                m_TargetDistance = 500f;
+                m_TargetDistance = Client.RuntimeConfiguration.GlobeSettings.UnfocusedOffset;
             }
         }
     }

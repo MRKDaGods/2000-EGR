@@ -80,8 +80,9 @@ namespace MRK.UI {
             }
 
             void OnPageChanged(int page) {
-                if (m_LastPage == page)
+                if (m_LastPage == page || page >= ms_Instance.m_ContextGradients.Length)
                     return;
+
 
                 ContextGradient curGradient = ms_Instance.m_ContextGradients[page];
                 DOTween.To(() => m_ContextualBgGradient.color1, x => m_ContextualBgGradient.color1 = x, curGradient.First, 0.5f).SetEase(Ease.OutSine);

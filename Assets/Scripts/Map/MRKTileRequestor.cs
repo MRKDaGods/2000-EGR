@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.Networking;
 
 namespace MRK {
     [Serializable]
@@ -24,6 +25,7 @@ namespace MRK {
 
         readonly Queue<CachedTileInfo> m_QueuedTiles;
         readonly MRKFileTileFetcher m_FileFetcher;
+        readonly MRKRemoteTileFetcher m_RemoteTileFetcher;
         [SerializeField]
         MRKTilesetProvider[] m_TilesetProviders;
         CancellationTokenSource m_LastCancellationToken;
@@ -31,10 +33,12 @@ namespace MRK {
         public static MRKTileRequestor Instance { get; private set; }
         public MRKTilesetProvider[] TilesetProviders => m_TilesetProviders;
         public MRKFileTileFetcher FileTileFetcher => m_FileFetcher;
+        public MRKRemoteTileFetcher RemoteTileFetcher => m_RemoteTileFetcher;
 
         public MRKTileRequestor() {
             m_QueuedTiles = new Queue<CachedTileInfo>();
             m_FileFetcher = new MRKFileTileFetcher();
+            m_RemoteTileFetcher = new MRKRemoteTileFetcher();
         }
 
         void Awake() {
@@ -71,14 +75,38 @@ namespace MRK {
             }
         }
 
-        public MRKTilesetProvider GetCurrentTilesetProvider() {
+        public IEnumerator RequestTile(MRKTileID id, bool low, Action<MRKTileFetcherContext> callback, string tileset = null) {
+            //dont exec if callback is null
+            if (callback == null) {
+                yield break;
+            }
+            
+            if (tileset == null) {
+                tileset = Client.FlatMap.Tileset;
+            }
+
+            MRKTileFetcher fetcher = m_FileFetcher.Exists(tileset, id, low) ? (MRKTileFetcher)m_FileFetcher : m_RemoteTileFetcher;
+            MRKTileFetcherContext ctx = new MRKTileFetcherContext();
+            Reference<UnityWebRequest> req = ReferencePool<UnityWebRequest>.Default.Rent();
+            yield return fetcher.Fetch(ctx, tileset, id, req, low);
+
+            callback(ctx);
+
+            ReferencePool<UnityWebRequest>.Default.Free(req);
+        }
+
+        public MRKTilesetProvider GetTilesetProvider(string tileset) {
             foreach (MRKTilesetProvider provider in m_TilesetProviders) {
-                if (provider.Name == Client.FlatMap.Tileset) {
+                if (provider.Name == tileset) {
                     return provider;
                 }
             }
 
             return default;
+        }
+
+        public MRKTilesetProvider GetCurrentTilesetProvider() {
+            return GetTilesetProvider(Client.FlatMap.Tileset);
         }
 
         public void DeleteLocalProvidersCache() {

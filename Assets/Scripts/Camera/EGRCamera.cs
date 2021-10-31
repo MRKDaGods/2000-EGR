@@ -8,7 +8,7 @@ namespace MRK {
         protected readonly Vector3[] m_Deltas;
         protected readonly bool[] m_PassedThreshold;
         protected bool m_InterfaceActive;
-        protected EGRController m_LastController;
+        protected MRKInputController m_LastController;
         float m_LastControllerTime;
 
         protected Camera m_Camera => Client.ActiveCamera;
@@ -41,20 +41,20 @@ namespace MRK {
             }
         }
 
-        public bool ShouldProcessControllerMessage(EGRControllerMessage msg, bool ignoreUI = false) {
+        public bool ShouldProcessControllerMessage(MRKInputControllerMessage msg, bool ignoreUI = false) {
             //if (Client.ActiveScreens.Count > 1)
             //    return false;
 
             if (!ignoreUI) {
-                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
-                int id = msg.Kind == EGRControllerMessageKind.Virtual ? data.Index : -1;
+                MRKInputControllerMouseData data = (MRKInputControllerMouseData)msg.Proposer;
+                int id = msg.Kind == MRKInputControllerMessageKind.Virtual ? data.Index : -1;
                 if (EventSystem.current.IsPointerOverGameObject(id))
                     return false;
             }
             
             bool res = true;
 
-            EGRController proposed = Client.GetControllerFromMessage(msg);
+            MRKInputController proposed = Client.GetControllerFromMessage(msg);
             if (m_LastController == null || m_LastController != proposed) {
                 if (Time.time - m_LastControllerTime > 0.3f) {
                     m_LastController = proposed;

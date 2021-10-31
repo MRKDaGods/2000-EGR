@@ -83,13 +83,16 @@ namespace MRK {
                 yield return new WaitForEndOfFrame();
             }
 
-            m_Tween = DOTween.To(() => m_DissolveValue, x => m_DissolveValue = x, 1f, m_MapHasHigherZoom ? 0.6f : 0.3f)
-                .OnUpdate(() => {
-                    if (m_Material != null) m_Material.SetFloat("_Amount", m_DissolveValue);
-                })
-                .OnComplete(() => RecyclePlane())
-                .SetEase(Ease.OutSine)
-                .intId = EGRTweenIDs.IntId;
+            m_Tween = DOTween.To(
+                () => m_DissolveValue,
+                x => m_DissolveValue = x,
+                1f,
+                m_MapHasHigherZoom ? 0.6f : 0.3f
+            ).OnUpdate(() => {
+                if (m_Material != null) m_Material.SetFloat("_Amount", m_DissolveValue);
+            }).OnComplete(() => RecyclePlane())
+            .SetEase(Ease.OutSine)
+            .intId = EGRTweenIDs.IntId;
         }
 
         public void UpdatePlane() {

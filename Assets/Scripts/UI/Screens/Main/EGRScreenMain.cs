@@ -166,16 +166,16 @@ namespace MRK.UI {
             UpdateNavButtonsVisibility();
         }
 
-        void OnReceiveControllerMessage(EGRControllerMessage msg) {
-            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
-                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
+        void OnReceiveControllerMessage(MRKInputControllerMessage msg) {
+            if (msg.ContextualKind == MRKInputControllerMessageContextualKind.Mouse) {
+                MRKInputControllerMouseEventKind kind = (MRKInputControllerMouseEventKind)msg.Payload[0];
 
                 switch (kind) {
-                    case EGRControllerMouseEventKind.Down:
+                    case MRKInputControllerMouseEventKind.Down:
                         m_Down = true;
                         break;
 
-                    case EGRControllerMouseEventKind.Up:
+                    case MRKInputControllerMouseEventKind.Up:
                         if (m_Down) {
                             HandleSwipe();
                         }

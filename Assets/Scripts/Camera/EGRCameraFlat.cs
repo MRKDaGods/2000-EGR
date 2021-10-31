@@ -63,25 +63,25 @@ namespace MRK {
             m_MinViewportZoomLevel = 0f;
         }
 
-        void OnReceiveControllerMessage(EGRControllerMessage msg) {
+        void OnReceiveControllerMessage(MRKInputControllerMessage msg) {
             if (!m_InterfaceActive || !gameObject.activeSelf)
                 return;
 
             if (!ShouldProcessControllerMessage(msg, m_Down[0])) {
                 ResetStates();
 
-                if (((EGRControllerMouseEventKind)msg.Payload[0]) == EGRControllerMouseEventKind.Down)
+                if (((MRKInputControllerMouseEventKind)msg.Payload[0]) == MRKInputControllerMouseEventKind.Down)
                     msg.Payload[2] = true;
 
                 return;
             }
 
-            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
-                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
-                EGRControllerMouseData data = (EGRControllerMouseData)msg.Proposer;
+            if (msg.ContextualKind == MRKInputControllerMessageContextualKind.Mouse) {
+                MRKInputControllerMouseEventKind kind = (MRKInputControllerMouseEventKind)msg.Payload[0];
+                MRKInputControllerMouseData data = (MRKInputControllerMouseData)msg.Proposer;
 
                 switch (kind) {
-                    case EGRControllerMouseEventKind.Down:
+                    case MRKInputControllerMouseEventKind.Down:
                         m_Down[data.Index] = true;
                         msg.Payload[2] = true;
 
@@ -92,7 +92,7 @@ namespace MRK {
                         m_PassedThreshold[data.Index] = false;
                         break;
 
-                    case EGRControllerMouseEventKind.Drag:
+                    case MRKInputControllerMouseEventKind.Drag:
                         //store delta for zoom
                         m_Deltas[data.Index] = (Vector3)msg.Payload[2];
 
@@ -108,7 +108,6 @@ namespace MRK {
                         }
 
                         switch (touchCount) {
-
                             case 0:
                                 break;
 
@@ -123,15 +122,14 @@ namespace MRK {
                             case 2:
 
                                 if (data.Index == 1 && m_PassedThreshold[0] && m_PassedThreshold[1]) { //handle 2nd touch
-                                    ProcessZoom((EGRControllerMouseData[])msg.Payload[3]);
+                                    ProcessZoom((MRKInputControllerMouseData[])msg.Payload[3]);
                                 }
 
                                 break;
-
                         }
                         break;
 
-                    case EGRControllerMouseEventKind.Up:
+                    case MRKInputControllerMouseEventKind.Up:
                         if (m_Down[0] && !m_PassedThreshold[0]) {
                             if (Time.time - m_LastZoomTime > 0.5f && Time.time - m_TouchCtx0.LastValidDownTime < 0.2f) {
                                 ProcessDoubleClick((Vector3)msg.Payload[1]);
@@ -199,7 +197,7 @@ namespace MRK {
 
         public void SwitchToGlobe() {
             m_MapInterface.SetTransitionTex(Client.CaptureScreenBuffer(), null);
-            Client.GlobeCamera.SetDistance(500f);
+            Client.GlobeCamera.SetDistance(Client.RuntimeConfiguration.GlobeSettings.FlatTransitionOffset);
             Client.SetMapMode(EGRMapMode.Globe);
         }
 
@@ -218,7 +216,7 @@ namespace MRK {
             m_LastZoomTime = Time.time;
         }
 
-        void ProcessZoom(EGRControllerMouseData[] data) {
+        void ProcessZoom(MRKInputControllerMouseData[] data) {
             m_Delta[1] = 0f;
             Vector3 prevPos0 = data[0].LastPosition - m_Deltas[0];
             Vector3 prevPos1 = data[1].LastPosition - m_Deltas[1];

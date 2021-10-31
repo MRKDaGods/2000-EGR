@@ -8,30 +8,38 @@ namespace MRK.UI {
     public class EGRScreenMapChooser : EGRScreen {
         [Serializable]
         struct StyleInfo {
-            public Sprite Sprite;
+            public string Tileset;
             public string Text;
         }
 
-        class MapStyle {
+        class MapStyle : MRKBehaviourPlain {
             RectTransform m_Transform;
             GameObject m_Indicator;
+            StyleInfo m_StyleInfo;
+            readonly EGRUIUsableLoading m_MapPreviewLoading;
 
             public RectTransform Transform => m_Transform;
             public float Multiplier { get; set; }
             public int Index { get; private set; }
+            public RawImage Preview { get; private set; }
 
             public MapStyle(Transform root, StyleInfo style, int idx) {
                 m_Transform = (RectTransform)root;
+                m_StyleInfo = style;
 
                 m_Indicator = m_Transform.Find("Indicator").gameObject;
                 m_Indicator.SetActive(false);
 
-                m_Transform.Find("Scroll View/Viewport/Content/Map").GetComponent<Image>().sprite = style.Sprite;
+                Preview = m_Transform.Find("Scroll View/Viewport/Map").GetComponent<RawImage>();
                 m_Transform.Find("Text").GetComponent<TextMeshProUGUI>().text = style.Text;
                 m_Transform.GetComponent<Button>().onClick.AddListener(OnStyleClicked);
 
                 Multiplier = 1f;
                 Index = idx;
+
+                EGRUIUsableReference loadingRef = m_Transform.GetComponent<EGRUIUsableReference>();
+                loadingRef.InitializeIfNeeded();
+                m_MapPreviewLoading = (EGRUIUsableLoading)loadingRef.Usable;
             }
 
             void OnStyleClicked() {
@@ -40,6 +48,31 @@ namespace MRK.UI {
 
             public void SetIndicatorState(bool active) {
                 m_Indicator.SetActive(active);
+            }
+
+            public void LoadPreview() {
+                if (Preview.texture != null) {
+                    m_MapPreviewLoading.gameObject.SetActive(false);
+                    return;
+                }
+
+                m_MapPreviewLoading.gameObject.SetActive(true);
+
+                MRKTileID tileID = new MRKTileID(2, 2, 1);
+                Client.Runnable.Run(MRKTileRequestor.Instance.RequestTile(tileID, false, OnReceivedMapPreviewResponse, m_StyleInfo.Tileset));
+            }
+
+            void OnReceivedMapPreviewResponse(MRKTileFetcherContext ctx) {
+                m_MapPreviewLoading.gameObject.SetActive(false);
+
+                if (ctx.Error) {
+                    MRKLogger.LogError("Cannot load map preview");
+                    return;
+                }
+
+                if (ctx.Texture != null) {
+                    Preview.texture = ctx.MonitoredTexture.Value.Texture;
+                }
             }
         }
 
@@ -60,18 +93,23 @@ namespace MRK.UI {
         protected override void OnScreenInit() {
             ms_Instance = this;
 
-            m_MapPrefab.gameObject.SetActive(false);
-
             m_MapStyles = new MapStyle[m_Styles.Length];
             int styleIdx = 0;
             foreach (StyleInfo style in m_Styles) {
                 GameObject obj = Instantiate(m_MapPrefab, m_MapPrefab.transform.parent);
                 m_MapStyles[styleIdx++] = new MapStyle(obj.transform as RectTransform, style, styleIdx - 1);
 
+                Destroy(obj.GetComponent<DisableAtRuntime>());
                 obj.SetActive(true);
             }
 
             m_Layout = GetElement<VerticalLayoutGroup>("Layout");
+        }
+
+        protected override void OnScreenShow() {
+            foreach (MapStyle mapStyle in m_MapStyles) {
+                mapStyle.LoadPreview();
+            }
         }
 
         protected override void OnScreenShowAnim() {

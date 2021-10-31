@@ -108,8 +108,11 @@ namespace MRK {
 
                     float zoomProg = Client.FlatMap.Zoom / 21f;
                     transform.localScale = m_OriginalScale * ms_MapInterface.EvaluateMarkerScale(zoomProg) * 1.2f;
-                    float opactiyDelta = 1f - Mathf.Abs(Client.FlatMap.Zoom - m_CreationZoom) / m_CreationZoom;
-                    Color color = Color.white.AlterAlpha(ms_MapInterface.EvaluateMarkerOpacity(opactiyDelta) * 1.5f);
+
+                    float distance = Mathf.Abs(Client.FlatMap.Zoom - m_CreationZoom);
+                    float opacity = distance > 5f ? 1f - Mathf.Clamp((distance - 5f) / 5f, 0f, 1f) : 1f;
+
+                    Color color = Color.white.AlterAlpha(opacity); // ms_MapInterface.EvaluateMarkerOpacity(opacity) * 1.5f);
                     foreach (Graphic gfx in m_Gfx)
                         gfx.color = color;
 

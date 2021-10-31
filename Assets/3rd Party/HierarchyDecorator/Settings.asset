@@ -34,7 +34,7 @@ MonoBehaviour:
       - fontColour: {r: 0.245283, g: 0.245283, b: 0.245283, a: 1}
         backgroundColour: {r: 0.7960785, g: 0.7960785, b: 0.7960785, a: 1}
       - fontColour: {r: 1, g: 1, b: 1, a: 1}
-        backgroundColour: {r: 0, g: 0, b: 0, a: 1}
+        backgroundColour: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
       style:
         m_Name: 
         m_Normal:
@@ -106,13 +106,13 @@ MonoBehaviour:
       name: Subheader
       font: {fileID: 12800000, guid: 0966cb6622c8a4142a1820901c6d4696, type: 3}
       fontSize: 11
-      fontAlignment: 4
+      fontAlignment: 3
       fontStyle: 1
       modes:
       - fontColour: {r: 0.245283, g: 0.245283, b: 0.245283, a: 1}
         backgroundColour: {r: 0.7960785, g: 0.7960785, b: 0.7960785, a: 1}
       - fontColour: {r: 1, g: 1, b: 1, a: 1}
-        backgroundColour: {r: 0.20269391, g: 0.2830189, b: 0, a: 1}
+        backgroundColour: {r: 0.31132078, g: 0.31132078, b: 0.31132078, a: 1}
       style:
         m_Name: 
         m_Normal:
@@ -170,7 +170,7 @@ MonoBehaviour:
         m_Font: {fileID: 12800000, guid: 0966cb6622c8a4142a1820901c6d4696, type: 3}
         m_FontSize: 11
         m_FontStyle: 1
-        m_Alignment: 4
+        m_Alignment: 3
         m_WordWrap: 0
         m_RichText: 1
         m_TextClipping: 0
@@ -327,6 +327,84 @@ MonoBehaviour:
         m_FontSize: 11
         m_FontStyle: 1
         m_Alignment: 4
+        m_WordWrap: 0
+        m_RichText: 1
+        m_TextClipping: 0
+        m_ImagePosition: 0
+        m_ContentOffset: {x: 0, y: 0}
+        m_FixedWidth: 0
+        m_FixedHeight: 0
+        m_StretchWidth: 1
+        m_StretchHeight: 0
+    - prefix: -s
+      name: Subheader
+      font: {fileID: 0}
+      fontSize: 11
+      fontAlignment: 3
+      fontStyle: 1
+      modes:
+      - fontColour: {r: 0.245283, g: 0.245283, b: 0.245283, a: 1}
+        backgroundColour: {r: 0.7960785, g: 0.7960785, b: 0.7960785, a: 1}
+      - fontColour: {r: 1, g: 1, b: 1, a: 1}
+        backgroundColour: {r: 0.23037556, g: 0.27339402, b: 0.2924528, a: 1}
+      style:
+        m_Name: 
+        m_Normal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 1, g: 1, b: 1, a: 1}
+        m_Hover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Active:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Focused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnNormal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnHover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnActive:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnFocused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Border:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Margin:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Padding:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Overflow:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Font: {fileID: 0}
+        m_FontSize: 11
+        m_FontStyle: 1
+        m_Alignment: 3
         m_WordWrap: 0
         m_RichText: 1
         m_TextClipping: 0
@@ -791,6 +869,8 @@ MonoBehaviour:
       shown: 0
     - name: EGRMain
       shown: 0
+    - name: EGRPlanet
+      shown: 0
     - name: EGRRuntimeConfiguration
       shown: 0
     - name: MRKARManager
@@ -953,6 +1033,8 @@ MonoBehaviour:
       shown: 0
     - name: EGRUIWTESearchConfirmation
       shown: 0
+    - name: EGRUIUsable
+      shown: 0
     - name: EGRUIMapButtonsGroup
       shown: 0
     - name: EGRUIAttribute
@@ -984,40 +1066,6 @@ MonoBehaviour:
     - name: EGRLanguageUpdater
       shown: 0
     - name: EGRUIUpdater
-      shown: 0
-    - name: PermissionCallbackHelper
-      shown: 0
-    - name: BaseMaterialEffect
-      shown: 0
-    - name: BaseMeshEffect
-      shown: 0
-    - name: UIDissolve
-      shown: 0
-    - name: UIEffect
-      shown: 0
-    - name: UIFlip
-      shown: 0
-    - name: UIGradient
-      shown: 0
-    - name: UIHsvModifier
-      shown: 0
-    - name: UIShadow
-      shown: 0
-    - name: UIShiny
-      shown: 0
-    - name: UISyncEffect
-      shown: 0
-    - name: UITransitionEffect
-      shown: 0
-    - name: PostProcessDebug
-      shown: 0
-    - name: PostProcessLayer
-      shown: 0
-    - name: PostProcessVolume
-      shown: 0
-    - name: RTLTextMeshPro
-      shown: 0
-    - name: RTLTextMeshPro3D
       shown: 0
     - name: ExampleScript
       shown: 0
@@ -1423,283 +1471,39 @@ MonoBehaviour:
       shown: 0
     - name: DefaultCellGroup
       shown: 0
-    - name: SgtAccretion
+    - name: PermissionCallbackHelper
       shown: 0
-    - name: SgtAccretionMesh
+    - name: BaseMaterialEffect
       shown: 0
-    - name: SgtAccretionNearTex
+    - name: BaseMeshEffect
       shown: 0
-    - name: SgtAtmosphere
+    - name: UIDissolve
       shown: 0
-    - name: SgtAtmosphereDepthTex
+    - name: UIEffect
       shown: 0
-    - name: SgtAtmosphereHeight
+    - name: UIFlip
       shown: 0
-    - name: SgtAtmosphereLightingTex
+    - name: UIGradient
       shown: 0
-    - name: SgtAtmosphereScatteringTex
+    - name: UIHsvModifier
       shown: 0
-    - name: SgtAurora
+    - name: UIShadow
       shown: 0
-    - name: SgtAuroraMainTex
+    - name: UIShiny
       shown: 0
-    - name: SgtAuroraNearTex
+    - name: UISyncEffect
       shown: 0
-    - name: SgtBackdrop
+    - name: UITransitionEffect
       shown: 0
-    - name: SgtBelt
+    - name: PostProcessDebug
       shown: 0
-    - name: SgtBeltCustom
+    - name: PostProcessLayer
       shown: 0
-    - name: SgtBeltLightingTex
+    - name: PostProcessVolume
       shown: 0
-    - name: SgtBeltSimple
+    - name: RTLTextMeshPro
       shown: 0
-    - name: SgtBillboard
-      shown: 0
-    - name: SgtFastBillboard
-      shown: 0
-    - name: SgtFastBillboardManager
-      shown: 0
-    - name: SgtCloudsphere
-      shown: 0
-    - name: SgtCloudsphereDepthTex
-      shown: 0
-    - name: SgtCloudsphereLightingTex
-      shown: 0
-    - name: SgtCloudsphereNearTex
-      shown: 0
-    - name: SgtCorona
-      shown: 0
-    - name: SgtCoronaDepthTex
-      shown: 0
-    - name: SgtDebris
-      shown: 0
-    - name: SgtDebrisGrid
-      shown: 0
-    - name: SgtDebrisSpawner
-      shown: 0
-    - name: SgtFlare
-      shown: 0
-    - name: SgtFlareMaterial
-      shown: 0
-    - name: SgtFlareMesh
-      shown: 0
-    - name: SgtJovian
-      shown: 0
-    - name: SgtJovianDepthTex
-      shown: 0
-    - name: SgtJovianLightingTex
-      shown: 0
-    - name: SgtJovianScatteringTex
-      shown: 0
-    - name: SgtLightning
-      shown: 0
-    - name: SgtLightningSpawner
-      shown: 0
-    - name: SgtPlanet
-      shown: 0
-    - name: SgtProminence
-      shown: 0
-    - name: SgtRing
-      shown: 0
-    - name: SgtRingLightingTex
-      shown: 0
-    - name: SgtRingMainTexFilter
-      shown: 0
-    - name: SgtRingMesh
-      shown: 0
-    - name: SgtRingNearTex
-      shown: 0
-    - name: SgtCameraLook
-      shown: 0
-    - name: SgtCameraMove
-      shown: 0
-    - name: SgtCameraPath
-      shown: 0
-    - name: SgtFollow
-      shown: 0
-    - name: SgtFollowCamera
-      shown: 0
-    - name: SgtGravityReceiver
-      shown: 0
-    - name: SgtGravitySource
-      shown: 0
-    - name: SgtLightFlicker
-      shown: 0
-    - name: SgtLinkTo
-      shown: 0
-    - name: SgtPrefabSwitcher
-      shown: 0
-    - name: SgtProceduralForce
-      shown: 0
-    - name: SgtProceduralScale
-      shown: 0
-    - name: SgtProceduralSpin
-      shown: 0
-    - name: SgtProceduralTint
-      shown: 0
-    - name: SgtProceduralTorque
-      shown: 0
-    - name: SgtProximityDrag
-      shown: 0
-    - name: SgtRaycastTranslate
-      shown: 0
-    - name: SgtRotate
-      shown: 0
-    - name: SgtSimpleOrbit
-      shown: 0
-    - name: SgtSimpleScaler
-      shown: 0
-    - name: SgtCamera
-      shown: 0
-    - name: SgtDelay
-      shown: 0
-    - name: SgtDepthTextureMode
-      shown: 0
-    - name: SgtLight
-      shown: 0
-    - name: SgtLightPointer
-      shown: 0
-    - name: SgtLinkedBehaviour`1
-      shown: 0
-    - name: SgtOcclusionScaler
-      shown: 0
-    - name: SgtPoolComponent
-      shown: 0
-    - name: SgtPoolObject
-      shown: 0
-    - name: SgtProcedural
-      shown: 0
-    - name: SgtQuads
-      shown: 0
-    - name: SgtShadow
-      shown: 0
-    - name: SgtShadowLayer
-      shown: 0
-    - name: SgtShadowRing
-      shown: 0
-    - name: SgtShadowRingFilter
-      shown: 0
-    - name: SgtShadowSphere
-      shown: 0
-    - name: SgtShape
-      shown: 0
-    - name: SgtShapeBox
-      shown: 0
-    - name: SgtShapeGroup
-      shown: 0
-    - name: SgtShapeSphere
-      shown: 0
-    - name: SgtShapeTorus
-      shown: 0
-    - name: SgtSharedMaterial
-      shown: 0
-    - name: SgtLens
-      shown: 0
-    - name: SgtSingularity
-      shown: 0
-    - name: SgtSpacetime
-      shown: 0
-    - name: SgtSpacetimeGrid
-      shown: 0
-    - name: SgtSpacetimeMesh
-      shown: 0
-    - name: SgtSpacetimeModifier
-      shown: 0
-    - name: SgtSpacetimeWell
-      shown: 0
-    - name: SgtStarfield
-      shown: 0
-    - name: SgtStarfieldBox
-      shown: 0
-    - name: SgtStarfieldCustom
-      shown: 0
-    - name: SgtStarfieldElliptical
-      shown: 0
-    - name: SgtStarfieldInfinite
-      shown: 0
-    - name: SgtStarfieldInfiniteFarTex
-      shown: 0
-    - name: SgtStarfieldNearTex
-      shown: 0
-    - name: SgtStarfieldNebula
-      shown: 0
-    - name: SgtStarfieldSpiral
-      shown: 0
-    - name: SgtTerrain
-      shown: 0
-    - name: SgtTerrainCollider
-      shown: 0
-    - name: SgtTerrainHeightmap
-      shown: 0
-    - name: SgtTerrainObject
-      shown: 0
-    - name: SgtTerrainPlanet
-      shown: 0
-    - name: SgtTerrainPlanetMaterial
-      shown: 0
-    - name: SgtTerrainPrefabSpawner
-      shown: 0
-    - name: SgtTerrainSharedMaterial
-      shown: 0
-    - name: SgtTerrainSimplex
-      shown: 0
-    - name: SgtTerrainSine
-      shown: 0
-    - name: SgtThrusterControls
-      shown: 0
-    - name: SgtThruster
-      shown: 0
-    - name: SgtThrusterRoll
-      shown: 0
-    - name: SgtThrusterScale
-      shown: 0
-    - name: SgtFloatingCamera
-      shown: 0
-    - name: SgtFloatingFollow
-      shown: 0
-    - name: SgtFloatingLight
-      shown: 0
-    - name: SgtFloatingLod
-      shown: 0
-    - name: SgtFloatingObject
-      shown: 0
-    - name: SgtFloatingOrbit
-      shown: 0
-    - name: SgtFloatingOrbitVisual
-      shown: 0
-    - name: SgtFloatingParticleSystem
-      shown: 0
-    - name: SgtFloatingPoint
-      shown: 0
-    - name: SgtFloatingRigidbody
-      shown: 0
-    - name: SgtFloatingRoot
-      shown: 0
-    - name: SgtFloatingScaler
-      shown: 0
-    - name: SgtFloatingSpawner
-      shown: 0
-    - name: SgtFloatingSpawnerOrbit
-      shown: 0
-    - name: SgtFloatingSpawnerRing
-      shown: 0
-    - name: SgtFloatingSpawnerSphere
-      shown: 0
-    - name: SgtFloatingSpeedometer
-      shown: 0
-    - name: SgtFloatingTarget
-      shown: 0
-    - name: SgtFloatingWarp
-      shown: 0
-    - name: SgtFloatingWarpButton
-      shown: 0
-    - name: SgtFloatingWarpPin
-      shown: 0
-    - name: SgtFloatingWarpSmoothstep
-      shown: 0
-    - name: SgtSpawnList
+    - name: RTLTextMeshPro3D
       shown: 0
     - name: DOTweenComponent
       shown: 0

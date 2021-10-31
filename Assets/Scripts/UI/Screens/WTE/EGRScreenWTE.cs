@@ -328,15 +328,15 @@ namespace MRK.UI {
             m_ContextArea.SetupCellGradients();
         }
 
-        void OnControllerMessageReceived(EGRControllerMessage msg) {
+        void OnControllerMessageReceived(MRKInputControllerMessage msg) {
             if (m_ShouldUpdateAnimFSM) //animating
                 return;
 
-            if (msg.ContextualKind == EGRControllerMessageContextualKind.Mouse) {
-                EGRControllerMouseEventKind kind = (EGRControllerMouseEventKind)msg.Payload[0];
+            if (msg.ContextualKind == MRKInputControllerMessageContextualKind.Mouse) {
+                MRKInputControllerMouseEventKind kind = (MRKInputControllerMouseEventKind)msg.Payload[0];
 
                 switch (kind) {
-                    case EGRControllerMouseEventKind.Down:
+                    case MRKInputControllerMouseEventKind.Down:
                         if (m_ContextArea.Page == 0) {
                             m_Down = true;
                             m_DownPos = (Vector3)msg.Payload[msg.ObjectIndex]; //down pos
@@ -346,7 +346,7 @@ namespace MRK.UI {
 
                         break;
 
-                    case EGRControllerMouseEventKind.Drag:
+                    case MRKInputControllerMouseEventKind.Drag:
                         if (m_Down) {
                             float curY = ((Vector3)msg.Payload[msg.ObjectIndex]).y;
                             float diff = curY - m_DownPos.y;
@@ -359,14 +359,13 @@ namespace MRK.UI {
 
                         break;
 
-                    case EGRControllerMouseEventKind.Up:
+                    case MRKInputControllerMouseEventKind.Up:
                         if (m_Down) {
                             m_Down = false;
 
                             if (m_BackIndicator.LastAlpha > 0.7f) {
                                 HideScreen(() => {
-                                    ScreenManager.MapInterface.ForceHideScreen(true);
-                                    ScreenManager.MainScreen.ShowScreen();
+                                    ScreenManager.MapInterface.ExternalForceHide(); //MainScreen is shown <---
                                 });
                             }
 
