@@ -39,6 +39,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -232,6 +233,12 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      SquircleAtlas_2: 6973859888485118184
+      SquircleAtlas_0: -5026695414116692062
+      SquircleAtlas_4: -1516459379949570782
+      SquircleAtlas_3: -18133725470344261
+      SquircleAtlas_1: 2928259754169339059
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 1

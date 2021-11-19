@@ -182,6 +182,8 @@ namespace MRK.UI {
 
             m_Time = 0f;
             m_AnimFSM.ResetMachine();
+
+            Client.Sun.gameObject.SetActive(false);
         }
 
         protected override void OnScreenShowAnim() {
@@ -204,6 +206,8 @@ namespace MRK.UI {
             Client.ActiveEGRCamera.SetInterfaceState(false);
 
             Client.UnregisterControllerReceiver(OnControllerMessageReceived);
+
+            Client.Sun.gameObject.SetActive(true);
         }
 
         protected override void OnScreenUpdate() {

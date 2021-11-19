@@ -24,6 +24,8 @@ namespace MRK.UI {
             GetElement<Button>(Buttons.SignIn).onClick.AddListener(OnLoginClick);
             GetElement<Button>(Buttons.Dev).onClick.AddListener(OnLoginDevClick);
 
+            GetElement<Button>("txtForgotPwd").onClick.AddListener(Client.AuthenticationManager.BuiltInLogin);
+
             //clear our preview strs
             m_Email.text = "";
             m_Password.text = "";

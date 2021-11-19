@@ -33,6 +33,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -162,7 +163,7 @@ TextureImporter:
         width: 160
         height: 160
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -170,6 +171,27 @@ TextureImporter:
       bones: []
       spriteID: 708d68451ae50e170800000000000000
       internalID: 8205662568069912583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIAtlas3_3
+      rect:
+        serializedVersion: 2
+        x: 1667
+        y: 1709
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1a0227596ff64647ab51e444635f7b8
+      internalID: 1971125537
       vertices: []
       indices: 
       edges: []
@@ -184,6 +206,11 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      UIAtlas3_0: 143470583773787602
+      UIAtlas3_1: 3657325424746110287
+      UIAtlas3_3: 1971125537
+      UIAtlas3_2: 8205662568069912583
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 1

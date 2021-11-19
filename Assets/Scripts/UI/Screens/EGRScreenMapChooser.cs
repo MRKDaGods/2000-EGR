@@ -21,7 +21,7 @@ namespace MRK.UI {
             public RectTransform Transform => m_Transform;
             public float Multiplier { get; set; }
             public int Index { get; private set; }
-            public RawImage Preview { get; private set; }
+            public EGRUIColorMaskedRawImage Preview { get; private set; }
 
             public MapStyle(Transform root, StyleInfo style, int idx) {
                 m_Transform = (RectTransform)root;
@@ -30,7 +30,7 @@ namespace MRK.UI {
                 m_Indicator = m_Transform.Find("Indicator").gameObject;
                 m_Indicator.SetActive(false);
 
-                Preview = m_Transform.Find("Scroll View/Viewport/Map").GetComponent<RawImage>();
+                Preview = m_Transform.Find("Scroll View/Viewport/Map").GetComponent<EGRUIColorMaskedRawImage>();
                 m_Transform.Find("Text").GetComponent<TextMeshProUGUI>().text = style.Text;
                 m_Transform.GetComponent<Button>().onClick.AddListener(OnStyleClicked);
 

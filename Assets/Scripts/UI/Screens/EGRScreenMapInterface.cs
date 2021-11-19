@@ -12,7 +12,7 @@ using static MRK.UI.EGRUI_Main.EGRScreen_MapInterface;
 namespace MRK.UI {
     [Serializable]
     public class EGRMapInterfaceResources {
-        public Image CurrentLocationSprite;
+        public GameObject CurrentLocationSprite;
         public AnimationCurve CurrentLocationScaleCurve;
         public Image LocationPinSprite;
     }
@@ -68,6 +68,7 @@ namespace MRK.UI {
         [SerializeField]
         EGRUIMapButtonInfo[] m_MapButtonsInfo;
         bool m_MapButtonsEnabled;
+        Button m_BackButton;
 
         public override bool CanChangeBar => true;
         public override uint BarColor => 0x00000000;
@@ -105,7 +106,8 @@ namespace MRK.UI {
             m_Map = Client.FlatMap;
             m_Map.gameObject.SetActive(false);
 
-            GetElement<Button>(Buttons.Back).onClick.AddListener(OnBackClick);
+            m_BackButton = GetElement<Button>(Buttons.Back);
+            m_BackButton.onClick.AddListener(OnBackClick);
             m_MapButtonPrefab.SetActive(false); //disable our template button
 
             m_CamDistLabel = GetElement<TextMeshProUGUI>(Labels.CamDist);
@@ -183,6 +185,8 @@ namespace MRK.UI {
             //reset map button mask
             MapButtonsMask = MapButtonIDs.ALL_MASK;
             MapButtonsInteractivityMask = MapButtonIDs.ALL_MASK;
+
+            ShowBackButton(true);
         }
 
         protected override void OnScreenUpdate() {
@@ -191,6 +195,11 @@ namespace MRK.UI {
             }
 
             Components.OnComponentsUpdate();
+        }
+
+        public void ShowBackButton(bool show)
+        {
+            m_BackButton.gameObject.SetActive(show);
         }
 
         void RegisterInterfaceComponent(EGRMapInterfaceComponentType type, EGRMapInterfaceComponent component) {

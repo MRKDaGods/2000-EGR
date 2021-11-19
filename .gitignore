@@ -5,6 +5,8 @@
 [Bb]uilds/
 Assets/AssetStoreTools*
 Logs/*
+2000-EGR_BackUpThisFolder_ButDontShipItWithYourGame/
+2000-EGR_BurstDebugInformation_DoNotShip/
 
 # Visual Studio cache directory
 .vs/

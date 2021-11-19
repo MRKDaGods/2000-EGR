@@ -224,10 +224,10 @@ namespace MRK.UI {
 
         void UpdateNavButtonsVisibility() {
             NavButton back = m_NavButtons[0];
-            back.SetActive(m_CurrentPage > 0);
+            back.SetActive(true/*m_CurrentPage > 0*/);
 
             NavButton next = m_NavButtons[1];
-            next.SetActive(m_CurrentPage < m_PageCount - 1);
+            next.SetActive(true/*m_CurrentPage < m_PageCount - 1*/);
 
             if (m_ActiveScroll != null) {
                 float absSz = 1f - m_ActiveScroll.size;

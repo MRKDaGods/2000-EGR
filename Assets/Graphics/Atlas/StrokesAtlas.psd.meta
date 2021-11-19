@@ -39,6 +39,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -232,6 +233,12 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      StrokesAtlas_4: -7793865849734490968
+      StrokesAtlas_3: 1344122705091800373
+      StrokesAtlas_2: -6036459298677875173
+      StrokesAtlas_1: -1983230673465536639
+      StrokesAtlas_0: 8870400897792337084
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 1

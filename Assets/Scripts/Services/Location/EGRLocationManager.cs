@@ -5,7 +5,7 @@ namespace MRK {
     public class EGRLocationManager : MRKBehaviour {
         const float LOCATION_REQUEST_DELAY = 0f; //0.5f
 
-        Image m_CurrentLocationSprite;
+        GameObject m_CurrentLocationSprite;
         bool m_IsActive;
         bool m_RequestingLocation;
         float m_LastLocationRequestTime;
@@ -16,7 +16,7 @@ namespace MRK {
 
         void Start() {
             m_CurrentLocationSprite = ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationSprite;
-            m_CurrentLocationSprite.gameObject.SetActive(false);
+            m_CurrentLocationSprite.SetActive(false);
 
             Client.RegisterMapModeDelegate(OnMapModeChanged);
             Client.FlatMap.OnMapUpdated += OnMapUpdated;
@@ -36,7 +36,7 @@ namespace MRK {
                     ScreenManager.MapInterface.MapInterfaceResources.CurrentLocationScaleCurve.Evaluate(Client.FlatMap.Zoom / 21f);
 
                 m_CurrentLocationSprite.transform.rotation = Quaternion.Euler(Quaternion.Euler(0f, 0f, m_LastFetchedBearing.Value).eulerAngles 
-                    - Quaternion.Euler(-90f, 0f, -Client.FlatCamera.MapRotation.y).eulerAngles);
+                    - Quaternion.Euler(-90f - Client.FlatCamera.MapRotation.x, 0f, -Client.FlatCamera.MapRotation.y).eulerAngles);
 
                 //float show = 0f;
             }
@@ -56,7 +56,7 @@ namespace MRK {
                 return;
 
             m_IsActive = false;
-            m_CurrentLocationSprite.gameObject.SetActive(false);
+            m_CurrentLocationSprite.SetActive(false);
         }
 
         void ActivateIfNeeded() {
@@ -64,7 +64,7 @@ namespace MRK {
                 return;
 
             m_IsActive = true;
-            m_CurrentLocationSprite.gameObject.SetActive(true);
+            m_CurrentLocationSprite.SetActive(true);
         }
 
         void OnReceiveLocation(bool success, Vector2d? coords, float? bearing) {
@@ -122,59 +122,5 @@ namespace MRK {
                 Client.FlatCamera.TeleportToLocationTweened(m_LastFetchedCoords.Value);
             }
         }
-
-        /*Vector2d? _interLatLng;
-
-        void TestLineSegs() {
-            Vector2d current = MRKMapUtils.LatLonToMeters(m_LastFetchedCoords.Value);
-
-            Vector2d start = MRKMapUtils.LatLonToMeters(Client.NavigationManager.CurrentRoute.Geometry.Coordinates[0]);
-            Vector2d end = MRKMapUtils.LatLonToMeters(Client.NavigationManager.CurrentRoute.Geometry.Coordinates[1]);
-
-            //slope of line segment
-            double m = (end.y - start.y) / (end.x - start.x);
-
-            //y = mx + c
-            //c = y - mx
-            double c = start.y - m * start.x;
-
-            //neg reciprocal (normal slope) of line segment
-            //double normalM = -1d / m;
-
-            //y - y'  -1
-            //      =
-            //x - x'   m
-            //-x + x'= m(y - y')
-            //(x' - x) / m + y' = y
-            //(x' / m) - (x / m) + y' = y
-            //c = (x' / m) + y'
-            double normalC = current.x / m + current.y;
-            //y = (-1 / m)x + normalC
-            //(-1 / m)x + normalC = mx + c
-            //(-1 / m)x - mx = c - normalC
-            //x(-1 / m - m) = c - normalC
-            //x = (c - normalC) / (-1 / m - m)
-            double x = (c - normalC) / (-1d / m - m); //intersection x
-            double y = m * x + c; //intersection y
-
-            _interLatLng = MRKMapUtils.MetersToLatLon(new Vector2d(x, y));
-            Debug.Log($"intersection={_interLatLng}");
-        }
-
-        void OnGUI() {
-           if (_interLatLng.HasValue) {
-                MRKMap map = Client.FlatMap;
-                Vector3 worldPos = map.GeoToWorldPosition(_interLatLng.Value);
-                Vector3 worldPosCur = map.GeoToWorldPosition(m_LastFetchedCoords.Value);
-
-                Vector3 sPos = Client.ActiveCamera.WorldToScreenPoint(worldPos);
-                Vector3 sPosCur = Client.ActiveCamera.WorldToScreenPoint(worldPosCur);
-
-                sPos.y = Screen.height - sPos.y;
-                sPosCur.y = Screen.height - sPosCur.y;
-
-                EGRGL.DrawLine(sPos, sPosCur, Color.blue, 2f);
-            }
-        }*/
     }
 }

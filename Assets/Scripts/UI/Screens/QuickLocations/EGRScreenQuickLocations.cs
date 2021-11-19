@@ -78,11 +78,14 @@ namespace MRK.UI {
                 UpdateLocationListFromLocal();
 
             ScreenManager.MapInterface.MapButtonsMask = ms_DesiredMapButtonMask;
+            ScreenManager.MapInterface.ShowBackButton(false);
         }
 
         protected override void OnScreenHide() {
             Client.FlatCamera.SetRotation(Vector3.zero);
             EventManager.Unregister<EGREventScreenHideRequest>(OnScreenHideRequest);
+
+            ScreenManager.MapInterface.ShowBackButton(true);
         }
 
         void OnScreenHideRequest(EGREventScreenHideRequest evt) {

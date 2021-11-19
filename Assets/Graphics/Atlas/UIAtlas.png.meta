@@ -72,6 +72,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -496,6 +497,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      UIAtlas_9: -4734932565565833062
+      UIAtlas_15: 4615185416095560828
+      UIAtlas_12: 7481478073410783102
+      UIAtlas_6: 1928566696291120068
+      UIAtlas_7: -8882723404404433249
+      UIAtlas_4: 6522926881772575649
+      UIAtlas_10: 3079850192802285701
+      UIAtlas_11: -1983652196504064915
+      UIAtlas_0: -1997983427079204491
+      UIAtlas_2: 7208106850282566461
+      UIAtlas_3: 3303909427098033265
+      UIAtlas_14: 3216143005595737769
+      UIAtlas_5: 8240114503325441606
+      UIAtlas_1: -2242911272580784506
+      UIAtlas_8: 7040899507186427306
+      UIAtlas_13: -3233138491841863971
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
