@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using Vectrosity;
 
 namespace MRK.Navigation {
-    public class EGRNavigationManager : MRKBehaviour {
+    public class EGRNavigationManager : BaseBehaviour {
         readonly ObjectPool<VectorLine> m_LinePool;
         [SerializeField]
         Material m_LineMaterial;
@@ -63,7 +63,7 @@ namespace MRK.Navigation {
         }
 
         void Start() {
-            Client.FlatMap.OnMapUpdated += OnMapUpdated;
+            Client.FlatMap.MapUpdated += OnMapUpdated;
             m_NavSprite.gameObject.SetActive(false);
         }
 
@@ -79,7 +79,7 @@ namespace MRK.Navigation {
         }
 
         void OnDestroy() {
-            Client.FlatMap.OnMapUpdated -= OnMapUpdated;
+            Client.FlatMap.MapUpdated -= OnMapUpdated;
         }
 
         public void PrepareDirections() {

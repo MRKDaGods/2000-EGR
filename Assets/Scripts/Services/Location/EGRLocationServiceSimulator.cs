@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace MRK {
-    public class EGRLocationServiceSimulator : MRKBehaviour {
+    public class EGRLocationServiceSimulator : BaseBehaviour {
         [SerializeField]
         bool m_LocationEnabled = true;
         [SerializeField]

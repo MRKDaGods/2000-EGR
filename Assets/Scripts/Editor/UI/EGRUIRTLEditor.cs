@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace MRK.UI {
-    [CustomEditor(typeof(EGRUIRTLAttribute))]
+    [CustomEditor(typeof(RTLAttribute))]
     public class EGRUIRTLEditor : Editor {
         enum RTLType {
             None,
@@ -22,7 +22,7 @@ namespace MRK.UI {
         object m_Component;
         readonly Stack<bool> m_StateStack;
 
-        EGRUIRTLAttribute m_RTLAttribute => (EGRUIRTLAttribute)target;
+        RTLAttribute m_RTLAttribute => (RTLAttribute)target;
 
         static EGRUIRTLEditor() {
             ms_RTLTypes = new Type[(int)(RTLType.MAX - 1)] {
@@ -38,7 +38,7 @@ namespace MRK.UI {
         RTLType GetDetectedType() {
             if (!m_DetectedType.HasValue) {
                 for (int i = 0; i < ms_RTLTypes.Length; i++) {
-                    object comp = ((EGRUIRTLAttribute)target).GetComponent(ms_RTLTypes[i]);
+                    object comp = ((RTLAttribute)target).GetComponent(ms_RTLTypes[i]);
                     if (comp != null) {
                         m_Component = comp;
                         m_DetectedType = (RTLType)(i + 1);

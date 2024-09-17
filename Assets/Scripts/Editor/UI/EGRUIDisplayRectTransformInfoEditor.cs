@@ -2,7 +2,7 @@
 using UnityEditor;
 
 namespace MRK.UI {
-    [CustomEditor(typeof(EGRUIDisplayRectTransformInfo))]
+    [CustomEditor(typeof(DisplayRectTransformInfo))]
     public class EGRUIDisplayRectTransformInfoEditor : Editor {
         class GUIState {
             public bool RichTextEnabled;
@@ -13,7 +13,7 @@ namespace MRK.UI {
         string m_CurrentGroup;
         int m_GroupDepth;
 
-        EGRUIDisplayRectTransformInfo DisplayInfo => (EGRUIDisplayRectTransformInfo)target;
+        DisplayRectTransformInfo DisplayInfo => (DisplayRectTransformInfo)target;
 
         void SaveCurrentGUIState() {
             if (m_CurrentState == null)

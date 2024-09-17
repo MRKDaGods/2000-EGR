@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace MRK {
-    public class EGRAnimationDeviation : MRKBehaviour {
+    public class EGRAnimationDeviation : BaseBehaviour {
         [SerializeField]
         Vector3 m_DeviationTop;
         [SerializeField]

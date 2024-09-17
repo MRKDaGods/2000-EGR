@@ -2,9 +2,9 @@
     [PacketRegInfo(PacketNature.Out, PacketType.TILEFETCH)]
     public class PacketOutFetchTile : Packet {
         string m_Tileset;
-        MRKTileID m_ID;
+        TileID m_ID;
 
-        public PacketOutFetchTile(string tileset, MRKTileID id) : base(PacketNature.Out, PacketType.TILEFETCH) {
+        public PacketOutFetchTile(string tileset, TileID id) : base(PacketNature.Out, PacketType.TILEFETCH) {
             m_Tileset = tileset;
             m_ID = id;
         }

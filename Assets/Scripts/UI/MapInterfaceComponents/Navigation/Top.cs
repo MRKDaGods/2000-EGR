@@ -4,122 +4,176 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MRK.UI.MapInterface {
-    public partial class EGRMapInterfaceComponentNavigation {
-        class Top {
-            RectTransform m_Transform;
-            TMP_InputField m_From;
-            TMP_InputField m_To;
-            Button[] m_Profiles;
-            int m_SelectedProfileIndex;
-            static Color ms_SelectedProfileColor;
-            static Color ms_IdleProfileColor;
-            readonly UIHsvModifier[] m_ValidationModifiers;
-            float m_InitialY;
+namespace MRK.UI.MapInterface
+{
+    public partial class Navigation
+    {
+        private class Top
+        {
+            private RectTransform _transform;
+            private TMP_InputField _from;
+            private TMP_InputField _to;
+            private Button[] _profiles;
+            private int _selectedProfileIndex;
+            private readonly UIHsvModifier[] _validationModifiers;
+            private float _initialY;
 
-            public string From => m_From.text;
-            public string To => m_To.text;
-            public TMP_InputField FromInput => m_From;
-            public TMP_InputField ToInput => m_To;
-            public byte SelectedProfile => (byte)m_SelectedProfileIndex;
+            private static Color _selectedProfileColor;
+            private static Color _idleProfileColor;
 
-            static Top() {
-                ms_SelectedProfileColor = new Color(0.4588235294117647f, 0.6980392156862745f, 1f, 1f);
-                ms_IdleProfileColor = new Color(0.5176470588235294f, 0.5176470588235294f, 0.5176470588235294f, 1f);
+            public string From
+            {
+                get
+                {
+                    return _from.text;
+                }
             }
 
-            public Top(RectTransform transform) {
-                m_Transform = transform;
+            public string To
+            {
+                get
+                {
+                    return _to.text;
+                }
+            }
 
-                m_From = m_Transform.Find("Main/Places/From").GetComponent<TMP_InputField>();
-                m_To = m_Transform.Find("Main/Places/To").GetComponent<TMP_InputField>();
+            public TMP_InputField FromInput
+            {
+                get
+                {
+                    return _from;
+                }
+            }
 
-                m_From.text = m_To.text = "";
-                m_From.onSelect.AddListener((val) => OnSelect(0));
-                m_To.onSelect.AddListener((val) => OnSelect(1));
-                m_From.onValueChanged.AddListener((val) => OnTextChanged(0, val));
-                m_To.onValueChanged.AddListener((val) => OnTextChanged(1, val));
+            public TMP_InputField ToInput
+            {
+                get
+                {
+                    return _to;
+                }
+            }
 
-                m_Profiles = m_Transform.Find("Main/Places/Profiles").GetComponentsInChildren<Button>();
-                for (int i = 0; i < m_Profiles.Length; i++) {
+            public byte SelectedProfile
+            {
+                get
+                {
+                    return (byte)_selectedProfileIndex;
+                }
+            }
+
+            static Top()
+            {
+                _selectedProfileColor = new Color(0.4588235294117647f, 0.6980392156862745f, 1f, 1f);
+                _idleProfileColor = new Color(0.5176470588235294f, 0.5176470588235294f, 0.5176470588235294f, 1f);
+            }
+
+            public Top(RectTransform transform)
+            {
+                _transform = transform;
+
+                _from = _transform.Find("Main/Places/From").GetComponent<TMP_InputField>();
+                _to = _transform.Find("Main/Places/To").GetComponent<TMP_InputField>();
+
+                _from.text = _to.text = "";
+                _from.onSelect.AddListener((val) => OnSelect(0));
+                _to.onSelect.AddListener((val) => OnSelect(1));
+                _from.onValueChanged.AddListener((val) => OnTextChanged(0, val));
+                _to.onValueChanged.AddListener((val) => OnTextChanged(1, val));
+
+                _profiles = _transform.Find("Main/Places/Profiles").GetComponentsInChildren<Button>();
+                for (int i = 0; i < _profiles.Length; i++)
+                {
                     int _i = i;
-                    m_Profiles[i].onClick.AddListener(() => OnProfileClicked(_i));
+                    _profiles[i].onClick.AddListener(() => OnProfileClicked(_i));
                 }
 
-                m_SelectedProfileIndex = 0;
+                _selectedProfileIndex = 0;
                 UpdateSelectedProfile();
 
-                m_ValidationModifiers = new UIHsvModifier[2]{
-                    m_From.GetComponent<UIHsvModifier>(),
-                    m_To.GetComponent<UIHsvModifier>()
+                _validationModifiers = new UIHsvModifier[2]{
+                    _from.GetComponent<UIHsvModifier>(),
+                    _to.GetComponent<UIHsvModifier>()
                 };
 
-                foreach (UIHsvModifier modifier in m_ValidationModifiers) {
+                foreach (UIHsvModifier modifier in _validationModifiers)
+                {
                     modifier.enabled = false;
                 }
 
-                m_InitialY = m_Transform.anchoredPosition.y;
-                transform.anchoredPosition = new Vector3(m_Transform.anchoredPosition.x, m_InitialY + m_Transform.rect.height); //initially
+                _initialY = _transform.anchoredPosition.y;
+                transform.anchoredPosition = new Vector3(_transform.anchoredPosition.x, _initialY + _transform.rect.height); //initially
             }
 
-            void OnProfileClicked(int index) {
-                m_SelectedProfileIndex = index;
+            private void OnProfileClicked(int index)
+            {
+                _selectedProfileIndex = index;
                 UpdateSelectedProfile();
             }
 
-            void UpdateSelectedProfile() {
-                for (int i = 0; i < m_Profiles.Length; i++) {
-                    m_Profiles[i].GetComponent<Image>().color = m_SelectedProfileIndex == i ? ms_SelectedProfileColor : ms_IdleProfileColor;
+            private void UpdateSelectedProfile()
+            {
+                for (int i = 0; i < _profiles.Length; i++)
+                {
+                    _profiles[i].GetComponent<Image>().color = _selectedProfileIndex == i ? _selectedProfileColor : _idleProfileColor;
                 }
             }
 
-            void OnTextChanged(int idx, string value) {
-                ms_Instance.m_AutoComplete.SetContext(idx, value);
+            private void OnTextChanged(int idx, string value)
+            {
+                _instance._autoComplete.SetContext(idx, value);
 
                 //invalidate
                 SetValidationState(idx, false);
             }
 
-            void OnSelect(int idx) {
-                ms_Instance.m_AutoComplete.SetAutoCompleteState(true, idx == 0, /*idx == 1*/ true);
-                TMP_InputField active = idx == 0 ? m_From : m_To;
-                ms_Instance.m_AutoComplete.SetActiveInput(active);
+            private void OnSelect(int idx)
+            {
+                _instance._autoComplete.SetAutoCompleteState(true, idx == 0, /*idx == 1*/ true);
+                TMP_InputField active = idx == 0 ? _from : _to;
+                _instance._autoComplete.SetActiveInput(active);
 
                 OnTextChanged(idx, active.text);
             }
 
-            public void Show(bool clear = true) {
-                if (clear) {
-                    m_From.text = m_To.text = "";
+            public void Show(bool clear = true)
+            {
+                if (clear)
+                {
+                    _from.text = _to.text = "";
                 }
 
-                m_Transform.DOAnchorPosY(m_InitialY, 0.3f)
-                    .ChangeStartValue(new Vector3(0f, m_InitialY + m_Transform.rect.height))
+                _transform.DOAnchorPosY(_initialY, 0.3f)
+                    .ChangeStartValue(new Vector3(0f, _initialY + _transform.rect.height))
                     .SetEase(Ease.OutSine);
             }
 
-            public void Hide() {
-                m_Transform.DOAnchorPosY(m_InitialY + m_Transform.rect.height, 0.3f)
+            public void Hide()
+            {
+                _transform.DOAnchorPosY(_initialY + _transform.rect.height, 0.3f)
                     .SetEase(Ease.OutSine);
             }
 
-            public void SetInputActive(int idx) {
-                (idx == 0 ? m_From : m_To).ActivateInputField();
+            public void SetInputActive(int idx)
+            {
+                (idx == 0 ? _from : _to).ActivateInputField();
             }
 
-            public void SetValidationState(int idx, bool state) {
-                m_ValidationModifiers[idx].enabled = state;
+            public void SetValidationState(int idx, bool state)
+            {
+                _validationModifiers[idx].enabled = state;
 
-                if (!state) {
+                if (!state)
+                {
                     if (idx == 0)
-                        ms_Instance.FromCoords = null;
+                        _instance.FromCoords = null;
                     else
-                        ms_Instance.ToCoords = null;
+                        _instance.ToCoords = null;
                 }
             }
 
-            public bool IsValid(int idx) {
-                return m_ValidationModifiers[idx].enabled;
+            public bool IsValid(int idx)
+            {
+                return _validationModifiers[idx].enabled;
             }
         }
     }

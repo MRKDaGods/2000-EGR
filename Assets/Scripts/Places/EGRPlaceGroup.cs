@@ -7,18 +7,18 @@ using DG.Tweening;
 using System;
 
 namespace MRK {
-    public class EGRPlaceGroup : MRKBehaviour {
+    public class EGRPlaceGroup : BaseBehaviour {
         Image m_Sprite;
         bool m_OwnerDirty;
         Vector3 m_OriginalScale;
         Graphic[] m_Gfx;
-        static EGRScreenMapInterface ms_MapInterface;
+        static HUD ms_MapInterface;
         TextMeshProUGUI m_Text;
         float m_InitialTextWidth;
         RectTransform m_TextContainer;
-        static EGRPopupPlaceGroup ms_GroupPopup;
+        static PlaceGroup ms_GroupPopup;
         float m_TransitionEndTime;
-        Tweener m_Tweener;
+        DG.Tweening.Tweener m_Tweener;
         [SerializeField]
         bool m_Freeing;
         Action m_FreeCallback;
@@ -39,11 +39,11 @@ namespace MRK {
             m_InitialTextWidth = m_TextContainer.rect.width;
 
             if (ms_MapInterface == null) {
-                ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
+                ms_MapInterface = ScreenManager.GetScreen<HUD>();
             }
 
             if (ms_GroupPopup == null) {
-                ms_GroupPopup = ScreenManager.GetPopup<EGRPopupPlaceGroup>();
+                ms_GroupPopup = ScreenManager.GetPopup<PlaceGroup>();
             }
 
             m_Sprite.GetComponent<Button>().onClick.AddListener(OnGroupClick);

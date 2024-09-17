@@ -49,8 +49,8 @@ namespace MRK.Networking {
             //assign cdn
             ClientSideCDNNetwork = new EGRClientSideCDNNetwork();
 
-            EGREventManager.Instance.Register<EGREventNetworkConnected>(OnNetworkConnected);
-            EGREventManager.Instance.Register<EGREventNetworkDisconnected>(OnNetworkDisconnected);
+            EGREventManager.Instance.Register<NetworkConnected>(OnNetworkConnected);
+            EGREventManager.Instance.Register<NetworkDisconnected>(OnNetworkDisconnected);
         }
 
         public void Update() {
@@ -68,11 +68,11 @@ namespace MRK.Networking {
                 ClientSideCDNNetwork.StopLocalCDN();
             }
 
-            EGREventManager.Instance.Unregister<EGREventNetworkConnected>(OnNetworkConnected);
-            EGREventManager.Instance.Unregister<EGREventNetworkDisconnected>(OnNetworkDisconnected);
+            EGREventManager.Instance.Unregister<NetworkConnected>(OnNetworkConnected);
+            EGREventManager.Instance.Unregister<NetworkDisconnected>(OnNetworkDisconnected);
         }
 
-        void OnNetworkConnected(EGREventNetworkConnected evt) {
+        void OnNetworkConnected(NetworkConnected evt) {
             if (evt.Network == MainNetwork) {
                 //ask for CDN?
                 MainNetwork.PacketWatchdog.Start();
@@ -84,7 +84,7 @@ namespace MRK.Networking {
             }
         }
 
-        void OnNetworkDisconnected(EGREventNetworkDisconnected evt) {
+        void OnNetworkDisconnected(NetworkDisconnected evt) {
             if (evt.Network == MainNetwork) {
                 MainNetwork.PacketWatchdog.Stop();
             }
@@ -94,7 +94,7 @@ namespace MRK.Networking {
             MRKLogger.Log($"Late login result = {packet.Response}");
             if (packet.Response == EGRStandardResponse.SUCCESS) {
                 //request cdn
-                EGRMain.Instance.Runnable.RunLater(() => MainNetworkExternal.RetrieveNetInfo(OnNetRetrieveNetInfo), 1f);
+                EGR.Instance.Runnable.RunLater(() => MainNetworkExternal.RetrieveNetInfo(OnNetRetrieveNetInfo), 1f);
             }
         }
 

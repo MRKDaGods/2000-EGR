@@ -113,7 +113,7 @@ namespace MRK {
 		}
 
 		public static void MoveToGeocoordinate(this Transform t, double lat, double lng, Vector2d refPoint, float scale = 1) {
-			t.position = MRKMapUtils.GeoToWorldPosition(lat, lng, refPoint, scale).ToVector3xz();
+			t.position = MapUtils.GeoToWorldPosition(lat, lng, refPoint, scale).ToVector3xz();
 		}
 
 		public static void MoveToGeocoordinate(this Transform t, Vector2d latLon, Vector2d refPoint, float scale = 1) {
@@ -121,17 +121,17 @@ namespace MRK {
 		}
 
 		public static Vector3 AsUnityPosition(this Vector2 latLon, Vector2d refPoint, float scale = 1) {
-			return MRKMapUtils.GeoToWorldPosition(latLon.x, latLon.y, refPoint, scale).ToVector3xz();
+			return MapUtils.GeoToWorldPosition(latLon.x, latLon.y, refPoint, scale).ToVector3xz();
 		}
 
 		public static Vector2d GetGeoPosition(this Transform t, Vector2d refPoint, float scale = 1) {
 			var pos = refPoint + (t.position / scale).ToVector2d();
-			return MRKMapUtils.MetersToLatLon(pos);
+			return MapUtils.MetersToLatLon(pos);
 		}
 
 		public static Vector2d GetGeoPosition(this Vector3 position, Vector2d refPoint, float scale = 1) {
 			var pos = refPoint + (position / scale).ToVector2d();
-			return MRKMapUtils.MetersToLatLon(pos);
+			return MapUtils.MetersToLatLon(pos);
 		}
 
 		public static Vector2d GetGeoPosition(this Vector2 position, Vector2d refPoint, float scale = 1) {

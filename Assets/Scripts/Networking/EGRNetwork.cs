@@ -136,7 +136,7 @@ namespace MRK.Networking {
                 case PacketType.DWNLDREQ: {
                         PacketInDownloadRequest packet = (PacketInDownloadRequest)evt.Packet;
                         EGRDownloadContext downloadContext = new EGRDownloadContext(packet.ID, packet.Sections);
-                        EGREventNetworkDownloadRequest downloadEvt = new EGREventNetworkDownloadRequest(downloadContext);
+                        NetworkDownloadRequest downloadEvt = new NetworkDownloadRequest(downloadContext);
                         EGREventManager.Instance.BroadcastEvent(downloadEvt);
 
                         if (downloadEvt.IsAccepted) {
@@ -179,14 +179,14 @@ namespace MRK.Networking {
             //send device info (auto)
             SendPacket(new PacketOutDeviceInfo(MRKSysUtils.DeviceUniqueIdentifier));
 
-            EGREventManager.Instance.BroadcastEvent(new EGREventNetworkConnected(this));
+            EGREventManager.Instance.BroadcastEvent(new NetworkConnected(this));
         }
 
         void OnDisconnected(NetPeer server, DisconnectInfo info) {
             if (m_RaisedDisconnectEvent)
                 return;
 
-            EGREventManager.Instance.BroadcastEvent(new EGREventNetworkDisconnected(this, info));
+            EGREventManager.Instance.BroadcastEvent(new NetworkDisconnected(this, info));
             m_RaisedDisconnectEvent = true;
             m_HasConnected = false;
         }

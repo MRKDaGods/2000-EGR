@@ -34,7 +34,7 @@ namespace MRK.Navigation {
 
         int IsPointOnLine(Vector2d p, List<Vector2d> points, double tolerance, Reference<Vector2d> intersection = null, bool rank = false) {
             int pointIdx = 0;
-            Vector2d current = MRKMapUtils.LatLonToMeters(p);
+            Vector2d current = MapUtils.LatLonToMeters(p);
 
             List<LineSegmentPointRank> rankedList = null;
             if (rank) {
@@ -42,8 +42,8 @@ namespace MRK.Navigation {
             }
 
             while (pointIdx + 1 < points.Count) {
-                Vector2d start = MRKMapUtils.LatLonToMeters(points[pointIdx]);
-                Vector2d end = MRKMapUtils.LatLonToMeters(points[pointIdx + 1]);
+                Vector2d start = MapUtils.LatLonToMeters(points[pointIdx]);
+                Vector2d end = MapUtils.LatLonToMeters(points[pointIdx + 1]);
 
                 //slope of line segment
                 double m = (end.y - start.y) / (end.x - start.x);
@@ -85,7 +85,7 @@ namespace MRK.Navigation {
                     rankedList.Add(new LineSegmentPointRank {
                         Index = pointIdx,
                         SqrDistance = sqrDist,
-                        Intersection = intersection != null ? new Vector2d?(MRKMapUtils.MetersToLatLon(new Vector2d(x, y))) : null
+                        Intersection = intersection != null ? new Vector2d?(MapUtils.MetersToLatLon(new Vector2d(x, y))) : null
                     });
 
                     goto __continue;
@@ -93,7 +93,7 @@ namespace MRK.Navigation {
                 else {
                     if (intersection != null) {
                         Vector2d intersectionMeters = new Vector2d(x, y);
-                        intersection.Value = MRKMapUtils.MetersToLatLon(intersectionMeters);
+                        intersection.Value = MapUtils.MetersToLatLon(intersectionMeters);
                     }
 
                     return pointIdx;

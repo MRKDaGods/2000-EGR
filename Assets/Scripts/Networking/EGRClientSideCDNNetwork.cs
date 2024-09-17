@@ -7,7 +7,7 @@ namespace MRK.Networking {
         Thread m_Thread;
         bool m_IsLocalCDNRunning;
 
-        bool IsRunning => EGRMain.Instance.IsRunning && m_IsLocalCDNRunning;
+        bool IsRunning => EGR.Instance.IsRunning && m_IsLocalCDNRunning;
 
         public void SetNetwork(EGRNetwork network) {
         }
@@ -23,7 +23,7 @@ namespace MRK.Networking {
                 m_Thread.Abort();
             }
 
-            m_Network = new EGRNetwork(EGRMain.Instance.NetworkingClient.MainNetwork.Endpoint.Address.ToString(),
+            m_Network = new EGRNetwork(EGR.Instance.NetworkingClient.MainNetwork.Endpoint.Address.ToString(),
                 port, key, this, () => MRKTime.Time);
             m_Network.Connect();
 

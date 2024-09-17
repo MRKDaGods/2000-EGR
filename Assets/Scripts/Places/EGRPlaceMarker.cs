@@ -8,12 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace MRK {
-    public class EGRPlaceMarker : MRKBehaviour {
+    public class EGRPlaceMarker : BaseBehaviour {
         TextMeshProUGUI m_Text;
         EGRColorFade m_Fade;
         Vector3 m_OriginalScale;
         Image m_Sprite;
-        static EGRScreenMapInterface ms_MapInterface;
+        static HUD ms_MapInterface;
         static Canvas ms_Canvas;
         float m_InitialMarkerWidth;
         EGRPlaceMarker m_OverlapOwner;
@@ -52,7 +52,7 @@ namespace MRK {
             m_OriginalScale = transform.localScale;
 
             if (ms_MapInterface == null) {
-                ms_MapInterface = ScreenManager.GetScreen<EGRScreenMapInterface>();
+                ms_MapInterface = ScreenManager.GetScreen<HUD>();
                 //ms_Canvas = ScreenManager.GetLayer(ms_MapInterface);
                 ms_Canvas = ScreenManager.GetScreenSpaceLayer(0);
             }
@@ -180,7 +180,7 @@ namespace MRK {
 
         public static Vector3 ScreenToMarkerSpace(Vector2 spos) {
             if (ms_Canvas == null) {
-                ms_Canvas = EGRScreenManager.Instance.GetScreenSpaceLayer(0);
+                ms_Canvas = ScreenManager.Instance.GetScreenSpaceLayer(0);
             }
 
             Vector2 point;

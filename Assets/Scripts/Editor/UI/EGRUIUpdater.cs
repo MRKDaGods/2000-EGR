@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEditor;
 using System.IO;
 
-using Screen = MRK.UI.EGRScreen;
+using Screen = MRK.UI.Screen;
 using System.Text;
 
 public class EGRUIUpdater : MonoBehaviour {
@@ -52,7 +52,7 @@ public class EGRUIUpdater : MonoBehaviour {
             foreach (Screen screen in screens) {
                 string name = screen.ScreenName;
 
-                string pref = screen is MRK.UI.EGRPopup ? "Popup" : "Screen";
+                string pref = screen is MRK.UI.Popup ? "Popup" : "Screen";
                 sb.Append($"public class EGR{pref}_{name} {{ //{name}\n\t\t\tpublic static string SCREEN_NAME = \"{name}\";\n\n\t\t\t");
 
                 List<string> textBoxes = new List<string>();

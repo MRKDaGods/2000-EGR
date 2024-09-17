@@ -13,7 +13,7 @@
 
         public override void Write(PacketDataStream stream) {
             stream.WriteString(m_Token);
-            stream.WriteString(MRKCryptography.Hash(m_Pass));
+            stream.WriteString(Crypto.Hash(m_Pass));
             stream.WriteBool(m_LogoutAll);
         }
     }

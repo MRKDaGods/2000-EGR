@@ -2,11 +2,11 @@
 using UnityEngine;
 
 namespace MRK {
-    public class EGRShowScreenKeyCode : MRKBehaviour {
+    public class EGRShowScreenKeyCode : BaseBehaviour {
         [SerializeField]
         KeyCode m_KeyCode;
         [SerializeField]
-        EGRScreen m_Screen;
+        UI.Screen m_Screen;
 
         void Start() {
             //if we're attached to a screen we need to attach ourselves to a global handler
@@ -31,7 +31,7 @@ namespace MRK {
         }
 
         void OnValidate() {
-            m_Screen = GetComponent<EGRScreen>();
+            m_Screen = GetComponent<UI.Screen>();
         }
     }
 }

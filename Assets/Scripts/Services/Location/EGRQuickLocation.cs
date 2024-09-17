@@ -10,11 +10,11 @@ namespace MRK {
         Other
     }
 
-    public class EGRQuickLocation : MRKBehaviourPlain {
+    public class EGRQuickLocation : BaseBehaviourPlain {
         const string B64_PREFIX = "MRKb64";
 
         static List<EGRQuickLocation> ms_Locations;
-        static MRKRegistryBinary m_Registry;
+        static BinaryRegistry m_Registry;
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -36,7 +36,7 @@ namespace MRK {
         }
 
         static EGRQuickLocation() {
-            m_Registry = new MRKRegistryBinary();
+            m_Registry = new BinaryRegistry();
         }
 
         public EGRQuickLocation() {
@@ -53,20 +53,20 @@ namespace MRK {
             return new TimeSpan(DateTime.UtcNow.Ticks - CreationDate);
         }
 
-        static MRKRegistryBinarySequence[] GetLocationLoadSequence() {
-            return new MRKRegistryBinarySequence[] {
-                MRKRegistryBinarySequence.String("Name"),
-                MRKRegistryBinarySequence.Double("Lat"),
-                MRKRegistryBinarySequence.Double("Lng"),
-                MRKRegistryBinarySequence.Byte("Type"),
-                MRKRegistryBinarySequence.Long("Date")
+        static RegistryBinarySequence[] GetLocationLoadSequence() {
+            return new RegistryBinarySequence[] {
+                RegistryBinarySequence.String("Name"),
+                RegistryBinarySequence.Double("Lat"),
+                RegistryBinarySequence.Double("Lng"),
+                RegistryBinarySequence.Byte("Type"),
+                RegistryBinarySequence.Long("Date")
             };
         }
 
         public static void ImportLocalLocations(Action callback) {
-            string b64 = MRKPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_LOCAL_QLOCATIONS, null);
+            string b64 = CryptoPlayerPrefs.Get<string>(EGRConstants.EGR_LOCALPREFS_LOCAL_QLOCATIONS, null);
             if (b64 != null && b64.StartsWith(B64_PREFIX)) {
-                MRKThreadPool.Global.QueueTask(() => {
+                ThreadPool.Global.QueueTask(() => {
                     byte[] bytes = Convert.FromBase64String(b64.Substring(B64_PREFIX.Length));
                     using (MemoryStream stream = new MemoryStream(bytes))
                     using (BinaryReader reader = new BinaryReader(stream)) {
@@ -94,13 +94,13 @@ namespace MRK {
             }
         }
 
-        static MRKRegistryBinaryReverseSequence[] GetLocationSaveSequence() {
-            return new MRKRegistryBinaryReverseSequence[] {
-                MRKRegistryBinaryReverseSequence.String("Name"),
-                MRKRegistryBinaryReverseSequence.Double("Lat"),
-                MRKRegistryBinaryReverseSequence.Double("Lng"),
-                MRKRegistryBinaryReverseSequence.Byte("Type"),
-                MRKRegistryBinaryReverseSequence.Long("Date")
+        static RegistryBinaryReverseSequence[] GetLocationSaveSequence() {
+            return new RegistryBinaryReverseSequence[] {
+                RegistryBinaryReverseSequence.String("Name"),
+                RegistryBinaryReverseSequence.Double("Lat"),
+                RegistryBinaryReverseSequence.Double("Lng"),
+                RegistryBinaryReverseSequence.Byte("Type"),
+                RegistryBinaryReverseSequence.Long("Date")
             };
         }
 
@@ -108,7 +108,7 @@ namespace MRK {
             if (ms_Locations == null)
                 return;
 
-            MRKThreadPool.Global.QueueTask(() => {
+            ThreadPool.Global.QueueTask(() => {
                 m_Registry.SetAll(ms_Locations, (reg, loc) => {
                     reg["Name"] = loc.Name;
                     reg["Lat"] = loc.Coords.x;
@@ -128,8 +128,8 @@ namespace MRK {
                 }
 
                 Client.Runnable.RunOnMainThread(() => {
-                    MRKPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_LOCAL_QLOCATIONS, b64);
-                    MRKPlayerPrefs.Save();
+                    CryptoPlayerPrefs.Set<string>(EGRConstants.EGR_LOCALPREFS_LOCAL_QLOCATIONS, b64);
+                    CryptoPlayerPrefs.Save();
 
                     if (callback != null) {
                         callback();

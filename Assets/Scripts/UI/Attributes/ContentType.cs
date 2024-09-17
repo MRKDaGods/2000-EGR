@@ -1,18 +1,22 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace MRK.UI.Attributes {
-    public enum EGRUIContentType {
+namespace MRK.UI.Attributes
+{
+    public enum ContentType
+    {
         None,
         Body
     }
 
-    public partial class EGRUIAttribute {
+    public partial class UIAttribute
+    {
         [SerializeField]
-        List<Attribute<EGRUIContentType>> m_ContentTypeAttributes;
+        private List<Attribute<ContentType>> _contentTypeAttributes;
 
-        public Attribute<EGRUIContentType> Get(EGRUIAttributes attr) {
-            return m_ContentTypeAttributes.Find(x => x.Attr == attr);
+        public Attribute<ContentType> Get(UIAttributes attr)
+        {
+            return _contentTypeAttributes.Find(x => x.Attr == attr);
         }
     }
 }

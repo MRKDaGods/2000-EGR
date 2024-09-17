@@ -3,186 +3,221 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static MRK.EGRLanguageManager;
+using MRK.Localization;
+using static MRK.Localization.LanguageManager;
 
-namespace MRK.UI {
-    public partial class EGRScreenQuickLocations {
-        class DetailedView : MRKBehaviourPlain {
-            RectTransform m_Transform;
-            TMP_InputField m_Name;
-            TMP_Dropdown m_Type;
-            TextMeshProUGUI m_Date;
-            TextMeshProUGUI m_Distance;
-            Button m_Save;
-            Button m_Delete;
-            EGRQuickLocation m_Location;
-            CanvasGroup m_CanvasGroup;
+namespace MRK.UI
+{
+    public partial class QuickLocations
+    {
+        private class DetailedView : BaseBehaviourPlain
+        {
+            private RectTransform _transform;
+            private TMP_InputField _name;
+            private TMP_Dropdown _type;
+            private TextMeshProUGUI _date;
+            private TextMeshProUGUI _distance;
+            private Button _save;
+            private Button _delete;
+            private EGRQuickLocation _location;
+            private CanvasGroup _canvasGroup;
 
-            public bool IsActive => m_Transform.gameObject.activeInHierarchy;
+            public bool IsActive
+            {
+                get
+                {
+                    return _transform.gameObject.activeInHierarchy;
+                }
+            }
 
-            public DetailedView(RectTransform transform) {
-                m_Transform = transform;
-                m_Name = transform.GetElement<TMP_InputField>("Layout/Name/Input");
-                m_Name.onValueChanged.AddListener((_) => UpdateSaveButtonInteractibility());
+            public DetailedView(RectTransform transform)
+            {
+                _transform = transform;
+                _name = transform.GetElement<TMP_InputField>("Layout/Name/Input");
+                _name.onValueChanged.AddListener((_) => UpdateSaveButtonInteractibility());
 
-                m_Type = transform.GetElement<TMP_Dropdown>("Layout/Type/Dropdown");
-                m_Type.onValueChanged.AddListener((_) => UpdateSaveButtonInteractibility());
+                _type = transform.GetElement<TMP_Dropdown>("Layout/Type/Dropdown");
+                _type.onValueChanged.AddListener((_) => UpdateSaveButtonInteractibility());
 
-                m_Date = transform.GetElement<TextMeshProUGUI>("Layout/Date/Val");
-                m_Distance = transform.GetElement<TextMeshProUGUI>("Layout/Dist/Val");
+                _date = transform.GetElement<TextMeshProUGUI>("Layout/Date/Val");
+                _distance = transform.GetElement<TextMeshProUGUI>("Layout/Dist/Val");
 
-                m_Save = transform.GetElement<Button>("Layout/Save/Button");
-                m_Save.onClick.AddListener(() => OnSaveClick());
+                _save = transform.GetElement<Button>("Layout/Save/Button");
+                _save.onClick.AddListener(() => OnSaveClick());
 
-                m_Delete = transform.GetElement<Button>("Layout/Delete/Button");
-                m_Delete.onClick.AddListener(OnDeleteClick);
+                _delete = transform.GetElement<Button>("Layout/Delete/Button");
+                _delete.onClick.AddListener(OnDeleteClick);
 
-                m_CanvasGroup = transform.GetComponent<CanvasGroup>();
+                _canvasGroup = transform.GetComponent<CanvasGroup>();
 
                 transform.GetElement<Button>("Layout/Top/Close").onClick.AddListener(OnCloseClick);
                 transform.GetElement<Button>("Layout/Goto/Button").onClick.AddListener(OnGotoClick);
             }
 
-            public void SetActive(bool active) {
-                m_Transform.gameObject.SetActive(active);
+            public void SetActive(bool active)
+            {
+                _transform.gameObject.SetActive(active);
             }
 
-            public void SetLocation(EGRQuickLocation loc) {
-                m_Location = loc;
-                m_Name.text = loc.Name;
-                m_Type.value = (int)loc.Type;
+            public void SetLocation(EGRQuickLocation loc)
+            {
+                _location = loc;
+                _name.text = loc.Name;
+                _type.value = (int)loc.Type;
                 TimeSpan period = loc.Period();
 
                 string str;
-                if (period.TotalHours < 1d) {
-                    str = string.Format(Localize(EGRLanguageData._0__MINUTES_AGO), (int)period.TotalMinutes);
+                if (period.TotalHours < 1d)
+                {
+                    str = string.Format(Localize(LanguageData._0__MINUTES_AGO), (int)period.TotalMinutes);
                 }
-                else if (period.TotalDays < 1d) {
-                    str = string.Format(Localize(EGRLanguageData._0__HOURS_AGO), (int)period.TotalHours);
+                else if (period.TotalDays < 1d)
+                {
+                    str = string.Format(Localize(LanguageData._0__HOURS_AGO), (int)period.TotalHours);
                 }
-                else {
-                    str = string.Format(Localize(EGRLanguageData._0__DAYS_AGO), (int)period.TotalDays);
+                else
+                {
+                    str = string.Format(Localize(LanguageData._0__DAYS_AGO), (int)period.TotalDays);
                 }
 
-                m_Date.text = str;
+                _date.text = str;
 
                 //distance
-                Client.LocationService.GetCurrentLocation((success, coords, bearing) => {
-                    if (!success) {
-                        m_Distance.text = Localize(EGRLanguageData.N_A);
+                Client.LocationService.GetCurrentLocation((success, coords, bearing) =>
+                {
+                    if (!success)
+                    {
+                        _distance.text = Localize(LanguageData.N_A);
                         return;
                     }
 
                     Vector2d delta = coords.Value - loc.Coords;
-                    float distance = (float)MRKMapUtils.LatLonToMeters(delta).magnitude;
-                    if (distance > 1000f) {
+                    float distance = (float)MapUtils.LatLonToMeters(delta).magnitude;
+                    if (distance > 1000f)
+                    {
                         distance /= 1000f;
-                        m_Distance.text = string.Format(Localize(EGRLanguageData._0__KM_AWAY), (int)distance);
+                        _distance.text = string.Format(Localize(LanguageData._0__KM_AWAY), (int)distance);
                     }
-                    else {
-                        m_Distance.text = string.Format(Localize(EGRLanguageData._0__M_AWAY), (int)distance);
+                    else
+                    {
+                        _distance.text = string.Format(Localize(LanguageData._0__M_AWAY), (int)distance);
                     }
-                }, 
+                },
                 true);
 
-                m_Save.interactable = false;
+                _save.interactable = false;
             }
 
-            void OnCloseClick() {
-                if (m_Save.interactable) {
-                    EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
-                    popup.SetYesButtonText(Localize(EGRLanguageData.SAVE));
-                    popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+            private void OnCloseClick()
+            {
+                if (_save.interactable)
+                {
+                    Confirmation popup = ScreenManager.GetPopup<Confirmation>();
+                    popup.SetYesButtonText(Localize(LanguageData.SAVE));
+                    popup.SetNoButtonText(Localize(LanguageData.CANCEL));
                     popup.ShowPopup(
-                        Localize(EGRLanguageData.QUICK_LOCATIONS),
-                        Localize(EGRLanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_),
+                        Localize(LanguageData.QUICK_LOCATIONS),
+                        Localize(LanguageData.YOU_HAVE_UNSAVED_CHANGES_nWOULD_YOU_LIKE_TO_SAVE_YOUR_CHANGES_),
                         OnUnsavedClose,
                         null
                     );
                 }
-                else {
-                    ms_Instance.CloseDetailedView();
+                else
+                {
+                    _instance.CloseDetailedView();
                 }
             }
 
-            void OnUnsavedClose(EGRPopup popup, EGRPopupResult result) {
-                if (result == EGRPopupResult.YES) {
+            private void OnUnsavedClose(Popup popup, PopupResult result)
+            {
+                if (result == PopupResult.YES)
+                {
                     OnSaveClick(true);
                     return;
                 }
 
-                ms_Instance.CloseDetailedView();
+                _instance.CloseDetailedView();
             }
 
-            void OnSaveClick(bool hideAfter = false) {
-                m_Location.Name = m_Name.text;
-                m_Location.Type = (EGRQuickLocationType)m_Type.value;
+            private void OnSaveClick(bool hideAfter = false)
+            {
+                _location.Name = _name.text;
+                _location.Type = (EGRQuickLocationType)_type.value;
 
-                EGRQuickLocation.SaveLocalLocations(() => {
-                    ms_Instance.MessageBox.ShowPopup(
-                        Localize(EGRLanguageData.QUICK_LOCATIONS),
-                        Localize(EGRLanguageData.SAVED),
+                EGRQuickLocation.SaveLocalLocations(() =>
+                {
+                    _instance.MessageBox.ShowPopup(
+                        Localize(LanguageData.QUICK_LOCATIONS),
+                        Localize(LanguageData.SAVED),
                         null,
-                        ms_Instance
+                        _instance
                     );
 
-                    if (hideAfter) {
-                        ms_Instance.CloseDetailedView();
+                    if (hideAfter)
+                    {
+                        _instance.CloseDetailedView();
                     }
 
-                    ms_Instance.UpdateLocationListFromLocal();
+                    _instance.UpdateLocationListFromLocal();
                 });
 
                 UpdateSaveButtonInteractibility();
             }
 
-            void UpdateSaveButtonInteractibility() {
-                m_Save.interactable = m_Name.text != m_Location.Name 
-                    || m_Type.value != (int)m_Location.Type;
+            private void UpdateSaveButtonInteractibility()
+            {
+                _save.interactable = _name.text != _location.Name
+                    || _type.value != (int)_location.Type;
             }
 
-            void OnDeleteClick() {
-                EGRPopupConfirmation popup = ScreenManager.GetPopup<EGRPopupConfirmation>();
-                popup.SetYesButtonText(Localize(EGRLanguageData.DELETE));
-                popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+            private void OnDeleteClick()
+            {
+                Confirmation popup = ScreenManager.GetPopup<Confirmation>();
+                popup.SetYesButtonText(Localize(LanguageData.DELETE));
+                popup.SetNoButtonText(Localize(LanguageData.CANCEL));
                 popup.ShowPopup(
-                    Localize(EGRLanguageData.QUICK_LOCATIONS),
-                    string.Format(Localize(EGRLanguageData.ARE_YOU_SURE_THAT_YOU_WANT_TO_DELETE__0__), m_Location.Name),
-                    (_, res) => {
-                        if (res == EGRPopupResult.YES) {
-                            EGRQuickLocation.Delete(m_Location);
+                    Localize(LanguageData.QUICK_LOCATIONS),
+                    string.Format(Localize(LanguageData.ARE_YOU_SURE_THAT_YOU_WANT_TO_DELETE__0__), _location.Name),
+                    (_, res) =>
+                    {
+                        if (res == PopupResult.YES)
+                        {
+                            EGRQuickLocation.Delete(_location);
                             OnCloseClick();
 
-                            ms_Instance.UpdateLocationListFromLocal();
+                            _instance.UpdateLocationListFromLocal();
                         }
                     },
-                    ms_Instance
+                    _instance
                 );
             }
 
-            void OnGotoClick() {
+            private void OnGotoClick()
+            {
                 OnCloseClick();
 
                 //hide everything
-                ms_Instance.UpdateMainView(false);
+                _instance.UpdateMainView(false);
 
-                Client.FlatCamera.TeleportToLocationTweened(m_Location.Coords);
+                Client.FlatCamera.TeleportToLocationTweened(_location.Coords);
             }
 
-            public void AnimateIn() {
+            public void AnimateIn()
+            {
                 DOTween.To(
-                    () => m_CanvasGroup.alpha,
-                    x => m_CanvasGroup.alpha = x,
+                    () => _canvasGroup.alpha,
+                    x => _canvasGroup.alpha = x,
                     1f,
                     0.3f
                 ).ChangeStartValue(0f)
                 .SetEase(Ease.OutSine);
             }
 
-            public void AnimateOut(Action callback) {
+            public void AnimateOut(Action callback)
+            {
                 DOTween.To(
-                    () => m_CanvasGroup.alpha,
-                    x => m_CanvasGroup.alpha = x,
+                    () => _canvasGroup.alpha,
+                    x => _canvasGroup.alpha = x,
                     0f,
                     0.3f
                 )
@@ -190,7 +225,8 @@ namespace MRK.UI {
                 .OnComplete(() => callback());
             }
 
-            public void Close() {
+            public void Close()
+            {
                 OnCloseClick();
             }
         }

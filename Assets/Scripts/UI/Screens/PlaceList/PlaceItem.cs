@@ -1,11 +1,11 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static MRK.EGRLanguageManager;
+using static MRK.LanguageManager;
 
 namespace MRK.UI {
-    public partial class EGRScreenPlaceList {
-        class PlaceItem : MRKBehaviourPlain {
+    public partial class PlaceList {
+        class PlaceItem : BaseBehaviourPlain {
             Transform m_Transform;
             RawImage m_Image;
             TextMeshProUGUI m_Name;
@@ -57,11 +57,11 @@ namespace MRK.UI {
                     return;
                 }
 
-                EGRPopupMessageBox msgBox = ScreenManager.MessageBox;
+                MessageBox msgBox = ScreenManager.MessageBox;
                 msgBox.ShowButton(false);
                 msgBox.ShowPopup(
-                    Localize(EGRLanguageData.EGR),
-                    Localize(EGRLanguageData.FETCHING_PLACE_DATA___),
+                    Localize(LanguageData.EGR),
+                    Localize(LanguageData.FETCHING_PLACE_DATA___),
                     null,
                     null
                 );
@@ -71,8 +71,8 @@ namespace MRK.UI {
                         //an error has occured
                         if (place == null) {
                             msgBox.ShowPopup(
-                                Localize(EGRLanguageData.ERROR),
-                                string.Format(Localize(EGRLanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_RESPONSE),
+                                Localize(LanguageData.ERROR),
+                                string.Format(Localize(LanguageData.FAILED__EGR__0__), EGRConstants.EGR_ERROR_RESPONSE),
                                 null,
                                 null
                             );
@@ -91,7 +91,7 @@ namespace MRK.UI {
                     return;
                 }
 
-                EGRScreenPlaceView placeView = ScreenManager.GetScreen<EGRScreenPlaceView>();
+                PlaceView placeView = ScreenManager.GetScreen<PlaceView>();
                 placeView.SetPlace(place);
                 placeView.ShowScreen();
             }

@@ -1,29 +1,36 @@
-using MRK;
+using MRK.Localization;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class EGRLanguageUpdater : MonoBehaviour {
+public class EGRLanguageUpdater : MonoBehaviour
+{
     [MenuItem("EGR/Update Language")]
-    static void Main() {
-        TextAsset txt = Resources.Load<TextAsset>($"Lang/{EGRLanguage.English}");
+    private static void Main()
+    {
+        TextAsset txt = Resources.Load<TextAsset>($"Lang/{Language.English}");
         Dictionary<int, string> strings = new Dictionary<int, string>();
-        EGRLanguageManager.ParseWithOccurence(txt, strings, true);
+        LanguageManager.ParseWithOccurence(txt, strings, true);
 
-        using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\Localization\EGRLanguageData.cs", FileMode.Create))
-        using (StreamWriter writer = new StreamWriter(fstream)) {
-            writer.WriteLine("namespace MRK {\n\tpublic enum EGRLanguageData {");
+        using (FileStream fstream = new FileStream($@"{Application.dataPath}\Scripts\Localization\LanguageData.cs", FileMode.Create))
+        using (StreamWriter writer = new StreamWriter(fstream))
+        {
+            writer.WriteLine("namespace MRK.Localization {\n\tpublic enum LanguageData {");
 
-            static string fixStr(string s) {
+            static string fixStr(string s)
+            {
                 string chars = "!@#$%^&*()-+=~`'\":;/.,><[]{}|\\ ?";
                 foreach (char c in chars)
+                {
                     s = s.Replace(c, '_');
+                }
 
                 return s;
             }
 
-            foreach (KeyValuePair<int, string> pair in strings) {
+            foreach (KeyValuePair<int, string> pair in strings)
+            {
                 writer.WriteLine($"\t\t//{pair.Value}");
                 writer.WriteLine($"\t\t{fixStr(pair.Value)} = {pair.Key},\n");
             }

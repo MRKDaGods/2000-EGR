@@ -1,0 +1,1372 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00668fd727de9bb4081a8a202ce24c3b, type: 3}
+  m_Name: Settings
+  m_EditorClassIdentifier: 
+  globalData:
+    showActiveToggles: 1
+    showComponentIcons: 1
+    showAllComponents: 1
+    twoToneBackground: 1
+    showLayers: 1
+    editableLayers: 1
+    applyChildLayers: 1
+  styleData:
+    displayLayers: 1
+    displayIcons: 1
+    styles:
+    - prefix: =
+      name: Header (Centered)
+      font: {fileID: 0}
+      fontSize: 11
+      fontAlignment: 4
+      fontStyle: 1
+      modes:
+      - fontColour: {r: 0.1764706, g: 0.1764706, b: 0.1764706, a: 1}
+        backgroundColour: {r: 0.6666667, g: 0.6666667, b: 0.6666667, a: 1}
+      - fontColour: {r: 1, g: 1, b: 1, a: 1}
+        backgroundColour: {r: 0.1764706, g: 0.1764706, b: 0.1764706, a: 1}
+      style:
+        m_Name: 
+        m_Normal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 1, g: 1, b: 1, a: 1}
+        m_Hover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Active:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Focused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnNormal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnHover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnActive:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnFocused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Border:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Margin:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Padding:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Overflow:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Font: {fileID: 0}
+        m_FontSize: 11
+        m_FontStyle: 1
+        m_Alignment: 4
+        m_WordWrap: 0
+        m_RichText: 1
+        m_TextClipping: 0
+        m_ImagePosition: 0
+        m_ContentOffset: {x: 0, y: 0}
+        m_FixedWidth: 0
+        m_FixedHeight: 0
+        m_StretchWidth: 1
+        m_StretchHeight: 0
+    - prefix: '-'
+      name: Subheader
+      font: {fileID: 0}
+      fontSize: 10
+      fontAlignment: 3
+      fontStyle: 1
+      modes:
+      - fontColour: {r: 0.245283, g: 0.245283, b: 0.245283, a: 1}
+        backgroundColour: {r: 0.7960785, g: 0.7960785, b: 0.7960785, a: 1}
+      - fontColour: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
+        backgroundColour: {r: 0.2352941, g: 0.2352941, b: 0.2352941, a: 1}
+      style:
+        m_Name: 
+        m_Normal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
+        m_Hover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Active:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Focused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnNormal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnHover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnActive:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnFocused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Border:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Margin:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Padding:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Overflow:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Font: {fileID: 0}
+        m_FontSize: 10
+        m_FontStyle: 1
+        m_Alignment: 3
+        m_WordWrap: 0
+        m_RichText: 1
+        m_TextClipping: 0
+        m_ImagePosition: 0
+        m_ContentOffset: {x: 0, y: 0}
+        m_FixedWidth: 0
+        m_FixedHeight: 0
+        m_StretchWidth: 1
+        m_StretchHeight: 0
+    - prefix: +
+      name: Mini Header (Centered)
+      font: {fileID: 0}
+      fontSize: 10
+      fontAlignment: 4
+      fontStyle: 1
+      modes:
+      - fontColour: {r: 1, g: 1, b: 1, a: 1}
+        backgroundColour: {r: 0.38568, g: 0.6335747, b: 0.764151, a: 1}
+      - fontColour: {r: 1, g: 1, b: 1, a: 1}
+        backgroundColour: {r: 0.2671325, g: 0.4473481, b: 0.6509434, a: 1}
+      style:
+        m_Name: 
+        m_Normal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 1, g: 1, b: 1, a: 1}
+        m_Hover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Active:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Focused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnNormal:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnHover:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnActive:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_OnFocused:
+          m_Background: {fileID: 0}
+          m_ScaledBackgrounds: []
+          m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+        m_Border:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Margin:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Padding:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Overflow:
+          m_Left: 0
+          m_Right: 0
+          m_Top: 0
+          m_Bottom: 0
+        m_Font: {fileID: 0}
+        m_FontSize: 10
+        m_FontStyle: 1
+        m_Alignment: 4
+        m_WordWrap: 0
+        m_RichText: 1
+        m_TextClipping: 0
+        m_ImagePosition: 0
+        m_ContentOffset: {x: 0, y: 0}
+        m_FixedWidth: 0
+        m_FixedHeight: 0
+        m_StretchWidth: 1
+        m_StretchHeight: 0
+  componentData:
+    showMissingScriptsWarning: 0
+    unityComponents:
+    - name: NavMeshAgent
+      shown: 0
+    - name: NavMeshObstacle
+      shown: 0
+    - name: OffMeshLink
+      shown: 0
+    - name: Animator
+      shown: 0
+    - name: Animation
+      shown: 0
+    - name: AimConstraint
+      shown: 0
+    - name: PositionConstraint
+      shown: 0
+    - name: RotationConstraint
+      shown: 0
+    - name: ScaleConstraint
+      shown: 0
+    - name: LookAtConstraint
+      shown: 0
+    - name: ParentConstraint
+      shown: 0
+    - name: AudioSource
+      shown: 0
+    - name: AudioLowPassFilter
+      shown: 0
+    - name: AudioHighPassFilter
+      shown: 0
+    - name: AudioReverbFilter
+      shown: 0
+    - name: AudioBehaviour
+      shown: 0
+    - name: AudioListener
+      shown: 0
+    - name: AudioReverbZone
+      shown: 0
+    - name: AudioDistortionFilter
+      shown: 0
+    - name: AudioEchoFilter
+      shown: 0
+    - name: AudioChorusFilter
+      shown: 0
+    - name: Cloth
+      shown: 0
+    - name: Camera
+      shown: 0
+    - name: FlareLayer
+      shown: 0
+    - name: ReflectionProbe
+      shown: 0
+    - name: BillboardRenderer
+      shown: 0
+    - name: Renderer
+      shown: 0
+    - name: Projector
+      shown: 0
+    - name: TrailRenderer
+      shown: 0
+    - name: LineRenderer
+      shown: 0
+    - name: OcclusionPortal
+      shown: 0
+    - name: OcclusionArea
+      shown: 0
+    - name: LensFlare
+      shown: 0
+    - name: Light
+      shown: 0
+    - name: Skybox
+      shown: 0
+    - name: MeshFilter
+      shown: 0
+    - name: Halo
+      shown: 0
+    - name: LightProbeProxyVolume
+      shown: 0
+    - name: SkinnedMeshRenderer
+      shown: 0
+    - name: MeshRenderer
+      shown: 0
+    - name: LightProbeGroup
+      shown: 0
+    - name: LODGroup
+      shown: 0
+    - name: NetworkView
+      shown: 0
+    - name: Behaviour
+      shown: 0
+    - name: MonoBehaviour
+      shown: 0
+    - name: RectTransform
+      shown: 0
+    - name: Transform
+      shown: 0
+    - name: SpriteRenderer
+      shown: 0
+    - name: Light2DBase
+      shown: 0
+    - name: SortingGroup
+      shown: 0
+    - name: PlayableDirector
+      shown: 0
+    - name: Grid
+      shown: 0
+    - name: GridLayout
+      shown: 0
+    - name: ParticleSystem
+      shown: 0
+    - name: ParticleSystemRenderer
+      shown: 0
+    - name: ParticleSystemForceField
+      shown: 0
+    - name: ArticulationBody
+      shown: 0
+    - name: Rigidbody
+      shown: 0
+    - name: Collider
+      shown: 0
+    - name: CharacterController
+      shown: 0
+    - name: MeshCollider
+      shown: 0
+    - name: CapsuleCollider
+      shown: 0
+    - name: BoxCollider
+      shown: 0
+    - name: SphereCollider
+      shown: 0
+    - name: ConstantForce
+      shown: 0
+    - name: Joint
+      shown: 0
+    - name: HingeJoint
+      shown: 0
+    - name: SpringJoint
+      shown: 0
+    - name: FixedJoint
+      shown: 0
+    - name: CharacterJoint
+      shown: 0
+    - name: ConfigurableJoint
+      shown: 0
+    - name: Rigidbody2D
+      shown: 0
+    - name: Collider2D
+      shown: 0
+    - name: CustomCollider2D
+      shown: 0
+    - name: CircleCollider2D
+      shown: 0
+    - name: CapsuleCollider2D
+      shown: 0
+    - name: EdgeCollider2D
+      shown: 0
+    - name: BoxCollider2D
+      shown: 0
+    - name: PolygonCollider2D
+      shown: 0
+    - name: CompositeCollider2D
+      shown: 0
+    - name: Joint2D
+      shown: 0
+    - name: AnchoredJoint2D
+      shown: 0
+    - name: SpringJoint2D
+      shown: 0
+    - name: DistanceJoint2D
+      shown: 0
+    - name: FrictionJoint2D
+      shown: 0
+    - name: HingeJoint2D
+      shown: 0
+    - name: RelativeJoint2D
+      shown: 0
+    - name: SliderJoint2D
+      shown: 0
+    - name: TargetJoint2D
+      shown: 0
+    - name: FixedJoint2D
+      shown: 0
+    - name: WheelJoint2D
+      shown: 0
+    - name: Effector2D
+      shown: 0
+    - name: AreaEffector2D
+      shown: 0
+    - name: BuoyancyEffector2D
+      shown: 0
+    - name: PointEffector2D
+      shown: 0
+    - name: PlatformEffector2D
+      shown: 0
+    - name: SurfaceEffector2D
+      shown: 0
+    - name: PhysicsUpdateBehaviour2D
+      shown: 0
+    - name: ConstantForce2D
+      shown: 0
+    - name: SpriteMask
+      shown: 0
+    - name: SpriteShapeRenderer
+      shown: 0
+    - name: StreamingController
+      shown: 0
+    - name: Terrain
+      shown: 0
+    - name: Tree
+      shown: 0
+    - name: TerrainCollider
+      shown: 0
+    - name: TextMesh
+      shown: 0
+    - name: Tilemap
+      shown: 0
+    - name: TilemapRenderer
+      shown: 0
+    - name: TilemapCollider2D
+      shown: 0
+    - name: CanvasGroup
+      shown: 0
+    - name: CanvasRenderer
+      shown: 0
+    - name: Canvas
+      shown: 0
+    - name: UIDocument
+      shown: 0
+    - name: NetworkMatch
+      shown: 0
+    - name: VisualEffect
+      shown: 0
+    - name: VFXRenderer
+      shown: 0
+    - name: WheelCollider
+      shown: 0
+    - name: VideoPlayer
+      shown: 0
+    - name: WindZone
+      shown: 0
+    - name: NativeToolkitExample
+      shown: 0
+    - name: NativeToolkit
+      shown: 0
+    - name: CurvePointControl
+      shown: 0
+    - name: DrawCurve
+      shown: 0
+    - name: SimpleCurve
+      shown: 0
+    - name: DrawLines
+      shown: 0
+    - name: DrawLinesMouse
+      shown: 0
+    - name: DrawLinesTouch
+      shown: 0
+    - name: Ellipse1
+      shown: 0
+    - name: Ellipse2
+      shown: 0
+    - name: EndCapDemo
+      shown: 0
+    - name: DrawGrid
+      shown: 0
+    - name: Grid3D
+      shown: 0
+    - name: Highlight
+      shown: 0
+    - name: MakeSpheres
+      shown: 0
+    - name: RotateAroundY
+      shown: 0
+    - name: MaskLine1
+      shown: 0
+    - name: MaskLine2
+      shown: 0
+    - name: CreateStars
+      shown: 0
+    - name: Orbit
+      shown: 0
+    - name: RotateViewpoint
+      shown: 0
+    - name: AnimatePartialLine
+      shown: 0
+    - name: DrawPath
+      shown: 0
+    - name: DrawPoints
+      shown: 0
+    - name: PowerBar
+      shown: 0
+    - name: CreateHills
+      shown: 0
+    - name: CameraZoom
+      shown: 0
+    - name: ScribbleCube
+      shown: 0
+    - name: SelectionBox
+      shown: 0
+    - name: SelectionBox2
+      shown: 0
+    - name: SelectLine
+      shown: 0
+    - name: MakeSpline
+      shown: 0
+    - name: SplineFollow2D
+      shown: 0
+    - name: SplineFollow3D
+      shown: 0
+    - name: TextDemo
+      shown: 0
+    - name: DrawBox
+      shown: 0
+    - name: VectorObject
+      shown: 0
+    - name: XrayLineData
+      shown: 0
+    - name: Line
+      shown: 0
+    - name: ReallyBasicLine
+      shown: 0
+    - name: UniformTexturedLine
+      shown: 0
+    - name: Simple3D
+      shown: 0
+    - name: Simple3D2
+      shown: 0
+    - name: Simple3D3
+      shown: 0
+    - name: AddComboBoxItems
+      shown: 0
+    - name: WarmUpComboboxes
+      shown: 0
+    - name: ReportRadialTouch
+      shown: 0
+    - name: UICircleChangeColor
+      shown: 0
+    - name: UICircleChangeDensity
+      shown: 0
+    - name: KnobManagement
+      shown: 0
+    - name: DrawLine
+      shown: 0
+    - name: ParticleSystemControllerWindow
+      shown: 0
+    - name: ComboBoxChanged
+      shown: 0
+    - name: CooldownEffect_Image
+      shown: 0
+    - name: CooldownEffect_SAUIM
+      shown: 0
+    - name: PaginationScript
+      shown: 0
+    - name: UpdateScrollSnap
+      shown: 0
+    - name: AwesomeMenu
+      shown: 0
+    - name: GameMenu
+      shown: 0
+    - name: MainMenu
+      shown: 0
+    - name: OptionsMenu
+      shown: 0
+    - name: PauseMenu
+      shown: 0
+    - name: UpdateRadialValue
+      shown: 0
+    - name: AnimateEffects
+      shown: 0
+    - name: testHref
+      shown: 0
+    - name: LineRendererOrbit
+      shown: 0
+    - name: LineRendererOrbitList
+      shown: 0
+    - name: TestAddingPoints
+      shown: 0
+    - name: TestAddingPointsList
+      shown: 0
+    - name: ScrollingCalendar
+      shown: 0
+    - name: ScenesDropdown
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example09
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example08
+      shown: 0
+    - name: GridView
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example07
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Example06
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: SlideScreenTransition
+      shown: 0
+    - name: Tab
+      shown: 0
+    - name: Window
+      shown: 0
+    - name: Background
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example05
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Background
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example04
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example03
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example02
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: Cell
+      shown: 0
+    - name: Example01
+      shown: 0
+    - name: ScrollView
+      shown: 0
+    - name: EGRCamera
+      shown: 0
+    - name: EGRCameraFlat
+      shown: 0
+    - name: EGRCameraGeneral
+      shown: 0
+    - name: EGRCameraGlobe
+      shown: 0
+    - name: EGRCameraNavigation
+      shown: 0
+    - name: EGRBillboardTransform
+      shown: 0
+    - name: EGRDevSettingsManager
+      shown: 0
+    - name: EGRMain
+      shown: 0
+    - name: EGRPlanet
+      shown: 0
+    - name: EGRRuntimeConfiguration
+      shown: 0
+    - name: MRKMap
+      shown: 0
+    - name: MRKTileMonitor
+      shown: 0
+    - name: MRKTilePlane
+      shown: 0
+    - name: MRKTileRequestor
+      shown: 0
+    - name: MRKARManager
+      shown: 0
+    - name: MRKBehaviour
+      shown: 0
+    - name: MRKRunnable
+      shown: 0
+    - name: EGRPlaceGroup
+      shown: 0
+    - name: EGRPlaceManager
+      shown: 0
+    - name: EGRPlaceMarker
+      shown: 0
+    - name: EGRLocationManager
+      shown: 0
+    - name: EGRLocationService
+      shown: 0
+    - name: EGRLocationServiceSimulator
+      shown: 0
+    - name: TestARCamera
+      shown: 0
+    - name: TestMapGrouping
+      shown: 0
+    - name: TestNetworkClients
+      shown: 0
+    - name: TestNetworkDownload
+      shown: 0
+    - name: TestNetworkGeoAutoComplete
+      shown: 0
+    - name: TestSpecialLightStripRendering
+      shown: 0
+    - name: EGRSliderFill
+      shown: 0
+    - name: DisableAtRuntime
+      shown: 0
+    - name: EGRAnimationDeviation
+      shown: 0
+    - name: EGRShowScreenKeyCode
+      shown: 0
+    - name: EGRUICurvedTMProCircle
+      shown: 0
+    - name: EGRUICurvedTMProCurve
+      shown: 0
+    - name: EGRUIFancyScrollView
+      shown: 0
+    - name: EGRUIFancyScrollViewCell
+      shown: 0
+    - name: EGRUIFancyScrollViewContent
+      shown: 0
+    - name: EGRUIMultiSelector
+      shown: 0
+    - name: EGRUIMultiSelectorScroll
+      shown: 0
+    - name: EGRUIMultiSelectorSettings
+      shown: 0
+    - name: EGRUINonMaskableElement
+      shown: 0
+    - name: EGRUIScrollViewSortingLetters
+      shown: 0
+    - name: EGRFadeManager
+      shown: 0
+    - name: EGRUIAnimatedGradient
+      shown: 0
+    - name: EGRUIColorMaskedRawImage
+      shown: 0
+    - name: EGRUIDisplayRectTransformInfo
+      shown: 0
+    - name: EGRUIHSVModifier
+      shown: 0
+    - name: EGRUIReferenceFitterTMP
+      shown: 0
+    - name: EGRUIRenderBounds
+      shown: 0
+    - name: EGRUIRTLAttribute
+      shown: 0
+    - name: EGRUITextRenderer
+      shown: 0
+    - name: EGRPopup
+      shown: 0
+    - name: EGRPopupAnimatedLayout
+      shown: 0
+    - name: EGRPopupConfirmation
+      shown: 0
+    - name: EGRPopupConfirmPassword
+      shown: 0
+    - name: EGRPopupInputText
+      shown: 0
+    - name: EGRPopupMessageBox
+      shown: 0
+    - name: EGRPopupPlaceGroup
+      shown: 0
+    - name: EGRScreen
+      shown: 0
+    - name: EGRScreenAnimatedAlpha
+      shown: 0
+    - name: EGRScreenAnimatedLayout
+      shown: 0
+    - name: EGRScreenHottestTrends
+      shown: 0
+    - name: EGRScreenLoading
+      shown: 0
+    - name: EGRScreenLogin
+      shown: 0
+    - name: EGRScreenManager
+      shown: 0
+    - name: EGRScreenMapChooser
+      shown: 0
+    - name: EGRScreenMapInterface
+      shown: 0
+    - name: EGRScreenMenu
+      shown: 0
+    - name: EGRScreenMenuSettings
+      shown: 0
+    - name: EGRScreenPlaceView
+      shown: 0
+    - name: EGRScreenRegister
+      shown: 0
+    - name: EGRScreenSpaceFOV
+      shown: 0
+    - name: EGRScreenTest
+      shown: 0
+    - name: EGRScreenMain
+      shown: 0
+    - name: EGRScreenMainSub0
+      shown: 0
+    - name: EGRScreenMainSub1
+      shown: 0
+    - name: EGRScreenOptions
+      shown: 0
+    - name: EGRScreenOptionsAccInfo
+      shown: 0
+    - name: EGRScreenOptionsAdvancedSettings
+      shown: 0
+    - name: EGRScreenOptionsAppSettings
+      shown: 0
+    - name: EGRScreenOptionsAudioSettings
+      shown: 0
+    - name: EGRScreenOptionsDisplaySettings
+      shown: 0
+    - name: EGRScreenOptionsEmail
+      shown: 0
+    - name: EGRScreenOptionsGlobeSettings
+      shown: 0
+    - name: EGRScreenOptionsMapSettings
+      shown: 0
+    - name: EGRScreenOptionsPassword
+      shown: 0
+    - name: EGRScreenPlaceList
+      shown: 0
+    - name: EGRScreenQuickLocations
+      shown: 0
+    - name: EGRScreenWTE
+      shown: 0
+    - name: EGRUIWTESearchConfirmation
+      shown: 0
+    - name: EGRUIUsable
+      shown: 0
+    - name: EGRUIUsableLoading
+      shown: 0
+    - name: EGRUIUsableReference
+      shown: 0
+    - name: EGRUIMapButtonsGroup
+      shown: 0
+    - name: EGRUIAttribute
+      shown: 0
+    - name: EGRNavigationManager
+      shown: 0
+    - name: BrightnessControl
+      shown: 0
+    - name: LineManager
+      shown: 0
+    - name: VectorObject2D
+      shown: 0
+    - name: VectorObject3D
+      shown: 0
+    - name: VisibilityControl
+      shown: 0
+    - name: VisibilityControlAlways
+      shown: 0
+    - name: VisibilityControlStatic
+      shown: 0
+    - name: Loader
+      shown: 0
+    - name: CellGroup
+      shown: 0
+    - name: UIVector2D
+      shown: 0
+    - name: WTEContextAsset
+      shown: 0
+    - name: EGRLanguageUpdater
+      shown: 0
+    - name: EGRUIUpdater
+      shown: 0
+    - name: ExampleScript
+      shown: 0
+    - name: ExampleScript2
+      shown: 0
+    - name: ExampleScriptWithIcon
+      shown: 0
+    - name: PlaymodeTestsController
+      shown: 0
+    - name: PlayerQuitHandler
+      shown: 0
+    - name: PlayModeRunnerCallback
+      shown: 0
+    - name: RemoteTestResultSender
+      shown: 0
+    - name: TestResultRendererCallback
+      shown: 0
+    - name: SignalReceiver
+      shown: 0
+    - name: TextContainer
+      shown: 0
+    - name: TextMeshPro
+      shown: 0
+    - name: TextMeshProUGUI
+      shown: 0
+    - name: TMP_Dropdown
+      shown: 0
+    - name: TMP_InputField
+      shown: 0
+    - name: TMP_ScrollbarEventHandler
+      shown: 0
+    - name: TMP_SelectionCaret
+      shown: 0
+    - name: TMP_SpriteAnimator
+      shown: 0
+    - name: TMP_SubMesh
+      shown: 0
+    - name: TMP_SubMeshUI
+      shown: 0
+    - name: TMP_Text
+      shown: 0
+    - name: DropdownItem
+      shown: 0
+    - name: Button
+      shown: 0
+    - name: Dropdown
+      shown: 0
+    - name: Graphic
+      shown: 0
+    - name: GraphicRaycaster
+      shown: 0
+    - name: Image
+      shown: 0
+    - name: InputField
+      shown: 0
+    - name: AspectRatioFitter
+      shown: 0
+    - name: CanvasScaler
+      shown: 0
+    - name: ContentSizeFitter
+      shown: 0
+    - name: GridLayoutGroup
+      shown: 0
+    - name: HorizontalLayoutGroup
+      shown: 0
+    - name: HorizontalOrVerticalLayoutGroup
+      shown: 0
+    - name: LayoutElement
+      shown: 0
+    - name: LayoutGroup
+      shown: 0
+    - name: VerticalLayoutGroup
+      shown: 0
+    - name: Mask
+      shown: 0
+    - name: MaskableGraphic
+      shown: 0
+    - name: RawImage
+      shown: 0
+    - name: RectMask2D
+      shown: 0
+    - name: Scrollbar
+      shown: 0
+    - name: ScrollRect
+      shown: 0
+    - name: Selectable
+      shown: 0
+    - name: Slider
+      shown: 0
+    - name: Text
+      shown: 0
+    - name: Toggle
+      shown: 0
+    - name: ToggleGroup
+      shown: 0
+    - name: BaseMeshEffect
+      shown: 0
+    - name: Outline
+      shown: 0
+    - name: PositionAsUV1
+      shown: 0
+    - name: Shadow
+      shown: 0
+    - name: PanelEventHandler
+      shown: 0
+    - name: PanelRaycaster
+      shown: 0
+    - name: EventSystem
+      shown: 0
+    - name: EventTrigger
+      shown: 0
+    - name: BaseInput
+      shown: 0
+    - name: BaseInputModule
+      shown: 0
+    - name: PointerInputModule
+      shown: 0
+    - name: StandaloneInputModule
+      shown: 0
+    - name: TouchInputModule
+      shown: 0
+    - name: BaseRaycaster
+      shown: 0
+    - name: Physics2DRaycaster
+      shown: 0
+    - name: PhysicsRaycaster
+      shown: 0
+    - name: UIBehaviour
+      shown: 0
+    - name: DropdownItem
+      shown: 0
+    - name: TestCompression
+      shown: 0
+    - name: ExtensionsToggle
+      shown: 0
+    - name: ExtensionsToggleGroup
+      shown: 0
+    - name: ReturnKeyTriggersButton
+      shown: 0
+    - name: Accordion
+      shown: 0
+    - name: AccordionElement
+      shown: 0
+    - name: BoxSlider
+      shown: 0
+    - name: TiltWindow
+      shown: 0
+    - name: AutoCompleteComboBox
+      shown: 0
+    - name: ComboBox
+      shown: 0
+    - name: DropDownList
+      shown: 0
+    - name: CooldownButton
+      shown: 0
+    - name: InputFocus
+      shown: 0
+    - name: MultiTouchScrollRect
+      shown: 0
+    - name: RadialSlider
+      shown: 0
+    - name: RangeSlider
+      shown: 0
+    - name: ReorderableList
+      shown: 0
+    - name: ReorderableListContent
+      shown: 0
+    - name: ReorderableListDebug
+      shown: 0
+    - name: ReorderableListElement
+      shown: 0
+    - name: RescaleDragPanel
+      shown: 0
+    - name: RescalePanel
+      shown: 0
+    - name: ResizePanel
+      shown: 0
+    - name: Segment
+      shown: 0
+    - name: SegmentedControl
+      shown: 0
+    - name: ExampleSelectable
+      shown: 0
+    - name: SelectionBox
+      shown: 0
+    - name: Stepper
+      shown: 0
+    - name: StepperSide
+      shown: 0
+    - name: TextPic
+      shown: 0
+    - name: UI_Knob
+      shown: 0
+    - name: BestFitOutline
+      shown: 0
+    - name: CUIBezierCurve
+      shown: 0
+    - name: CUIGraphic
+      shown: 0
+    - name: CUIImage
+      shown: 0
+    - name: CUIText
+      shown: 0
+    - name: CurvedText
+      shown: 0
+    - name: CylinderText
+      shown: 0
+    - name: Gradient
+      shown: 0
+    - name: Gradient2
+      shown: 0
+    - name: LetterSpacing
+      shown: 0
+    - name: MonoSpacing
+      shown: 0
+    - name: NicerOutline
+      shown: 0
+    - name: RaycastMask
+      shown: 0
+    - name: UIAdditiveEffect
+      shown: 0
+    - name: UIImageCrop
+      shown: 0
+    - name: UILinearDodgeEffect
+      shown: 0
+    - name: UIMultiplyEffect
+      shown: 0
+    - name: UIScreenEffect
+      shown: 0
+    - name: UISoftAdditiveEffect
+      shown: 0
+    - name: ShineEffect
+      shown: 0
+    - name: ShineEffector
+      shown: 0
+    - name: SoftMaskScript
+      shown: 0
+    - name: UIFlippable
+      shown: 0
+    - name: UIParticleSystem
+      shown: 0
+    - name: CardExpanding2D
+      shown: 0
+    - name: CardPopup2D
+      shown: 0
+    - name: CardStack2D
+      shown: 0
+    - name: CardExpanding3D
+      shown: 0
+    - name: MeshCreator
+      shown: 0
+    - name: SuperellipsePoints
+      shown: 0
+    - name: ContentScrollSnapHorizontal
+      shown: 0
+    - name: CurvedLayout
+      shown: 0
+    - name: FancyCell`2
+      shown: 0
+    - name: FancyCell`1
+      shown: 0
+    - name: FancyScrollView`2
+      shown: 0
+    - name: FancyScrollView`1
+      shown: 0
+    - name: FancyCellGroup`2
+      shown: 0
+    - name: FancyGridView`2
+      shown: 0
+    - name: FancyGridView`1
+      shown: 0
+    - name: FancyGridViewCell`2
+      shown: 0
+    - name: FancyGridViewCell`1
+      shown: 0
+    - name: Scroller
+      shown: 0
+    - name: FancyScrollRect`2
+      shown: 0
+    - name: FancyScrollRect`1
+      shown: 0
+    - name: FancyScrollRectCell`2
+      shown: 0
+    - name: FancyScrollRectCell`1
+      shown: 0
+    - name: FlowLayoutGroup
+      shown: 0
+    - name: HorizontalScrollSnap
+      shown: 0
+    - name: RadialLayout
+      shown: 0
+    - name: ScrollPositionController
+      shown: 0
+    - name: ScrollSnap
+      shown: 0
+    - name: ScrollSnapBase
+      shown: 0
+    - name: ScrollSnapScrollbarHelper
+      shown: 0
+    - name: TableLayoutGroup
+      shown: 0
+    - name: TileSizeFitter
+      shown: 0
+    - name: UIVerticalScroller
+      shown: 0
+    - name: VerticalScrollSnap
+      shown: 0
+    - name: Menu`1
+      shown: 0
+    - name: Menu
+      shown: 0
+    - name: MenuManager
+      shown: 0
+    - name: SimpleMenu`1
+      shown: 0
+    - name: DiamondGraph
+      shown: 0
+    - name: UICircle
+      shown: 0
+    - name: UICornerCut
+      shown: 0
+    - name: UIGridRenderer
+      shown: 0
+    - name: UILineRenderer
+      shown: 0
+    - name: UILineRendererList
+      shown: 0
+    - name: UILineTextureRenderer
+      shown: 0
+    - name: UIPolygon
+      shown: 0
+    - name: UIPrimitiveBase
+      shown: 0
+    - name: UISquircle
+      shown: 0
+    - name: TabNavigationHelper
+      shown: 0
+    - name: BoundTooltipItem
+      shown: 0
+    - name: BoundTooltipTrigger
+      shown: 0
+    - name: HoverTooltip
+      shown: 0
+    - name: ToolTip
+      shown: 0
+    - name: TooltipTrigger
+      shown: 0
+    - name: UIWindowBase
+      shown: 0
+    - name: DragCorrector
+      shown: 0
+    - name: InputFieldEnterSubmit
+      shown: 0
+    - name: NonDrawingGraphic
+      shown: 0
+    - name: PaginationManager
+      shown: 0
+    - name: PPIViewer
+      shown: 0
+    - name: ScrollConflictManager
+      shown: 0
+    - name: ScrollRectEx
+      shown: 0
+    - name: ScrollRectLinker
+      shown: 0
+    - name: ScrollRectTweener
+      shown: 0
+    - name: SelectableScaler
+      shown: 0
+    - name: UIHighlightable
+      shown: 0
+    - name: UILineConnector
+      shown: 0
+    - name: UIScrollToSelection
+      shown: 0
+    - name: UIScrollToSelectionXY
+      shown: 0
+    - name: UISelectableExtension
+      shown: 0
+    - name: UI_InfiniteScroll
+      shown: 0
+    - name: UI_MagneticInfiniteScroll
+      shown: 0
+    - name: UI_ScrollRectOcclusion
+      shown: 0
+    - name: UI_TweenScale
+      shown: 0
+    - name: ColorImage
+      shown: 0
+    - name: ColorLabel
+      shown: 0
+    - name: ColorPickerControl
+      shown: 0
+    - name: ColorPickerPresets
+      shown: 0
+    - name: ColorPickerTester
+      shown: 0
+    - name: ColorSampler
+      shown: 0
+    - name: ColorSlider
+      shown: 0
+    - name: ColorSliderImage
+      shown: 0
+    - name: HexColorField
+      shown: 0
+    - name: SVBoxSlider
+      shown: 0
+    - name: DefaultCellGroup
+      shown: 0
+    - name: PermissionCallbackHelper
+      shown: 0
+    - name: BaseMaterialEffect
+      shown: 0
+    - name: BaseMeshEffect
+      shown: 0
+    - name: UIDissolve
+      shown: 0
+    - name: UIEffect
+      shown: 0
+    - name: UIFlip
+      shown: 0
+    - name: UIGradient
+      shown: 0
+    - name: UIHsvModifier
+      shown: 0
+    - name: UIShadow
+      shown: 0
+    - name: UIShiny
+      shown: 0
+    - name: UISyncEffect
+      shown: 0
+    - name: UITransitionEffect
+      shown: 0
+    - name: PostProcessDebug
+      shown: 0
+    - name: PostProcessLayer
+      shown: 0
+    - name: PostProcessVolume
+      shown: 0
+    - name: RTLTextMeshPro
+      shown: 0
+    - name: RTLTextMeshPro3D
+      shown: 0
+    - name: DOTweenComponent
+      shown: 0
+    customComponents: []
+    unityVersion: 2021.2.0f1
+    isDirty: 0

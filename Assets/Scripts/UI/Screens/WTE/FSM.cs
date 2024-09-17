@@ -1,33 +1,36 @@
 ﻿using System;
 using UnityEngine;
 
-namespace MRK.UI {
-    public partial class EGRScreenWTE {
-        void InitTransitionFSM() {
-            m_AnimFSM = new EGRFiniteStateMachine(new Tuple<Func<bool>, Action, Action>[]{
+namespace MRK.UI
+{
+    public partial class WTE
+    {
+        private void InitTransitionFSM()
+        {
+            _animFSM = new EGRFiniteStateMachine(new Tuple<Func<bool>, Action, Action>[]{
                 new Tuple<Func<bool>, Action, Action>(() => {
-                    return m_TransitionFade.Done;
+                    return _transitionFade.Done;
                 }, () => {
-                    m_TransitionFade.Update();
+                    _transitionFade.Update();
 
-                    m_WTETextBg.color = m_TransitionFade.Current;
-                    m_WTEText.color = m_TransitionFade.Current.Inverse().AlterAlpha(1f);
+                    _wteTextBg.color = _transitionFade.Current;
+                    _wteText.color = _transitionFade.Current.Inverse().AlterAlpha(1f);
 
                 }, () => {
-                    m_TransitionFade.Reset();
+                    _transitionFade.Reset();
 
-                    m_StripFade.Reset();
-                    m_StripFade.SetColors(m_TransitionFade.Final, Color.clear, 0.3f);
+                    _stripFade.Reset();
+                    _stripFade.SetColors(_transitionFade.Final, Color.clear, 0.3f);
 
-                    m_WTETextBgDissolve.effectFactor = 0f;
+                    _wteTextBgDissolve.effectFactor = 0f;
                 }),
 
                 new Tuple<Func<bool>, Action, Action>(() => {
-                    return m_WTETextBgDissolve.effectFactor >= 1f;
+                    return _wteTextBgDissolve.effectFactor >= 1f;
                 }, () => {
                 }, () => {
-                    m_WTETextBgDissolve.effectPlayer.duration = 0.5f;
-                    Client.Runnable.RunLater(() => m_WTETextBgDissolve.effectPlayer.Play(false), 1f);
+                    _wteTextBgDissolve.effectPlayer.duration = 0.5f;
+                    Client.Runnable.RunLater(() => _wteTextBgDissolve.effectPlayer.Play(false), 1f);
                 }),
 
                 //exit

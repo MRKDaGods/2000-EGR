@@ -1,15 +1,19 @@
 ﻿using System;
 
-namespace MRK.UI.Attributes {
-    public enum EGRUIAttributes {
+namespace MRK.UI.Attributes
+{
+    public enum UIAttributes
+    {
         None,
         ContentType
     }
 
-    public partial class EGRUIAttribute : MRKBehaviour {
+    public partial class UIAttribute : BaseBehaviour
+    {
         [Serializable]
-        public class Attribute<T> {
-            public EGRUIAttributes Attr;
+        public class Attribute<T>
+        {
+            public UIAttributes Attr;
             public T Value;
         }
     }

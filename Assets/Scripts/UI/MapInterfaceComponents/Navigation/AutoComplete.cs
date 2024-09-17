@@ -5,11 +5,16 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MRK.UI.MapInterface {
-    public partial class EGRMapInterfaceComponentNavigation {
-        class AutoComplete {
-            class Item {
-                public struct GraphicData {
+namespace MRK.UI.MapInterface
+{
+    public partial class Navigation
+    {
+        private class AutoComplete
+        {
+            private class Item
+            {
+                public struct GraphicData
+                {
                     public Graphic Gfx;
                     public Color Color;
                 }
@@ -26,61 +31,73 @@ namespace MRK.UI.MapInterface {
                 public EGRGeoAutoCompleteFeature Feature;
             }
 
-            struct Context {
+            private struct Context
+            {
                 public string Query;
                 public float Time;
                 public int Index;
             }
 
-            const float AUTOCOMPLETE_REQUEST_DELAY = 0.15f;
+            private const float AutoCompleteRequestDelay = 0.15f;
 
-            RectTransform m_Transform;
-            ObjectPool<Item> m_ItemPool;
-            Item m_DefaultItem;
-            Item m_CurrentLocation;
-            Item m_ManualMap;
-            float m_LastAutoCompleteRequestTime;
-            int m_ContextIndex;
-            readonly Dictionary<string, EGRGeoAutoComplete> m_RequestCache;
-            readonly List<Item> m_Items;
-            TMP_InputField m_ActiveInput;
-            Item m_LastActiveItem;
-            Context? m_LastContext;
+            private RectTransform _transform;
+            private ObjectPool<Item> _itemPool;
+            private Item _defaultItem;
+            private Item _currentLocation;
+            private Item _manualMap;
+            private float _lastAutoCompleteRequestTime;
+            private int _contextIndex;
+            private readonly Dictionary<string, EGRGeoAutoComplete> _requestCache;
+            private readonly List<Item> _items;
+            private TMP_InputField _activeInput;
+            private Item _lastActiveItem;
+            private Context? _lastContext;
 
-            public bool IsActive => m_Transform.gameObject.activeInHierarchy;
+            public bool IsActive
+            {
+                get
+                {
+                    return _transform.gameObject.activeInHierarchy;
+                }
+            }
 
-            public AutoComplete(RectTransform transform) {
-                m_Transform = transform;
+            public AutoComplete(RectTransform transform)
+            {
+                _transform = transform;
 
-                m_ItemPool = new ObjectPool<Item>(() => {
+                _itemPool = new ObjectPool<Item>(() =>
+                {
                     Item item = new Item();
-                    InitItem(item, Object.Instantiate(m_DefaultItem.Object, m_DefaultItem.Object.transform.parent).transform);
+                    InitItem(item, Object.Instantiate(_defaultItem.Object, _defaultItem.Object.transform.parent).transform);
                     return item;
                 });
 
-                Transform defaultTrans = m_Transform.Find("Item");
-                m_DefaultItem = new Item();
-                InitItem(m_DefaultItem, defaultTrans);
-                m_DefaultItem.Object.SetActive(false);
+                Transform defaultTrans = _transform.Find("Item");
+                _defaultItem = new Item();
+                InitItem(_defaultItem, defaultTrans);
+                _defaultItem.Object.SetActive(false);
 
-                Transform currentTrans = m_Transform.Find("Current");
-                m_CurrentLocation = new Item {
+                Transform currentTrans = _transform.Find("Current");
+                _currentLocation = new Item
+                {
                     FontStatic = true
                 };
-                InitItem(m_CurrentLocation, currentTrans);
+                InitItem(_currentLocation, currentTrans);
 
-                Transform manualTrans = m_Transform.Find("Manual");
-                m_ManualMap = new Item {
+                Transform manualTrans = _transform.Find("Manual");
+                _manualMap = new Item
+                {
                     FontStatic = true
                 };
-                InitItem(m_ManualMap, manualTrans);
+                InitItem(_manualMap, manualTrans);
 
-                m_ContextIndex = -1;
-                m_RequestCache = new Dictionary<string, EGRGeoAutoComplete>();
-                m_Items = new List<Item>();
+                _contextIndex = -1;
+                _requestCache = new Dictionary<string, EGRGeoAutoComplete>();
+                _items = new List<Item>();
             }
 
-            void InitItem(Item item, Transform itemTransform) {
+            private void InitItem(Item item, Transform itemTransform)
+            {
                 item.Object = itemTransform.gameObject;
                 item.RectTransform = (RectTransform)itemTransform;
                 item.Sprite = itemTransform.Find("Sprite")?.GetComponent<Image>();
@@ -91,126 +108,149 @@ namespace MRK.UI.MapInterface {
                 item.Button.onClick.AddListener(() => OnItemClick(item));
             }
 
-            void ResetActiveItem() {
-                if (m_LastActiveItem != null) {
-                    m_LastActiveItem.Focused = false;
-                    m_LastActiveItem.RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 100f);
+            private void ResetActiveItem()
+            {
+                if (_lastActiveItem != null)
+                {
+                    _lastActiveItem.Focused = false;
+                    _lastActiveItem.RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 100f);
 
-                    if (!m_LastActiveItem.FontStatic)
-                        m_LastActiveItem.Text.fontStyle &= ~FontStyles.Bold;
+                    if (!_lastActiveItem.FontStatic)
+                        _lastActiveItem.Text.fontStyle &= ~FontStyles.Bold;
                 }
             }
 
-            void AnimateItem(Item item) {
-                if (item.GfxData == null) {
+            private void AnimateItem(Item item)
+            {
+                if (item.GfxData == null)
+                {
                     Graphic[] gfx = item.Object.GetComponentsInChildren<Graphic>();
                     item.GfxData = new Item.GraphicData[gfx.Length];
 
-                    for (int i = 0; i < gfx.Length; i++) {
-                        item.GfxData[i] = new Item.GraphicData {
+                    for (int i = 0; i < gfx.Length; i++)
+                    {
+                        item.GfxData[i] = new Item.GraphicData
+                        {
                             Gfx = gfx[i],
                             Color = gfx[i].color
                         };
                     }
                 }
 
-                foreach (Item.GraphicData gfxData in item.GfxData) {
+                foreach (Item.GraphicData gfxData in item.GfxData)
+                {
                     gfxData.Gfx.DOColor(gfxData.Color, 0.4f)
                         .ChangeStartValue(gfxData.Color.AlterAlpha(0f))
                         .SetEase(Ease.OutSine);
                 }
             }
 
-            void OnItemClick(Item item) {
-                if (!item.Focused) {
+            private void OnItemClick(Item item)
+            {
+                if (!item.Focused)
+                {
                     ResetActiveItem();
 
                     item.Focused = true;
-                    m_ActiveInput.SetTextWithoutNotify(item.Text.text);
+                    _activeInput.SetTextWithoutNotify(item.Text.text);
 
                     item.RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 150f);
                     item.Text.fontStyle |= FontStyles.Bold;
 
-                    m_LastActiveItem = item;
+                    _lastActiveItem = item;
                 }
-                else {
-                    switch (m_ActiveInput.name) {
+                else
+                {
+                    switch (_activeInput.name)
+                    {
 
                         case "From":
-                            if (item == m_ManualMap) {
-                                ms_Instance.IsFromCurrentLocation = false;
-                                ms_Instance.ChooseLocationManually(0);
+                            if (item == _manualMap)
+                            {
+                                _instance.IsFromCurrentLocation = false;
+                                _instance.ChooseLocationManually(0);
                                 break;
                             }
 
-                            if (!ms_Instance.m_Top.IsValid(1))
-                                ms_Instance.m_Top.SetInputActive(1);
+                            if (!_instance._top.IsValid(1))
+                                _instance._top.SetInputActive(1);
 
-                            ms_Instance.m_Top.SetValidationState(0, true);
-                            bool isCurLoc = item == m_CurrentLocation;
+                            _instance._top.SetValidationState(0, true);
+                            bool isCurLoc = item == _currentLocation;
                             if (!isCurLoc)
-                                ms_Instance.FromCoords = item.Feature.Geometry.Coordinates;
+                                _instance.FromCoords = item.Feature.Geometry.Coordinates;
 
-                            ms_Instance.IsFromCurrentLocation = isCurLoc;
+                            _instance.IsFromCurrentLocation = isCurLoc;
 
-                            if (ms_Instance.CanQueryDirections()) {
-                                ms_Instance.QueryDirections();
+                            if (_instance.CanQueryDirections())
+                            {
+                                _instance.QueryDirections();
                                 SetAutoCompleteState(false);
                             }
 
                             break;
 
                         case "To":
-                            if (item == m_ManualMap) {
-                                ms_Instance.ChooseLocationManually(1);
+                            if (item == _manualMap)
+                            {
+                                _instance.ChooseLocationManually(1);
                                 break;
                             }
 
-                            ms_Instance.m_Top.SetValidationState(1, true);
-                            ms_Instance.ToCoords = item.Feature.Geometry.Coordinates;
+                            _instance._top.SetValidationState(1, true);
+                            _instance.ToCoords = item.Feature.Geometry.Coordinates;
 
-                            if (!ms_Instance.CanQueryDirections()) {
-                                ms_Instance.m_Top.SetInputActive(0);
+                            if (!_instance.CanQueryDirections())
+                            {
+                                _instance._top.SetInputActive(0);
                             }
-                            else {
-                                ms_Instance.QueryDirections();
+                            else
+                            {
+                                _instance.QueryDirections();
                                 SetAutoCompleteState(false);
                             }
 
                             break;
 
                         default:
-                            Debug.Log("UNK " + m_ActiveInput.name);
+                            Debug.Log("UNK " + _activeInput.name);
                             break;
 
                     }
                 }
             }
 
-            public void SetActiveInput(TMP_InputField input) {
-                m_ActiveInput = input;
+            public void SetActiveInput(TMP_InputField input)
+            {
+                _activeInput = input;
                 //ResetActiveItem();
 
                 FreeCurrentItems();
             }
 
-            public void Update() {
-                if (m_LastContext.HasValue) {
-                    if (Time.time - m_LastContext.Value.Time > AUTOCOMPLETE_REQUEST_DELAY) {
-                        CreateRequest(m_LastContext.Value.Query);
-                        m_LastContext = null;
+            public void Update()
+            {
+                if (_lastContext.HasValue)
+                {
+                    if (Time.time - _lastContext.Value.Time > AutoCompleteRequestDelay)
+                    {
+                        CreateRequest(_lastContext.Value.Query);
+                        _lastContext = null;
                     }
                 }
             }
 
-            public void SetContext(int idx, string txt) {
+            public void SetContext(int idx, string txt)
+            {
                 EGRGeoAutoComplete cachedItems;
-                if (m_RequestCache.TryGetValue(txt, out cachedItems)) {
+                if (_requestCache.TryGetValue(txt, out cachedItems))
+                {
                     SetItems(cachedItems);
                     return;
                 }
 
-                m_LastContext = new Context {
+                _lastContext = new Context
+                {
                     Query = txt,
                     Time = Time.time,
                     Index = idx
@@ -225,64 +265,76 @@ namespace MRK.UI.MapInterface {
                 //CreateRequest(txt);
             }
 
-            void CreateRequest(string txt) {
-                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt)) {
+            private void CreateRequest(string txt)
+            {
+                if (string.IsNullOrEmpty(txt) || string.IsNullOrWhiteSpace(txt))
+                {
                     FreeCurrentItems();
                     return;
                 }
 
-                ms_Instance.Client.NetworkingClient.MainNetworkExternal.GeoAutoComplete(txt, ms_Instance.Client.FlatMap.CenterLatLng, (res) => OnNetGeoAutoComplete(res, txt));
+                _instance.Client.NetworkingClient.MainNetworkExternal.GeoAutoComplete(txt, _instance.Client.FlatMap.CenterLatLng, (res) => OnNetGeoAutoComplete(res, txt));
             }
 
-            void OnNetGeoAutoComplete(PacketInGeoAutoComplete response, string query) {
+            private void OnNetGeoAutoComplete(PacketInGeoAutoComplete response, string query)
+            {
                 EGRGeoAutoComplete results = Newtonsoft.Json.JsonConvert.DeserializeObject<EGRGeoAutoComplete>(response.Response);
-                m_RequestCache[query] = results;
+                _requestCache[query] = results;
                 SetItems(results);
             }
 
-            void FreeCurrentItems() {
+            private void FreeCurrentItems()
+            {
                 ResetActiveItem();
 
-                if (m_Items.Count > 0) {
-                    foreach (Item item in m_Items) {
+                if (_items.Count > 0)
+                {
+                    foreach (Item item in _items)
+                    {
                         item.Object.SetActive(false);
-                        m_ItemPool.Free(item);
+                        _itemPool.Free(item);
                     }
 
-                    m_Items.Clear();
+                    _items.Clear();
                 }
             }
 
-            void SetItems(EGRGeoAutoComplete items) {
+            private void SetItems(EGRGeoAutoComplete items)
+            {
                 FreeCurrentItems();
 
-                foreach (EGRGeoAutoCompleteFeature item in items.Features) {
-                    Item autoCompleteItem = m_ItemPool.Rent();
+                foreach (EGRGeoAutoCompleteFeature item in items.Features)
+                {
+                    Item autoCompleteItem = _itemPool.Rent();
                     autoCompleteItem.Text.text = item.Text;
                     autoCompleteItem.Address.text = item.PlaceName;
                     autoCompleteItem.Feature = item;
                     autoCompleteItem.Object.SetActive(true);
 
-                    m_Items.Add(autoCompleteItem);
+                    _items.Add(autoCompleteItem);
                 }
             }
 
-            public void SetAutoCompleteState(bool active, bool showCurLoc = true, bool showManual = true) {
-                m_Transform.gameObject.SetActive(active);
+            public void SetAutoCompleteState(bool active, bool showCurLoc = true, bool showManual = true)
+            {
+                _transform.gameObject.SetActive(active);
 
-                if (active) {
-                    if (m_CurrentLocation.Object.activeInHierarchy != showCurLoc) {
-                        m_CurrentLocation.Object.SetActive(showCurLoc);
+                if (active)
+                {
+                    if (_currentLocation.Object.activeInHierarchy != showCurLoc)
+                    {
+                        _currentLocation.Object.SetActive(showCurLoc);
 
                         if (showCurLoc)
-                            AnimateItem(m_CurrentLocation);
+                            AnimateItem(_currentLocation);
                     }
 
-                    if (m_ManualMap.Object.activeInHierarchy != showManual) {
-                        m_ManualMap.Object.SetActive(showManual);
+                    if (_manualMap.Object.activeInHierarchy != showManual)
+                    {
+                        _manualMap.Object.SetActive(showManual);
 
                         if (showManual)
-                            AnimateItem(m_ManualMap);
+                            AnimateItem(_manualMap);
                     }
                 }
             }

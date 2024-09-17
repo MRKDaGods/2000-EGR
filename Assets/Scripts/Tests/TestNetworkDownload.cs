@@ -35,24 +35,24 @@ namespace MRK {
             m_Network.Connect();
         }
 
-        bool NetFetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
+        bool NetFetchTile(string tileSet, TileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
             return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableSequenced, callback);
         }
 
-        IEnumerator Fetch(MRKTileFetcherContext context, string tileSet, MRKTileID id) {
+        IEnumerator Fetch(TileFetcherContext context, string tileSet, TileID id) {
             PacketInFetchTile response = null;
 
             void __cb(PacketInFetchTile _response) {
                 response = _response;
-                EGREventManager.Instance.Register<EGREventNetworkDownloadRequest>(__reqCb);
+                EGREventManager.Instance.Register<NetworkDownloadRequest>(__reqCb);
             }
 
             EGRDownloadContext downloadContext = null;
-            void __reqCb(EGREventNetworkDownloadRequest evt) {
+            void __reqCb(NetworkDownloadRequest evt) {
                 if (evt.Context.ID == response.DownloadID) {
                     evt.IsAccepted = true;
                     downloadContext = evt.Context;
-                    EGREventManager.Instance.Unregister<EGREventNetworkDownloadRequest>(__reqCb);
+                    EGREventManager.Instance.Unregister<NetworkDownloadRequest>(__reqCb);
                 }
             }
 
@@ -111,8 +111,8 @@ namespace MRK {
         }
 
         IEnumerator Download() {
-            MRKTileFetcherContext ctx = new MRKTileFetcherContext();
-            yield return Fetch(ctx, "main", new MRKTileID(0, 0, 0));
+            TileFetcherContext ctx = new TileFetcherContext();
+            yield return Fetch(ctx, "main", new TileID(0, 0, 0));
 
             if (ctx.Error) {
                 Debug.Log("error");

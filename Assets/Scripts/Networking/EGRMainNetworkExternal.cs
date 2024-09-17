@@ -18,7 +18,7 @@ namespace MRK.Networking {
         /// <param name="callback">Response callback</param>
         public bool RegisterAccount(string name, string email, string password, EGRPacketReceivedCallback<PacketInStandardResponse> callback) {
             //make sure we hash the password
-            return m_Network.SendPacket(new PacketOutRegisterAccount(name, email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
+            return m_Network.SendPacket(new PacketOutRegisterAccount(name, email, Crypto.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace MRK.Networking {
         /// <returns></returns>
         public bool LoginAccount(string email, string password, EGRPacketReceivedCallback<PacketInLoginAccount> callback) {
             //hash the password again
-            return m_Network.SendPacket(new PacketOutLoginAccount(email, MRKCryptography.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
+            return m_Network.SendPacket(new PacketOutLoginAccount(email, Crypto.Hash(password)), DeliveryMethod.ReliableOrdered, callback);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace MRK.Networking {
         /// <param name="id">Tile ID</param>
         /// <param name="callback">Response callback</param>
         /// <returns></returns>
-        public bool FetchTile(string tileSet, MRKTileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
+        public bool FetchTile(string tileSet, TileID id, EGRPacketReceivedCallback<PacketInFetchTile> callback) {
             return m_Network.SendPacket(new PacketOutFetchTile(tileSet, id), DeliveryMethod.ReliableOrdered, callback);
         }
 

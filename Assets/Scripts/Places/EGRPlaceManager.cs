@@ -1,4 +1,5 @@
-﻿using MRK.Networking.Packets;
+﻿using MRK.Maps;
+using MRK.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,10 +8,10 @@ namespace MRK {
     public delegate void EGRFetchPlacesCallback(EGRPlace place);
     public delegate void EGRFetchPlacesV2Callback(HashSet<EGRPlace> places, int tileHash);
 
-    public class EGRPlaceManager : MRKBehaviour {
+    public class EGRPlaceManager : BaseBehaviour {
         class TileInfo {
             public int Hash;
-            public MRKTileID ID;
+            public TileID ID;
             public HashSet<EGRPlace> Places;
             public EGRFetchPlacesV2Callback ActiveCallback;
             public Rectd Bounds;
@@ -26,12 +27,12 @@ namespace MRK {
             m_PlaceCache = new Dictionary<ulong, EGRPlace>();
         }
 
-        TileInfo GetTileInfo(MRKTileID id) {
+        TileInfo GetTileInfo(TileID id) {
             int hash = id.GetHashCode();
             if (!m_TileInfos.ContainsKey(hash)) {
-                Rectd bounds = MRKMapUtils.TileBounds(id);
-                Vector2d min = MRKMapUtils.MetersToLatLon(bounds.Min);
-                Vector2d max = MRKMapUtils.MetersToLatLon(bounds.Max);
+                Rectd bounds = MapUtils.TileBounds(id);
+                Vector2d min = MapUtils.MetersToLatLon(bounds.Min);
+                Vector2d max = MapUtils.MetersToLatLon(bounds.Max);
 
                 m_TileInfos[hash] = new TileInfo {
                     Hash = hash,
@@ -47,7 +48,7 @@ namespace MRK {
             return m_TileInfos[hash];
         }
 
-        public void FetchPlacesInTile(MRKTileID tileID, EGRFetchPlacesV2Callback callback) {
+        public void FetchPlacesInTile(TileID tileID, EGRFetchPlacesV2Callback callback) {
             TileInfo tileInfo = GetTileInfo(tileID);
 
             if (tileInfo.Places != null) {
@@ -85,7 +86,7 @@ namespace MRK {
             //TODO optimize, use local tile zoom and search for tiles with less zoom lvls having minLatLng and max of our local
 
             for (int z = tileInfo.ID.Z - 1; z > 7; z--) {
-                MRKTileID upperTile = MRKMapUtils.CoordinateToTileId((tileInfo.Minimum + tileInfo.Maximum) / 2f, z);
+                TileID upperTile = MapUtils.CoordinateToTileId((tileInfo.Minimum + tileInfo.Maximum) / 2f, z);
                 TileInfo upperInfo;
                 if (!m_TileInfos.TryGetValue(upperTile.GetHashCode(), out upperInfo))
                     continue;

@@ -2,21 +2,27 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MRK.UI.MapInterface {
-    public partial class EGRMapInterfaceComponentNavigation {
-        partial class NavInterface {
-            public class NavCurrentStep : EGRUINestedElement {
-                readonly Image m_Sprite;
-                readonly TextMeshProUGUI m_Text;
+namespace MRK.UI.MapInterface
+{
+    public partial class Navigation
+    {
+        public partial class NavInterface
+        {
+            public class NavCurrentStep : NestedElement
+            {
+                private readonly Image _sprite;
+                private readonly TextMeshProUGUI _text;
 
-                public NavCurrentStep(RectTransform transform) : base(transform) {
-                    m_Sprite = transform.GetElement<Image>("Sprite");
-                    m_Text = transform.GetElement<TextMeshProUGUI>("Instruction");
+                public NavCurrentStep(RectTransform transform) : base(transform)
+                {
+                    _sprite = transform.GetElement<Image>("Sprite");
+                    _text = transform.GetElement<TextMeshProUGUI>("Instruction");
                 }
 
-                public void SetInstruction(string text, Sprite sprite) {
-                    m_Text.text = text;
-                    m_Sprite.sprite = sprite;
+                public void SetInstruction(string text, Sprite sprite)
+                {
+                    _text.text = text;
+                    _sprite.sprite = sprite;
                 }
             }
         }

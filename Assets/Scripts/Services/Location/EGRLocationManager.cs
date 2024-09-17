@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 
 namespace MRK {
-    public class EGRLocationManager : MRKBehaviour {
+    public class EGRLocationManager : BaseBehaviour {
         const float LOCATION_REQUEST_DELAY = 0f; //0.5f
 
         GameObject m_CurrentLocationSprite;
@@ -19,12 +19,12 @@ namespace MRK {
             m_CurrentLocationSprite.SetActive(false);
 
             Client.RegisterMapModeDelegate(OnMapModeChanged);
-            Client.FlatMap.OnMapUpdated += OnMapUpdated;
+            Client.FlatMap.MapUpdated += OnMapUpdated;
         }
 
         void OnDestroy() {
             Client.UnregisterMapModeDelegate(OnMapModeChanged);
-            Client.FlatMap.OnMapUpdated -= OnMapUpdated;
+            Client.FlatMap.MapUpdated -= OnMapUpdated;
         }
 
         void OnMapUpdated() {

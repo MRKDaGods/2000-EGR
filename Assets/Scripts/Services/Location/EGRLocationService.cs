@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using MRK.UI;
-using static MRK.EGRLanguageManager;
+using static MRK.LanguageManager;
 
 namespace MRK {
     public enum EGRLocationError {
@@ -49,7 +49,7 @@ namespace MRK {
         }
     }
 
-    public class EGRLocationService : MRKBehaviour {
+    public class EGRLocationService : BaseBehaviour {
         class PermissionAwaiter {
             int m_Count;
             int m_Value;
@@ -81,7 +81,7 @@ namespace MRK {
         readonly PermissionCallbacks m_PermissionCallbacks;
         readonly PermissionAwaiter m_PermissionAwaiter;
         bool m_PermissionDenied;
-        MRKRunnable m_Runnable;
+        Runnable m_Runnable;
         EGRLocationServiceSimulator m_Simulator;
         readonly CircularBuffer<Vector2d> m_LastPositions;
         readonly MRKAngleSmoother m_RawCompassSmoothing;
@@ -111,7 +111,7 @@ namespace MRK {
         }
 
         void Start() {
-            m_Runnable = gameObject.AddComponent<MRKRunnable>();
+            m_Runnable = gameObject.AddComponent<Runnable>();
         }
 
         void OnPermissionGranted(string perm) {
@@ -125,13 +125,13 @@ namespace MRK {
 
         void OnPermissionDeniedAndDontAskAgain(string perm) {
             m_PermissionDenied = true;
-            MRKPlayerPrefs.Set<bool>($"EGR_PERM_{perm}", true);
-            MRKPlayerPrefs.Save();
+            CryptoPlayerPrefs.Set<bool>($"EGR_PERM_{perm}", true);
+            CryptoPlayerPrefs.Save();
             m_PermissionAwaiter.Increment();
         }
 
         bool IsPermissionRestricted(string perm) {
-            return MRKPlayerPrefs.Get<bool>($"EGR_PERM_{perm}", false);
+            return CryptoPlayerPrefs.Get<bool>($"EGR_PERM_{perm}", false);
         }
 
         IEnumerator Initialize(Action callback, bool silent) {
@@ -151,14 +151,14 @@ namespace MRK {
                     if (!Permission.HasUserAuthorizedPermission(perm)) {
                         if (IsPermissionRestricted(perm)) {
                             if (!silent) {
-                                EGRPopupConfirmation popup = Client.ScreenManager.GetPopup<EGRPopupConfirmation>();
-                                popup.SetYesButtonText(Localize(EGRLanguageData.SETTINGS));
-                                popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+                                Confirmation popup = Client.ScreenManager.GetPopup<Confirmation>();
+                                popup.SetYesButtonText(Localize(LanguageData.SETTINGS));
+                                popup.SetNoButtonText(Localize(LanguageData.CANCEL));
                                 popup.ShowPopup(
-                                    Localize(EGRLanguageData.EGR),
-                                    Localize(EGRLanguageData.LOCATION_PERMISSION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION),
+                                    Localize(LanguageData.EGR),
+                                    Localize(LanguageData.LOCATION_PERMISSION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION),
                                     (p, res) => {
-                                        if (res == EGRPopupResult.YES) {
+                                        if (res == PopupResult.YES) {
                                             AndroidRuntimePermissions.OpenSettings();
                                         }
                                     },
@@ -185,14 +185,14 @@ namespace MRK {
                         yield return m_PermissionAwaiter.Await();
 
                         if (m_PermissionDenied) {
-                            Reference<EGRPopupResult?> result = new Reference<EGRPopupResult?>();
+                            Reference<PopupResult?> result = new Reference<PopupResult?>();
 
-                            EGRPopupConfirmation popup = Client.ScreenManager.GetPopup<EGRPopupConfirmation>();
-                            popup.SetYesButtonText(Localize(EGRLanguageData.ENABLE));
-                            popup.SetNoButtonText(Localize(EGRLanguageData.CANCEL));
+                            Confirmation popup = Client.ScreenManager.GetPopup<Confirmation>();
+                            popup.SetYesButtonText(Localize(LanguageData.ENABLE));
+                            popup.SetNoButtonText(Localize(LanguageData.CANCEL));
                             popup.ShowPopup(
-                                Localize(EGRLanguageData.EGR),
-                                Localize(EGRLanguageData.LOCATION_PERMISSION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION),
+                                Localize(LanguageData.EGR),
+                                Localize(LanguageData.LOCATION_PERMISSION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION),
                                 (p, res) => {
                                     result.Value = res;
                                 },
@@ -202,7 +202,7 @@ namespace MRK {
                             while (!result.Value.HasValue)
                                 yield return new WaitForSeconds(0.2f);
 
-                            if (result.Value == EGRPopupResult.YES)
+                            if (result.Value == PopupResult.YES)
                                 goto __request;
 
                             LastError = EGRLocationError.Denied;
@@ -220,9 +220,9 @@ namespace MRK {
                 LastError = EGRLocationError.NotEnabled;
 
                 if (!silent) {
-                    Client.ScreenManager.GetPopup<EGRPopupMessageBox>().ShowPopup(
-                        Localize(EGRLanguageData.EGR), 
-                        Localize(EGRLanguageData.LOCATION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION), 
+                    Client.ScreenManager.GetPopup<MessageBox>().ShowPopup(
+                        Localize(LanguageData.EGR), 
+                        Localize(LanguageData.LOCATION_MUST_BE_ENABLED_TO_BE_ABLE_TO_USE_CURRENT_LOCATION), 
                         null,
                         Client.ActiveScreens[0]
                     );
